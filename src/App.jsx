@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useRef, useEffect } from 'react';
 import Auth, { getCurrentUser, clearSession } from './Auth.jsx';
 import './styles.css'
@@ -7,6 +8,11 @@ const MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-8b'];
 const geminiUrl = (model) =>`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
 
 const DEFAULT_METRICS = [
+=======
+import React, { useState } from 'react';
+
+const metrics = [
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
   { icon: '🧬', label: 'Sugar Load', level: 'High', value: 78, tone: 'red' },
   { icon: '🧂', label: 'Sodium Load', level: 'High', value: 72, tone: 'orange' },
   { icon: '🍔', label: 'Processed Food Score', level: 'High', value: 70, tone: 'orange' },
@@ -14,7 +20,11 @@ const DEFAULT_METRICS = [
   { icon: '🎨', label: 'Food Diversity', level: 'Average', value: 54, tone: 'yellow' },
 ];
 
+<<<<<<< HEAD
 const DEFAULT_BLAME_FOODS = [
+=======
+const blameFoods = [
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
   { emoji: '🥤', food: 'Coke', badge: 'High Impact', risk: 'Sugar Load Very High', swap: 'Nimbu Pani', tone: 'red' },
   { emoji: '🍜', food: 'Maggi', badge: 'High Impact', risk: 'Sodium Load Very High', swap: 'Masala Oats', tone: 'red' },
   { emoji: '🍕', food: 'Pizza', badge: 'High Impact', risk: 'Calories High', swap: 'Veg Uttapam', tone: 'red' },
@@ -45,6 +55,7 @@ const weeklyPlan = [
   'Review your Dabba Health Score',
 ];
 
+<<<<<<< HEAD
 // ─── Gemini helpers ───────────────────────────────────────────────────────────
 const responseCache = new Map();
 
@@ -137,6 +148,19 @@ function MVPModal({ show, onClose, title, children }) {
 }
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────
+=======
+const chatReplies = {
+  'Why is my BP risk high?': 'Your BP risk signal is high because Maggi, pizza, fries, and packaged snacks are pushing sodium load upward. Try poha, upma, sprouts chaat, roasted makhana, and home-style meals.',
+  'Why is my Dabba Health Score low?': 'Your score is affected by high sugar load, high sodium load, processed food frequency, and low fiber diversity. Small swaps can lift it quickly.',
+  'What should I replace Maggi with?': 'Try masala oats, poha, vegetable upma, dalia, or homemade sevai with vegetables. They are lighter and more fiber-friendly.',
+  'Give me a 7-day improvement plan': 'Day 1: replace sugary drinks. Day 2: add sprouts. Day 3: swap Maggi. Day 4: add protein. Day 5: skip late fried food. Day 6: add vegetables. Day 7: review your score.',
+  'Which food caused my sugar spike?': 'Coke and cold coffee are the biggest sugar-spike contributors in this demo. They increase short-term energy crash risk and long-term diabetes/fatty-liver risk signals.',
+  'Is this a medical diagnosis?': 'No. DabbaDoc does not diagnose disease. It shows early dietary risk signals from food patterns and recommends consulting a certified doctor or dietitian for medical advice.',
+  'How can I reduce processed food?': 'Start with three swaps: Maggi to poha/upma, fries to roasted makhana, and packaged chips to sprouts chaat. Also keep one home-style meal daily.',
+  'Give me healthier lunch ideas': 'Try dal-rice with salad, paneer roti wrap, rajma with brown rice, vegetable upma, sprouts chaat, or curd rice with vegetables.',
+};
+
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
 function Logo() {
   return (
     <div className="logo">
@@ -165,11 +189,19 @@ function Mascot({ small = false }) {
 
 function FloatingFoods() {
   const items = [
+<<<<<<< HEAD
     ['🥟','float-1'],['🧾','float-2'],['🍲','float-3'],['🛍️','float-4'],
     ['🧀','float-5'],['☕','float-6'],['🍎','float-7'],['🍟','float-8'],
     ['🥤','float-9'],['🍕','float-10'],['🌶️','float-11'],['🍃','float-12'],
     ['🥭','float-13'],['🥛','float-14'],['🥗','float-15'],['🫓','float-16'],
     ['🍋','float-17'],['🥕','float-18'],
+=======
+    ['🥟', 'float-1'], ['🧾', 'float-2'], ['🍲', 'float-3'], ['🛍️', 'float-4'],
+    ['🧀', 'float-5'], ['☕', 'float-6'], ['🍎', 'float-7'], ['🍟', 'float-8'],
+    ['🥤', 'float-9'], ['🍕', 'float-10'], ['🌶️', 'float-11'], ['🍃', 'float-12'],
+    ['🥭', 'float-13'], ['🥛', 'float-14'], ['🥗', 'float-15'], ['🫓', 'float-16'],
+    ['🍋', 'float-17'], ['🥕', 'float-18']
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
   ];
   return (
     <>
@@ -180,13 +212,18 @@ function FloatingFoods() {
   );
 }
 
+<<<<<<< HEAD
 // ─── Nav ──────────────────────────────────────────────────────────────────────
 function TopNav({ onNotif, onProfile, userName }) {
+=======
+function TopNav() {
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
   return (
     <nav className="top-nav">
       <Logo />
       <div className="nav-links">
         <a className="active" href="#dashboard">Dashboard</a>
+<<<<<<< HEAD
         <a href="#insights">Risk Insights</a>
         <a href="#foods">Food Map</a>
         <a href="#healthy-swaps">Swaps</a>
@@ -197,6 +234,18 @@ function TopNav({ onNotif, onProfile, userName }) {
         <button className="icon-btn" onClick={onNotif}>🔔</button>
         <div className="avatar" onClick={onProfile} style={{ cursor: 'pointer' }}></div>
         <span>Hi, {userName?.split(' ')[0] || 'there'}</span>
+=======
+        <a href="#receipts">Receipts</a>
+        <a href="#foods">Foods</a>
+        <a href="#insights">Insights</a>
+        <a href="#plan">Health Plan</a>
+        <a href="#community">Community</a>
+      </div>
+      <div className="profile-area">
+        <button className="icon-btn">🔔</button>
+        <div className="avatar"></div>
+        <span>Hi, Ananya</span>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
         <b>⌄</b>
       </div>
     </nav>
@@ -211,7 +260,14 @@ function Hero({ onDemo, onUpload }) {
         <div className="pill purple">AI-Powered Preventive Healthcare</div>
         <h1>Dabba<span>Doc</span></h1>
         <h2>Your dabba knows your health<br />before your reports do.</h2>
+<<<<<<< HEAD
         <p>We analyse your grocery receipts, packaged foods and food delivery history to predict health risks early and help you make smarter food choices.</p>
+=======
+        <p>
+          We analyse your grocery receipts, packaged foods and food delivery history
+          to predict health risks early and help you make smarter food choices.
+        </p>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
         <div className="hero-actions">
           <button className="btn primary" onClick={onDemo}>✦ Try Demo Analysis</button>
           <button className="btn upload" onClick={onUpload}>⇧ Upload Receipt</button>
@@ -224,7 +280,12 @@ function Hero({ onDemo, onUpload }) {
         <div className="trust-row">
           <span>Trusted by <b>50,000+</b> users across India</span>
           <div className="tiny-avatars"><i></i><i></i><i></i><i></i></div>
+<<<<<<< HEAD
           <b>4.8</b><span className="stars">★★★★★</span>
+=======
+          <b>4.8</b>
+          <span className="stars">★★★★★</span>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
         </div>
       </div>
       <div className="hero-art">
@@ -235,6 +296,7 @@ function Hero({ onDemo, onUpload }) {
   );
 }
 
+<<<<<<< HEAD
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 function Sidebar({ onUpgrade }) {
   const links = [
@@ -243,20 +305,39 @@ function Sidebar({ onUpgrade }) {
     ['▤','Orders','24'],['▥','Pantry','New'],['▦','Health Plan',''],
     ['☷','Reports',''],['♧','Community',''],['⚙','Settings',''],
   ];
+=======
+function Sidebar() {
+  const links = [
+    ['⌂', 'Overview', ''], ['♢', 'Health Score', ''], ['⌁', 'Risk Spectrum', ''],
+    ['❖', 'Food Blame Map', ''], ['♡', 'Healthy Swaps', ''], ['▣', 'Receipts', '12'],
+    ['▤', 'Orders', '24'], ['▥', 'Pantry', 'New'], ['▦', 'Health Plan', ''],
+    ['☷', 'Reports', ''], ['♧', 'Community', ''], ['⚙', 'Settings', ''],
+  ];
+
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
   return (
     <aside className="sidebar">
       <Logo />
       <div className="side-links">
         {links.map(([icon, label, badge], idx) => (
+<<<<<<< HEAD
           <a key={label} className={idx === 0 ? 'selected' : ''} href={`#${label.toLowerCase().replaceAll(' ','-')}`}>
             <span>{icon}</span>{label}{badge && <b className={badge==='New'?'new':''}>{badge}</b>}
+=======
+          <a key={label} className={idx === 0 ? 'selected' : ''} href={`#${label.toLowerCase().replaceAll(' ', '-')}`}>
+            <span>{icon}</span>{label}{badge && <b className={badge === 'New' ? 'new' : ''}>{badge}</b>}
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
           </a>
         ))}
       </div>
       <div className="pro-card">
         <strong>✦ Unlock Pro Insights</strong>
         <p>Go Premium for deeper AI insights & trends</p>
+<<<<<<< HEAD
         <button onClick={onUpgrade}>Upgrade Now</button>
+=======
+        <button>Upgrade Now</button>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
       </div>
     </aside>
   );
@@ -270,19 +351,28 @@ function MetricCard({ metric }) {
         <div><strong>{metric.label}</strong></div>
         <b className={`level ${metric.tone}`}>{metric.level}</b>
       </div>
+<<<<<<< HEAD
       <div className="progress-line"><span className={metric.tone} style={{ width:`${metric.value}%` }}></span></div>
+=======
+      <div className="progress-line"><span className={metric.tone} style={{ width: `${metric.value}%` }}></span></div>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
       <small>{metric.value}/100</small>
     </div>
   );
 }
 
+<<<<<<< HEAD
 function HealthScore({ score, onViewReport }) {
   const face = score >= 75 ? '😊' : score >= 55 ? '😟' : '😰';
   const label = score >= 75 ? 'Good' : score >= 55 ? 'Needs Improvement' : 'Needs Attention';
+=======
+function HealthScore() {
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
   return (
     <div className="score-card">
       <div className="card-title">Dabba Health Score <span>ⓘ</span></div>
       <div className="score-content">
+<<<<<<< HEAD
         <div className="score-ring" style={{'--score':`${score}%`}}>
           <strong>{score}</strong><span>/100</span>
         </div>
@@ -291,22 +381,41 @@ function HealthScore({ score, onViewReport }) {
           <h4>{label}</h4>
           <p>Small changes to your daily diet can make a big difference!</p>
           <button onClick={onViewReport}>View Full Report</button>
+=======
+        <div className="score-ring" style={{ '--score': '62%' }}>
+          <strong>62</strong><span>/100</span>
+        </div>
+        <div>
+          <div className="status-face">😟</div>
+          <h4>Needs<br />Improvement</h4>
+          <p>You're on the right track. Small changes can make a big difference!</p>
+          <button>View Full Report</button>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
         </div>
       </div>
     </div>
   );
 }
 
+<<<<<<< HEAD
 function RiskSpectrum({ onInsights }) {
   const zones = [
     { title:'Short-term Risk', days:'0 – 7 days', status:'Moderate', icon:'⚡', text:'High sodium & low fiber may cause bloating, fatigue, acidity, constipation, and sugar spikes.', tone:'yellow' },
     { title:'30-day Risk', days:'8 – 30 days', status:'High', icon:'📅', text:'High sugar & processed foods may impact energy, gut health, insulin response, and skin.', tone:'red' },
     { title:'Long-term Risk', days:'30+ days', status:'High', icon:'❤️', text:'Risk of weight gain, insulin resistance, heart issues, fatty liver, and lifestyle disease patterns.', tone:'purple' },
+=======
+function RiskSpectrum() {
+  const zones = [
+    { title: 'Short-term Risk', days: '0 – 7 days', status: 'Moderate', icon: '⚡', text: 'High sodium & low fiber may cause bloating, fatigue, acidity, constipation, and sugar spikes.', tone: 'yellow' },
+    { title: '30-day Risk', days: '8 – 30 days', status: 'High', icon: '📅', text: 'High sugar & processed foods may impact energy, gut health, insulin response, and skin.', tone: 'red' },
+    { title: 'Long-term Risk', days: '30+ days', status: 'High', icon: '❤️', text: 'Risk of weight gain, insulin resistance, heart issues, fatty liver, and lifestyle disease patterns.', tone: 'purple' },
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
   ];
   return (
     <section className="risk-card" id="insights">
       <div className="section-heading">
         <div><h3>Risk Spectrum</h3><p>AI-predicted risk signals based on your current eating patterns</p></div>
+<<<<<<< HEAD
         <button className="outline-purple" onClick={onInsights}>View Detailed Insights →</button>
       </div>
       <div className="timeline"><i></i><span></span><span></span><span></span></div>
@@ -315,6 +424,18 @@ function RiskSpectrum({ onInsights }) {
           <div className={`risk-zone ${z.tone}`} key={z.title}>
             <div className="zone-top"><strong>{z.title}</strong><b>{z.status}</b></div>
             <small>{z.days}</small><p>{z.text}</p><em>{z.icon}</em>
+=======
+        <button className="outline-purple">View Detailed Insights →</button>
+      </div>
+      <div className="timeline"><i></i><span></span><span></span><span></span></div>
+      <div className="risk-zones">
+        {zones.map((z) => (
+          <div className={`risk-zone ${z.tone}`} key={z.title}>
+            <div className="zone-top"><strong>{z.title}</strong><b>{z.status}</b></div>
+            <small>{z.days}</small>
+            <p>{z.text}</p>
+            <em>{z.icon}</em>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
           </div>
         ))}
       </div>
@@ -322,15 +443,26 @@ function RiskSpectrum({ onInsights }) {
   );
 }
 
+<<<<<<< HEAD
 function FoodBlameMap({ blameFoods, onViewAll }) {
+=======
+function FoodBlameMap() {
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
   return (
     <section className="blame-section" id="foods">
       <div className="section-heading">
         <div><h3>Food Blame Map</h3><p>These foods are pulling your health score down</p></div>
+<<<<<<< HEAD
         <button className="green-outline" onClick={onViewAll}>View All Food Insights →</button>
       </div>
       <div className="blame-grid">
         {blameFoods.map(item => (
+=======
+        <button className="green-outline">View All Food Insights →</button>
+      </div>
+      <div className="blame-grid">
+        {blameFoods.map((item) => (
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
           <div className="blame-card" key={item.food}>
             <div className="food-emoji">{item.emoji}</div>
             <strong>{item.food}</strong>
@@ -345,19 +477,29 @@ function FoodBlameMap({ blameFoods, onViewAll }) {
   );
 }
 
+<<<<<<< HEAD
 function HealthySwaps({ onExplore }) {
   const [idx, setIdx] = useState(0);
   const visible = 3;
   const prev = () => setIdx(i => Math.max(0, i - 1));
   const next = () => setIdx(i => Math.min(swaps.length - visible, i + 1));
+=======
+function HealthySwaps() {
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
   return (
     <section className="swaps-section" id="healthy-swaps">
       <h3>Healthy Swaps For You</h3>
       <p>Delicious Indian swaps that can boost your health</p>
       <div className="swap-carousel">
+<<<<<<< HEAD
         <button className="round-arrow" onClick={prev}>‹</button>
         <div className="swap-row">
           {swaps.slice(idx, idx + visible).map(([e1,f1,arrow,e2,f2]) => (
+=======
+        <button className="round-arrow">‹</button>
+        <div className="swap-row">
+          {swaps.map(([e1, f1, arrow, e2, f2]) => (
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
             <div className="swap-card" key={`${f1}-${f2}`}>
               <div><span>{e1}</span><small>{f1}</small></div>
               <b>{arrow}</b>
@@ -365,20 +507,31 @@ function HealthySwaps({ onExplore }) {
             </div>
           ))}
         </div>
+<<<<<<< HEAD
         <button className="round-arrow" onClick={next}>›</button>
       </div>
       <button className="explore-btn" onClick={onExplore}>⟳ Explore All Healthy Swaps</button>
+=======
+        <button className="round-arrow">›</button>
+      </div>
+      <button className="explore-btn">⟳ Explore 200+ Healthy Swaps</button>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
     </section>
   );
 }
 
+<<<<<<< HEAD
 function SimulatorAndPlan({ score, onSimulate, onPlanDay }) {
   const improved = Math.min(score + 16, 100);
+=======
+function SimulatorAndPlan() {
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
   return (
     <section className="extras-grid" id="plan">
       <div className="sim-card">
         <h3>What If You Swap These Foods?</h3>
         <div className="score-compare">
+<<<<<<< HEAD
           <div><small>Current Score</small><strong>{score}</strong></div>
           <span>→</span>
           <div><small>After Swaps</small><strong>{improved}</strong></div>
@@ -390,15 +543,32 @@ function SimulatorAndPlan({ score, onSimulate, onPlanDay }) {
           <div className="mini-progress" key={label}><span>{label}</span><b>{val}</b><i><em className={tone}></em></i></div>
         ))}
         <button className="btn primary compact" onClick={onSimulate}>Simulate Healthier Week</button>
+=======
+          <div><small>Current Score</small><strong>62</strong></div>
+          <span>→</span>
+          <div><small>After Swaps</small><strong>78</strong></div>
+        </div>
+        {[
+          ['Sugar Load reduced', '25%', 'red'], ['Sodium Load reduced', '30%', 'orange'],
+          ['Processed Food reduced', '35%', 'purple'], ['Fiber Score improved', '20%', 'green']
+        ].map(([label, val, tone]) => (
+          <div className="mini-progress" key={label}><span>{label}</span><b>{val}</b><i><em className={tone}></em></i></div>
+        ))}
+        <button className="btn primary compact">Simulate Healthier Week</button>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
       </div>
       <div className="plan-card">
         <h3>7-Day Dabba Reset Plan</h3>
         <p>Week Progress: <b>3/7 days completed</b></p>
         <div className="week-list">
           {weeklyPlan.map((item, index) => (
+<<<<<<< HEAD
             <div className={index < 3 ? 'done' : ''} key={item} onClick={() => onPlanDay(index, item)} style={{ cursor:'pointer' }}>
               <b>Day {index + 1}</b><span>{item}</span>
             </div>
+=======
+            <div className={index < 3 ? 'done' : ''} key={item}><b>Day {index + 1}</b><span>{item}</span></div>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
           ))}
         </div>
       </div>
@@ -406,24 +576,36 @@ function SimulatorAndPlan({ score, onSimulate, onPlanDay }) {
   );
 }
 
+<<<<<<< HEAD
 function AnalyticsReport({ onDownloadReport, onShare, onSave }) {
   const bars = [
     ['Sugar Load Chart',78,'red'],['Sodium Load Chart',72,'orange'],['Processed Food Frequency',70,'purple'],
     ['Fiber Deficiency Meter',64,'yellow'],['Protein Balance Meter',58,'green'],['Healthy Diversity Score',54,'green'],
+=======
+function AnalyticsReport({ onDownloadReport }) {
+  const bars = [
+    ['Sugar Load Chart', 78, 'red'], ['Sodium Load Chart', 72, 'orange'], ['Processed Food Frequency', 70, 'purple'],
+    ['Fiber Deficiency Meter', 64, 'yellow'], ['Protein Balance Meter', 58, 'green'], ['Healthy Diversity Score', 54, 'green'],
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
   ];
   return (
     <section className="analytics-report">
       <div className="analytics-card">
         <h3>Food Pattern Analytics</h3>
         <div className="analytics-bars">
+<<<<<<< HEAD
           {bars.map(([name,val,tone]) => (
             <div key={name}><span>{name}</span><i><em className={tone} style={{width:`${val}%`}}></em></i><b>{val}%</b></div>
           ))}
+=======
+          {bars.map(([name, val, tone]) => <div key={name}><span>{name}</span><i><em className={tone} style={{ width: `${val}%` }}></em></i><b>{val}%</b></div>)}
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
         </div>
       </div>
       <div className="report-card" id="reports">
         <h3>DabbaDoc Health Insight Report</h3>
         <ul>
+<<<<<<< HEAD
           <li>Dabba Health Score</li><li>Short-Term Alerts</li>
           <li>Medium-Term Pattern Risks</li><li>Long-Term Risk Signals</li>
           <li>Top Food Contributors</li><li>Healthy Indian Swaps</li>
@@ -434,18 +616,53 @@ function AnalyticsReport({ onDownloadReport, onShare, onSave }) {
           <button onClick={onShare}>↗ Share with Nutritionist</button>
           <button onClick={onSave}>♡ Save Analysis</button>
         </div>
+=======
+          <li>Dabba Health Score</li><li>Short-Term Alerts</li><li>Medium-Term Pattern Risks</li><li>Long-Term Risk Signals</li>
+          <li>Top Food Contributors</li><li>Healthy Indian Swaps</li><li>7-Day Dabba Reset Plan</li><li>DabbaBot AI Summary</li>
+        </ul>
+        <div className="report-actions"><button onClick={onDownloadReport}>⬇ Download Report</button><button>↗ Share with Nutritionist</button><button>♡ Save Analysis</button></div>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
       </div>
     </section>
   );
 }
 
+<<<<<<< HEAD
 function ImpactBanner({ onInvite }) {
+=======
+
+function BuildVerseSection() {
+  return (
+    <section className="buildverse-section" id="buildverse">
+      <div>
+        <span className="pill orange-pill">BuildVerse Healthcare Innovation</span>
+        <h3>Hackathon MVP Mode → 30-Hour Build Mode</h3>
+        <p>DabbaDoc is ready as a visual MVP now. In the offline round, the same frontend can connect with OCR, ML risk engine, GenAI, report generation and CLI.</p>
+      </div>
+      <div className="buildverse-grid">
+        <article><b>Round 1 MVP</b><span>Animated UI + mock food history + demo dashboard</span></article>
+        <article><b>30-Hour Finale</b><span>FastAPI backend + OCR + real scoring + PDF report</span></article>
+        <article><b>Deep-Tech Track</b><span>GenAI recommendations + ML/DL roadmap + explainable risk</span></article>
+      </div>
+      <div className="tech-badges">
+        {['React', 'Vite', 'Tailwind-ready CSS', 'FastAPI', 'Python', 'OCR', 'ML Risk Engine', 'GenAI', 'CLI'].map((tech) => <span key={tech}>{tech}</span>)}
+      </div>
+    </section>
+  );
+}
+
+function ImpactBanner() {
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
   return (
     <section className="impact-banner">
       <div><b>💸 Save Today</b><strong>₹2,340</strong><span>On healthier swaps</span></div>
       <div><b>🌿 CO₂ Saved</b><strong>12.4 kg</strong><span>By eating better</span></div>
       <div><b>🔥 Streak</b><strong>7 Days</strong><span>Healthy logging</span></div>
+<<<<<<< HEAD
       <div><b>🎁 Better Together</b><span>Invite friends & earn rewards!</span><button onClick={onInvite}>Invite Now</button></div>
+=======
+      <div><b>🎁 Better Together</b><span>Invite friends & earn rewards!</span><button>Invite Now</button></div>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
     </section>
   );
 }
@@ -456,27 +673,39 @@ function Footer() {
       <div className="monuments"><span>🏛️</span><span>🕌</span><span>🏰</span><span>🛕</span></div>
       <h2>❤️ Small Swaps. Big Impact. Better You.</h2>
       <p>DabbaDoc — Your everyday food, your lifelong health.</p>
+<<<<<<< HEAD
       <div className="footer-links">
         <a href="#about">About Us</a>
         <a href="#privacy">Privacy</a>
         <a href="#terms">Terms</a>
         <a href="#contact">Contact</a>
       </div>
+=======
+      <div className="footer-links"><a>About Us</a><a>Privacy</a><a>Terms</a><a>Contact</a></div>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
       <div className="socials"><span>📸</span><span>▶️</span><span>𝕏</span><span>in</span></div>
     </footer>
   );
 }
 
+<<<<<<< HEAD
 function Dashboard({ score, metrics, blameFoods, onDownloadReport, onShare, onSave, onInsights, onViewAll, onExplore, onSimulate, onPlanDay, onViewReport, onUpgrade, onInvite }) {
   return (
     <main className="dashboard-shell" id="dashboard">
       <Sidebar onUpgrade={onUpgrade} />
+=======
+function Dashboard({ onDownloadReport }) {
+  return (
+    <main className="dashboard-shell" id="dashboard">
+      <Sidebar />
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
       <div className="dashboard-content">
         <div className="dash-head">
           <div><h2>Your Dabba Health Dashboard 👋</h2><p>Analysed from 18 receipts, 24 orders & 312 unique items</p></div>
           <button className="date-btn">May 1 – May 31, 2024 📅</button>
         </div>
         <div className="score-metrics-grid">
+<<<<<<< HEAD
           <HealthScore score={score} onViewReport={onViewReport} />
           <div className="metrics-grid">{metrics.map(m => <MetricCard metric={m} key={m.label} />)}</div>
         </div>
@@ -486,11 +715,24 @@ function Dashboard({ score, metrics, blameFoods, onDownloadReport, onShare, onSa
         <SimulatorAndPlan score={score} onSimulate={onSimulate} onPlanDay={onPlanDay} />
         <AnalyticsReport onDownloadReport={onDownloadReport} onShare={onShare} onSave={onSave} />
         <ImpactBanner onInvite={onInvite} />
+=======
+          <HealthScore />
+          <div className="metrics-grid">{metrics.map((metric) => <MetricCard metric={metric} key={metric.label} />)}</div>
+        </div>
+        <RiskSpectrum />
+        <FoodBlameMap />
+        <HealthySwaps />
+        <SimulatorAndPlan />
+        <AnalyticsReport onDownloadReport={onDownloadReport} />
+        <BuildVerseSection />
+        <ImpactBanner />
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
       </div>
     </main>
   );
 }
 
+<<<<<<< HEAD
 // ─── Processing Overlay ───────────────────────────────────────────────────────
 function ProcessingOverlay({ show, onClose, steps }) {
   if (!show) return null;
@@ -498,10 +740,19 @@ function ProcessingOverlay({ show, onClose, steps }) {
   return (
     <div className="overlay">
       <div className="processing-card">
+=======
+function ProcessingOverlay({ show, onClose }) {
+  if (!show) return null;
+  return (
+    <div className="overlay">
+      <div className="processing-card">
+        <button className="close" onClick={onClose}>×</button>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
         <Mascot small />
         <h2>DabbaDoc AI is analysing your food pattern</h2>
         <div className="scan-box"><div className="scan-line"></div><span>🧾</span></div>
         <ul>
+<<<<<<< HEAD
           {steps.map((s, i) => (
             <li key={i} style={{ opacity: s.done ? 1 : 0.4, transition: 'opacity .3s' }}>
               {s.done ? '✅' : '⏳'} {s.label}
@@ -509,11 +760,21 @@ function ProcessingOverlay({ show, onClose, steps }) {
           ))}
         </ul>
         {allDone && <button className="btn primary" onClick={onClose} style={{ marginTop: 18 }}>Show Dashboard →</button>}
+=======
+          <li>Scanning receipt...</li>
+          <li>Extracting food items...</li>
+          <li>Mapping Indian nutrition scores...</li>
+          <li>Building short-term & long-term risk signals...</li>
+          <li>Generating DabbaBot recommendations...</li>
+        </ul>
+        <button className="btn primary" onClick={onClose}>Show Dashboard</button>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
       </div>
     </div>
   );
 }
 
+<<<<<<< HEAD
 // ─── Upload Modal with real Gemini Vision food detection ──────────────────────
 function UploadModal({ show, onClose, onUploadComplete, onToast }) {
   const [dragging, setDragging] = useState(false);
@@ -608,11 +869,27 @@ If it is NOT a food receipt or does not contain food items, just answer NO and n
             <div className="scan-line"></div><span>🧾</span>
           </div>
         )}
+=======
+function UploadModal({ show, onClose }) {
+  if (!show) return null;
+  return (
+    <div className="overlay">
+      <div className="upload-modal">
+        <button className="close" onClick={onClose}>×</button>
+        <h2>Upload Receipt or Order History</h2>
+        <p>MVP mode uses sample data. Backend OCR will be connected after Round 1.</p>
+        <div className="upload-options">
+          <div className="drop-zone">⇧<strong>Drag & drop receipt image</strong><span>PNG, JPG or PDF receipt</span></div>
+          <div className="drop-zone json">{}<strong>Upload order JSON</strong><span>Swiggy/Zomato-style demo history</span></div>
+        </div>
+        <button className="btn primary" onClick={onClose}>Use Sample Data</button>
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
       </div>
     </div>
   );
 }
 
+<<<<<<< HEAD
 function getLocalDabbaBotReply(question) {
   const q = question.toLowerCase();
 
@@ -1050,10 +1327,91 @@ export default function App() {
     const msg = 'Try DabbaDoc — it analyses your food receipts to predict health risks! 🍱 Join me: https://dabbadoc.app';
     if (navigator.share) { navigator.share({ title:'Join DabbaDoc', text:msg }); }
     else { navigator.clipboard?.writeText(msg); showToast('Invite link copied! Share it with friends 🎁'); }
+=======
+function Chatbot() {
+  const [open, setOpen] = useState(false);
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState([
+    { from: 'bot', text: 'Namaste! 👋 I’m DabbaBot! Ask me anything about your food & health.' },
+  ]);
+
+  function getBotReply(question) {
+    const q = question.toLowerCase();
+    if (chatReplies[question]) return chatReplies[question];
+    if (q.includes('bp') || q.includes('blood') || q.includes('hypertension')) return chatReplies['Why is my BP risk high?'];
+    if (q.includes('maggi')) return chatReplies['What should I replace Maggi with?'];
+    if (q.includes('sugar') || q.includes('coke')) return chatReplies['Which food caused my sugar spike?'];
+    if (q.includes('diagnosis') || q.includes('medical')) return chatReplies['Is this a medical diagnosis?'];
+    if (q.includes('processed')) return chatReplies['How can I reduce processed food?'];
+    if (q.includes('lunch') || q.includes('meal')) return chatReplies['Give me healthier lunch ideas'];
+    return 'Based on this demo pattern, focus on reducing sugary drinks, high-sodium packaged foods, and fried snacks. Replace them with chaas, poha, upma, sprouts, dal, paneer, fruits and roasted makhana.';
+  }
+
+  function ask(question) {
+    const cleanQuestion = question.trim();
+    if (!cleanQuestion) return;
+    setMessages((prev) => [...prev, { from: 'user', text: cleanQuestion }, { from: 'bot', text: getBotReply(cleanQuestion) }]);
+    setInput('');
+    setOpen(true);
+  }
+
+  function submitInput(event) {
+    event.preventDefault();
+    ask(input);
+  }
+
+  return (
+    <>
+      <div className="chat-suggestions">
+        {Object.keys(chatReplies).map((q) => <button key={q} onClick={() => ask(q)}>{q}</button>)}
+      </div>
+      <div className="chat-widget">
+        <button className="chat-close" onClick={() => setOpen(!open)}>{open ? '×' : '💬'}</button>
+        <Mascot small />
+        {open && <div className="chat-panel">
+          <div className="chat-messages">
+            {messages.slice(-6).map((m, i) => <div className={m.from} key={`${m.text}-${i}`}>{m.text}</div>)}
+          </div>
+          <form className="chat-input" onSubmit={submitInput}><input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask DabbaBot anything..." /><button type="submit">↗</button></form>
+        </div>}
+        {!open && <div className="chat-bubble"><b>Namaste! 👋<br />I'm DabbaBot!</b><span>Ask me anything about your food & health.</span></div>}
+      </div>
+    </>
+  );
+}
+
+export default function App() {
+  const [processing, setProcessing] = useState(false);
+  const [upload, setUpload] = useState(false);
+
+  function scrollToDashboard() {
+    const dash = document.getElementById('dashboard');
+    if (dash) dash.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function startDemo() {
+    setProcessing(true);
+    setTimeout(() => {
+      setProcessing(false);
+      scrollToDashboard();
+    }, 2100);
+  }
+
+  function downloadReport() {
+    const report = `DabbaDoc Health Insight Report\n\nDabba Health Score: 62/100 - Needs Improvement\n\nShort-Term Alerts:\n- Sugar Spike Risk: High\n- Bloating / Sodium Water Retention: High\n- Constipation / Low Fiber Risk: High\n\nLong-Term Risk Signals:\n- Type 2 Diabetes Risk Signal: Medium\n- Hypertension Risk Signal: High\n- Fatty Liver Risk Signal: Medium\n\nTop Food Contributors:\n- Coke: High sugar beverage\n- Maggi: High sodium + ultra processed\n- Pizza: Sodium + refined carbs + fat\n- Fries: Fried + processed fat\n\nSuggested Indian Swaps:\n- Coke → Chaas / Nimbu Pani\n- Maggi → Poha / Upma / Masala Oats\n- Fries → Roasted Makhana\n- Pizza → Paneer Roti Wrap\n\nDisclaimer: DabbaDoc does not diagnose, treat, or cure medical conditions. It provides early dietary risk signals based on food patterns.`;
+    const blob = new Blob([report], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'DabbaDoc-Health-Insight-Report.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
   }
 
   return (
     <div className="app-frame">
+<<<<<<< HEAD
       <TopNav onNotif={handleNotif} onProfile={handleProfile} userName={user.name} />
       <Hero onDemo={startDemo} onUpload={() => setUpload(true)} />
       <Dashboard
@@ -1073,6 +1431,15 @@ export default function App() {
         </MVPModal>
       )}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+=======
+      <TopNav />
+      <Hero onDemo={startDemo} onUpload={() => setUpload(true)} />
+      <Dashboard onDownloadReport={downloadReport} />
+      <Footer />
+      <Chatbot />
+      <ProcessingOverlay show={processing} onClose={() => { setProcessing(false); scrollToDashboard(); }} />
+      <UploadModal show={upload} onClose={() => setUpload(false)} />
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
     </div>
   );
 }

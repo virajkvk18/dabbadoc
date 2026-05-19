@@ -1205,6 +1205,7 @@ a { color: inherit; text-decoration: none; }
   .chat-close { bottom: 155px; }
   .chat-widget > .mascot { right: 2px; bottom: 44px; }
 }
+<<<<<<< HEAD
 
 /* MVP upgrade additions */
 .drop-zone.dragging {
@@ -1827,3 +1828,5 @@ a { color: inherit; text-decoration: none; }
     font-size: 21px;
   }
 }
+=======
+>>>>>>> 7f4a527f1ae333281ea4a371dc2536cfa1ef6dca
