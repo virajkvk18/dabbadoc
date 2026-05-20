@@ -324,14 +324,18 @@ function MetricCard({ metric }) {
 function HealthScore({ score, onViewReport }) {
   const face = score >= 75 ? '😊' : score >= 55 ? '😟' : '😰';
   const label = score >= 75 ? 'Good' : score >= 55 ? 'Needs Improvement' : 'Needs Attention';
+
   return (
     <div className="score-card">
       <div className="card-title">Dabba Health Score <span>ⓘ</span></div>
-      <div className="score-content">
-        <div className="score-ring" style={{'--score':`${score}%`}}>
-          <strong>{score}</strong><span>/100</span>
+
+      <div className="score-content fixed-score-content">
+        <div className="score-ring fixed-score-ring" style={{ '--score': `${score}%` }}>
+          <strong>{score}</strong>
+          <span>/100</span>
         </div>
-        <div>
+
+        <div className="score-info-fixed">
           <div className="status-face">{face}</div>
           <h4>{label}</h4>
           <p>Small changes to your daily diet can make a big difference!</p>
@@ -664,7 +668,10 @@ function Chatbot({ score, metrics }) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([
-    { from:'bot', text:"Namaste! 👋 I'm DabbaBot, your AI food health assistant! Ask me anything about your diet and health." },
+    {
+      from: 'bot',
+      text: "Namaste! 👋 I'm DabbaBot, your AI food health assistant! Ask me anything about your diet and health."
+    },
   ]);
   const [loading, setLoading] = useState(false);
   const endRef = useRef();
@@ -676,78 +683,131 @@ function Chatbot({ score, metrics }) {
     'Is Maggi bad for me?',
   ];
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior:'smooth' }); }, [messages]);
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   async function askGroq(question) {
-    const context = `You are DabbaBot, a friendly AI food health assistant for DabbaDoc — an Indian preventive healthcare app that analyses food receipts.
+    const context = `You are DabbaBot, a friendly AI food health assistant for DabbaDoc.
 
-User's current health data:
+User health data:
 - Dabba Health Score: ${score}/100
-- Sugar Load: ${metrics.find(m=>m.label==='Sugar Load')?.value ?? 78}/100 (High) — from Coke, sweets, cold coffee
-- Sodium Load: ${metrics.find(m=>m.label==='Sodium Load')?.value ?? 72}/100 (High) — from Maggi, chips, processed foods
-- Processed Food Score: 70/100 (High)
-- Fiber Score: 68/100 (Good)
-- Food Diversity: 54/100 (Average)
+- Sugar Load: ${metrics.find(m => m.label === 'Sugar Load')?.value ?? 78}/100
+- Sodium Load: ${metrics.find(m => m.label === 'Sodium Load')?.value ?? 72}/100
+- Processed Food Score: 70/100
 - Main culprit foods: Coke, Maggi, Pizza, Fries, Burger, Cold Coffee
 
 Rules:
-- You are NOT a doctor. Never diagnose diseases. Always add "consult a doctor" for medical concerns.
-- Keep responses SHORT — max 4 sentences.
-- Be warm, use Indian food context (chaas, poha, dal, sprouts, makhana, idli, upma etc.)
-- Use 1-2 emojis naturally.
+- Do not diagnose disease.
+- Keep response under 4 sentences.
+- Use Indian food suggestions like chaas, poha, dal, sprouts, makhana, idli, upma.
+- Mention consulting a doctor for medical concerns.
 
 User question: ${question}`;
 
     const raw = await callGroq(context);
-    if (!raw) throw new Error('rate limited');
+    if (!raw) throw new Error('Groq failed');
     return raw;
   }
 
   async function ask(question) {
     const q = question.trim();
     if (!q || loading) return;
-    setMessages(p => [...p, { from:'user', text:q }]);
+
+    setMessages(prev => [...prev, { from: 'user', text: q }]);
     setInput('');
     setOpen(true);
     setLoading(true);
+
     try {
       const reply = await askGroq(q);
-      setMessages(p => [...p, { from:'bot', text:reply }]);
+      setMessages(prev => [...prev, { from: 'bot', text: reply }]);
     } catch {
-      setMessages(p => [...p, { from:'bot', text:'Connection hiccup 🙏 Try again in a moment.' }]);
+      setMessages(prev => [
+        ...prev,
+        {
+          from: 'bot',
+          text: 'Connection issue, but here is a safe suggestion: reduce sugary drinks, avoid high-sodium packaged food, and choose chaas, poha, dal, sprouts, makhana, fruits, and home-style meals. 🍱'
+        }
+      ]);
     }
+
     setLoading(false);
   }
 
   return (
-    <>
-      <div className="chat-suggestions">
-        {SUGGESTIONS.map(q => <button key={q} onClick={() => ask(q)}>{q}</button>)}
-      </div>
-      <div className="chat-widget">
-        <button className="chat-close" onClick={() => setOpen(!open)}>{open ? '×' : '💬'}</button>
-        <Mascot small />
-        {open && (
-          <div className="chat-panel">
-            <div className="chat-messages">
-              {messages.slice(-10).map((m,i) => <div className={m.from} key={i}>{m.text}</div>)}
-              {loading && <div className="bot" style={{opacity:.6}}>Thinking... 🤔</div>}
-              <div ref={endRef} />
+    <div className={`chatbot-compact ${open ? 'open' : ''}`}>
+      {!open && (
+        <button className="chatbot-fab" onClick={() => setOpen(true)}>
+          <span className="fab-face">🍱</span>
+          <span>Ask DabbaBot</span>
+        </button>
+      )}
+
+      {open && (
+        <div className="chatbot-box">
+          <div className="chatbot-header">
+            <div className="chatbot-title">
+              <div className="chatbot-avatar">🍱</div>
+              <div>
+                <strong>DabbaBot</strong>
+                <span>Powered by GroqCloud AI</span>
+              </div>
             </div>
-            <form className="chat-input" onSubmit={e => { e.preventDefault(); ask(input); }}>
-              <input value={input} onChange={e => setInput(e.target.value)} placeholder="Ask DabbaBot anything..." disabled={loading} />
-              <button type="submit" disabled={loading}>↗</button>
-            </form>
+
+            <button className="chatbot-close" onClick={() => setOpen(false)}>
+              ×
+            </button>
           </div>
-        )}
-        {!open && (
-          <div className="chat-bubble">
-            <b>Namaste! 👋<br />I'm DabbaBot!</b>
-            <span>Powered by GroqCloud AI ✨</span>
+
+          <div className="chatbot-suggestions-inside">
+            {SUGGESTIONS.map(q => (
+              <button key={q} onClick={() => ask(q)}>
+                {q}
+              </button>
+            ))}
           </div>
-        )}
-      </div>
-    </>
+
+          <div className="chatbot-messages">
+            {messages.slice(-8).map((m, i) => (
+              <div
+                key={i}
+                className={`chatbot-message ${m.from === 'user' ? 'user' : 'bot'}`}
+              >
+                {m.text}
+              </div>
+            ))}
+
+            {loading && (
+              <div className="chatbot-message bot loading">
+                DabbaBot is thinking... 🤔
+              </div>
+            )}
+
+            <div ref={endRef} />
+          </div>
+
+          <form
+            className="chatbot-input"
+            onSubmit={(e) => {
+              e.preventDefault();
+              ask(input);
+            }}
+          >
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask about your food..."
+              disabled={loading}
+            />
+
+            <button type="submit" disabled={loading}>
+              ↗
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
   );
 }
 
