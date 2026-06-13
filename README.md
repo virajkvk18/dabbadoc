@@ -125,6 +125,9 @@ GEMINI_MODEL=gemini-3.5-flash
 GROQ_API_KEY=
 GROQ_TEXT_MODEL=llama-3.3-70b-versatile
 GROQ_VISION_MODEL=meta-llama/llama-4-scout-17b-16e-instruct
+DABBA_AGENT_URL=http://localhost:8000
+DABBA_AGENT_TOKEN=
+DABBA_AGENT_TIMEOUT_MS=45000
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
@@ -145,9 +148,10 @@ Where to add each key:
 6. `SECURITY_AUDIT_LOGS_ENABLED=true` keeps structured auth/API/traffic security logs enabled.
 7. Gemini API key is server-only and powers receipt, label, and food diary AI analysis.
 8. Groq API key is optional and is used as an AI fallback if Gemini is not configured or fails. Keep it as server-only `GROQ_API_KEY`.
-9. Cloudinary keys are optional if you choose Cloudinary instead of Supabase Storage for images.
-10. Razorpay key ID, secret, and webhook secret power premium plan payments.
-11. Never expose secret keys on the frontend. Only `NEXT_PUBLIC_*` values are browser-visible.
+9. `DABBA_AGENT_URL` and `DABBA_AGENT_TOKEN` connect the Next.js backend to the optional secured Python Dabba Agent service in `services/dabba-agent`. Keep the token server-only.
+10. Cloudinary keys are optional if you choose Cloudinary instead of Supabase Storage for images.
+11. Razorpay key ID, secret, and webhook secret power premium plan payments.
+12. Never expose secret keys on the frontend. Only `NEXT_PUBLIC_*` values are browser-visible.
 
 ## Supabase Setup
 
@@ -192,6 +196,50 @@ GROQ_VISION_MODEL=meta-llama/llama-4-scout-17b-16e-instruct
 ```
 
 The server tries Gemini first, then Groq, then Tesseract/demo fallback.
+
+## Dabba Agent Service
+
+The project includes an optional secured Python agent backend under `services/dabba-agent`. The existing Next.js API routes still own authentication, upload storage, rate limiting, and database writes. When `DABBA_AGENT_URL` and `DABBA_AGENT_TOKEN` are configured, those routes call the Python service server-to-server for richer receipt, label, and manual diary analysis. If the service is unavailable, the app falls back to the built-in Next.js agents so the UI still works.
+
+Local setup:
+
+```bash
+cd services/dabba-agent
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+```
+
+Set the same private token in both places:
+
+```env
+# services/dabba-agent/.env
+API_AUTH_TOKEN=your-long-random-token
+CORS_ORIGINS=http://localhost:3000
+GEMINI_API_KEY=your_gemini_key
+GROK_API_KEY=your_xai_grok_key
+```
+
+```env
+# .env.local for the Next.js app
+DABBA_AGENT_URL=http://localhost:8000
+DABBA_AGENT_TOKEN=your-long-random-token
+```
+
+Run the service:
+
+```bash
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Production notes:
+
+- Deploy `services/dabba-agent` as a private backend service, not as browser-facing frontend code.
+- Set a long random `API_AUTH_TOKEN` and keep the same value in the Next.js server env as `DABBA_AGENT_TOKEN`.
+- Restrict `CORS_ORIGINS` to your real app domain.
+- Do not place Gemini, Grok, or agent tokens in any `NEXT_PUBLIC_*` variable.
+- Keep `/health` public for uptime checks; analysis and report endpoints require the bearer token.
 
 ## Razorpay Setup
 

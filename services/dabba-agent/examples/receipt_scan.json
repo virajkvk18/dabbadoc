@@ -1,0 +1,12 @@
+{
+  "language": "hinglish",
+  "source_type": "food_delivery",
+  "raw_text": "Order: McAloo Tikki Burger x1, French Fries Medium x1, Coke 500ml x1, Chocolate Sundae x1. GST, delivery fee, discount applied.",
+  "image_base64": null,
+  "mime_type": "image/jpeg",
+  "user_profile": {
+    "age_group": "adult",
+    "diet_type": "veg",
+    "goals": ["reduce sugary drinks", "better protein"]
+  }
+}

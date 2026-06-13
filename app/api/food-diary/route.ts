@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { analyzeFoodDiaryWithDabbaAgent } from "@/lib/agents/dabbaAgentClient";
 import { analyzeFoodDiary } from "@/lib/agents/foodDiaryAgent";
 import { requireVerifiedUser } from "@/lib/auth/require-user";
 import { apiErrorResponse } from "@/lib/security/api-errors";
@@ -20,12 +21,15 @@ export async function POST(request: NextRequest) {
     enforceRequestSizeLimit(request, MAX_JSON_BYTES);
 
     const payload = foodDiarySchema.parse(await request.json());
-    const analysis = await analyzeFoodDiary({
+    const diaryInput = {
       userId: user.id,
       diaryText: payload.diaryText,
       entries: payload.entries,
       demoMode: payload.demoMode
-    });
+    };
+    const analysis =
+      (await analyzeFoodDiaryWithDabbaAgent(diaryInput)) ??
+      (await analyzeFoodDiary(diaryInput));
 
     await saveFoodDiary({
       userId: user.id,

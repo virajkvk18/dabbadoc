@@ -1,0 +1,19 @@
+{
+  "language": "hinglish",
+  "user_profile": {
+    "age_group": "family",
+    "diet_type": "mixed",
+    "goals": ["reduce junk", "better daily eating", "family health tracking"],
+    "restrictions": []
+  },
+  "meals": [
+    {
+      "meal_name": "Lunch",
+      "items": ["2 samosa", "1 cold drink", "1 plate chowmein"],
+      "quantity_note": "medium outside portion",
+      "spice_level": "medium",
+      "meal_source": "outside",
+      "notes": "college canteen"
+    }
+  ]
+}

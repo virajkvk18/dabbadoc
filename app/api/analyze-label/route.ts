@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { analyzeLabel, LabelExtractionError } from "@/lib/agents/labelScanAgent";
+import { analyzeLabelWithDabbaAgent } from "@/lib/agents/dabbaAgentClient";
+import {
+  analyzeLabel,
+  extractLabelText,
+  LabelExtractionError
+} from "@/lib/agents/labelScanAgent";
 import { requireVerifiedUser } from "@/lib/auth/require-user";
 import { ApiError, apiErrorResponse } from "@/lib/security/api-errors";
 import {
@@ -59,14 +64,25 @@ export async function POST(request: NextRequest) {
       fileUrl = upload.path;
     }
 
-    const analysis = await analyzeLabel({
+    const agentInput = {
       userId: user.id,
       sourceType: "packaged_label",
       fileName,
       mimeType,
       dataUri,
       demoMode: parsed.demoMode
-    });
+    } as const;
+    const extractedText = await extractLabelText(agentInput);
+    const analysis =
+      (await analyzeLabelWithDabbaAgent({
+        rawText: extractedText,
+        productName: extractedText.split("\n").find(Boolean)?.trim()
+      })) ??
+      (await analyzeLabel({
+        ...agentInput,
+        rawText: extractedText,
+        dataUri: undefined
+      }));
 
     let saved = false;
     try {

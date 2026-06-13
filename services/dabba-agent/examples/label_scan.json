@@ -1,0 +1,12 @@
+{
+  "language": "hinglish",
+  "product_name": "Masala Instant Noodles",
+  "raw_text": "Ingredients: Refined wheat flour (maida), palm oil, salt, sugar, spices and condiments, flavour enhancer INS 621, acidity regulator, colour 150d, permitted preservatives, dehydrated vegetables. Nutrition per serving: sodium 850mg, protein 7g.",
+  "image_base64": null,
+  "mime_type": "image/jpeg",
+  "user_profile": {
+    "age_group": "family",
+    "diet_type": "veg",
+    "goals": ["understand packaged food label"]
+  }
+}

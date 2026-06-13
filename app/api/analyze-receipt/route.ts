@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { analyzeReceiptWithDabbaAgent } from "@/lib/agents/dabbaAgentClient";
 import { runReceiptGraph } from "@/lib/agents/graph";
-import { ReceiptExtractionError } from "@/lib/agents/receiptScanAgent";
+import {
+  extractReceiptText,
+  ReceiptExtractionError
+} from "@/lib/agents/receiptScanAgent";
 import { requireVerifiedUser } from "@/lib/auth/require-user";
 import { ApiError, apiErrorResponse } from "@/lib/security/api-errors";
 import {
@@ -61,14 +65,25 @@ export async function POST(request: NextRequest) {
       fileUrl = upload.path;
     }
 
-    const analysis = await runReceiptGraph({
+    const agentInput = {
       userId: user.id,
       sourceType: parsed.sourceType,
       fileName,
       mimeType,
       dataUri,
       demoMode: parsed.demoMode
-    });
+    };
+    const extractedText = await extractReceiptText(agentInput);
+    const analysis =
+      (await analyzeReceiptWithDabbaAgent({
+        rawText: extractedText,
+        sourceType: parsed.sourceType
+      })) ??
+      (await runReceiptGraph({
+        ...agentInput,
+        rawText: extractedText,
+        dataUri: undefined
+      }));
 
     let saved = false;
     try {
