@@ -114,6 +114,18 @@ def health() -> dict:
     }
 
 
+@app.get("/")
+def root() -> dict:
+    return {
+        "status": "ok",
+        "service": "Dabba Agent",
+        "health": "/health",
+        "manual_analysis": "/api/v1/analyze/manual",
+        "receipt_analysis": "/api/v1/analyze/receipt",
+        "label_analysis": "/api/v1/analyze/label",
+    }
+
+
 @app.post("/api/v1/analyze/manual", response_model=AnalysisResponse, dependencies=[Depends(require_api_auth)])
 def analyze_manual(request: ManualMealRequest) -> AnalysisResponse:
     raw_from_meals = []
