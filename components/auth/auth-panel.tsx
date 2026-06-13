@@ -155,7 +155,7 @@ export function AuthPanel({ nextPath = "/dashboard", reason }: AuthPanelProps) {
                 id="full-name"
                 value={fullName}
                 className="pl-10"
-                placeholder="Demo Family"
+                placeholder="Viraj Kumar"
                 onChange={(event) => setFullName(event.target.value)}
               />
             </div>

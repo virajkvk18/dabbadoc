@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { analyzeLabel } from "@/lib/agents/labelScanAgent";
+import { analyzeLabel, LabelExtractionError } from "@/lib/agents/labelScanAgent";
 import { requireVerifiedUser } from "@/lib/auth/require-user";
 import { ApiError, apiErrorResponse } from "@/lib/security/api-errors";
 import {
@@ -31,6 +31,9 @@ export async function POST(request: NextRequest) {
     const parsed = labelAnalyzeSchema.parse({
       demoMode: formData.get("demoMode") === "true"
     });
+    if (!parsed.demoMode && !(file instanceof File)) {
+      throw new ApiError("Please upload a label image before analyzing.", 400);
+    }
 
     let dataUri: string | undefined;
     let fileUrl: string | null = null;
@@ -56,30 +59,49 @@ export async function POST(request: NextRequest) {
       fileUrl = upload.path;
     }
 
-    const uploadId = await saveUploadRecord({
-      userId: user.id,
-      fileUrl,
-      fileType: mimeType,
-      sourceType: "packaged_label"
-    });
-
     const analysis = await analyzeLabel({
       userId: user.id,
       sourceType: "packaged_label",
       fileName,
       mimeType,
       dataUri,
-      demoMode: parsed.demoMode || !file
+      demoMode: parsed.demoMode
     });
 
-    await saveLabelAnalysis({
-      userId: user.id,
-      uploadId,
-      analysis
-    });
+    let saved = false;
+    try {
+      const uploadId = await saveUploadRecord({
+        userId: user.id,
+        fileUrl,
+        fileType: mimeType,
+        sourceType: "packaged_label"
+      });
 
-    return NextResponse.json({ analysis, saved: true });
+      await saveLabelAnalysis({
+        userId: user.id,
+        uploadId,
+        analysis
+      });
+      saved = true;
+    } catch {
+      saved = false;
+    }
+
+    return NextResponse.json({
+      analysis,
+      saved,
+      warning: saved
+        ? undefined
+        : "Analysis completed, but history could not be saved yet. Check Supabase tables and policies."
+    });
   } catch (error) {
+    if (error instanceof LabelExtractionError) {
+      return apiErrorResponse(new ApiError(error.message, 422), "Label analysis failed", 422, {
+        request,
+        route: "/api/analyze-label"
+      });
+    }
+
     return apiErrorResponse(error, "Label analysis failed", 400, {
       request,
       route: "/api/analyze-label"

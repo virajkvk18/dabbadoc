@@ -173,6 +173,26 @@ export async function saveHealthIndex(params: {
   }
 }
 
+export async function saveReportRecord(params: {
+  userId: string;
+  reportUrl?: string | null;
+  reportData?: Record<string, unknown>;
+}) {
+  const supabase = createSupabaseAdmin();
+  const userId = requireUserId(params.userId);
+  if (!supabase) return;
+
+  const { error } = await supabase.from("reports").insert({
+    user_id: userId,
+    report_url: params.reportUrl ?? null,
+    report_data: params.reportData ?? {}
+  });
+
+  if (error) {
+    throw new ApiError("Could not save report history for this account.", 500);
+  }
+}
+
 export async function savePaymentOrder(params: {
   userId: string;
   razorpayOrderId: string;

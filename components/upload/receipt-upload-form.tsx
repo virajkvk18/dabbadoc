@@ -8,6 +8,7 @@ import { Disclaimer } from "@/components/common/disclaimer";
 import {
   CostSummary,
   DetectedItems,
+  ExtractedReceiptText,
   RiskFlags,
   SwapList
 } from "@/components/upload/analysis-list";
@@ -21,6 +22,7 @@ import type { ReceiptAnalysis } from "@/types";
 type ReceiptResponse = {
   analysis: ReceiptAnalysis;
   saved: boolean;
+  warning?: string;
   error?: string;
 };
 
@@ -29,6 +31,7 @@ export function ReceiptUploadForm() {
   const [analysis, setAnalysis] = useState<ReceiptAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,11 +48,19 @@ export function ReceiptUploadForm() {
   function chooseFile(nextFile?: File | null) {
     setFile(nextFile ?? null);
     setError(null);
+    setWarning(null);
   }
 
   async function submit(demoMode = false) {
+    if (!demoMode && !file) {
+      setError("Choose a receipt image or use live capture before analyzing.");
+      setWarning(null);
+      return;
+    }
+
     setLoading(true);
     setError(null);
+    setWarning(null);
 
     const formData = new FormData();
     formData.set("sourceType", "grocery_receipt");
@@ -69,6 +80,7 @@ export function ReceiptUploadForm() {
     }
 
     setAnalysis(payload.analysis);
+    setWarning(payload.warning ?? null);
   }
 
   return (
@@ -141,6 +153,7 @@ export function ReceiptUploadForm() {
             ) : null}
           </div>
           {error ? <p className="text-sm text-red-200">{error}</p> : null}
+          {warning ? <p className="text-sm text-orange-100">{warning}</p> : null}
           <div className="grid gap-3 sm:flex sm:flex-wrap">
             <Button className="w-full sm:w-auto" onClick={() => submit(false)} disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
@@ -181,6 +194,7 @@ export function ReceiptUploadForm() {
               </CardContent>
             </Card>
           </div>
+          <ExtractedReceiptText text={analysis.extractedText} />
           <DetectedItems items={analysis.detectedItems} />
           <RiskFlags risks={analysis.riskFlags} />
           <SwapList swaps={analysis.swaps} />

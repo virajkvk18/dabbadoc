@@ -21,6 +21,44 @@ Dal 1 kg Rs 145
 Poha Rs 60
 `;
 
+const receiptExtractionPrompt = `
+You are DabbaDoc's receipt OCR agent for Indian grocery, restaurant, food delivery, and quick-commerce receipts.
+
+Extract ONLY what is visible in the uploaded receipt/order image.
+Return plain text, one item or line per row.
+Include food item names, brand names, quantities, prices, totals, and store/order text if visible.
+Do not invent Maggi, cola, chips, or any other example items.
+If the image is unreadable, return exactly: READ_FAILED
+`;
+
+export class ReceiptExtractionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ReceiptExtractionError";
+  }
+}
+
+function cleanExtraction(text: string) {
+  return text
+    .replace(/```(?:text)?/gi, "")
+    .replace(/```/g, "")
+    .replace(/^extracted text:\s*/i, "")
+    .trim();
+}
+
+function isReadableReceiptText(text?: string | null) {
+  if (!text) return false;
+
+  const cleaned = cleanExtraction(text);
+  if (cleaned.length < 8) return false;
+  if (/^read_failed$/i.test(cleaned)) return false;
+  if (/unable to (read|extract|identify)|can't (read|extract)|cannot (read|extract)/i.test(cleaned)) {
+    return false;
+  }
+
+  return /[a-zA-Z]/.test(cleaned);
+}
+
 export async function extractReceiptText(input: AgentInput) {
   if (input.rawText) return input.rawText;
   if (input.demoMode) return sampleReceiptText;
@@ -28,24 +66,24 @@ export async function extractReceiptText(input: AgentInput) {
   const geminiText = await extractTextFromImageWithGemini({
     dataUri: input.dataUri,
     mimeType: input.mimeType,
-    prompt:
-      "Extract all readable food, drink, grocery, quantity, and price text from this Indian receipt/order screenshot. Return plain text only."
+    prompt: receiptExtractionPrompt
   });
 
-  if (geminiText?.trim()) return geminiText;
+  if (isReadableReceiptText(geminiText)) return cleanExtraction(geminiText ?? "");
 
   const groqText = await extractTextFromImageWithGroq({
     dataUri: input.dataUri,
-    prompt:
-      "Extract all readable food, drink, grocery, quantity, and price text from this Indian receipt/order screenshot. Return plain text only."
+    prompt: receiptExtractionPrompt
   });
 
-  if (groqText?.trim()) return groqText;
+  if (isReadableReceiptText(groqText)) return cleanExtraction(groqText ?? "");
 
   const tesseractText = await extractTextWithTesseract(input.dataUri);
-  if (tesseractText?.trim()) return tesseractText;
+  if (isReadableReceiptText(tesseractText)) return cleanExtraction(tesseractText ?? "");
 
-  return sampleReceiptText;
+  throw new ReceiptExtractionError(
+    "Could not read this receipt clearly. Please upload a sharper image, crop only the bill area, or use live capture in better light."
+  );
 }
 
 export async function analyzeReceipt(input: AgentInput): Promise<ReceiptAnalysis> {
@@ -76,7 +114,8 @@ export async function analyzeReceipt(input: AgentInput): Promise<ReceiptAnalysis
     score: health.score,
     riskFlags,
     swaps,
-    context: extractedText
+    context: extractedText,
+    items: detectedItems
   });
 
   return {

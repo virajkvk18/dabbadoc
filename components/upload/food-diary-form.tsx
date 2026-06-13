@@ -65,25 +65,7 @@ function entrySummary(entry: ManualMealEntry) {
 export function FoodDiaryForm() {
   const [currentEntry, setCurrentEntry] =
     useState<Omit<ManualMealEntry, "id">>(defaultEntry);
-  const [entries, setEntries] = useState<ManualMealEntry[]>([
-    {
-      id: "demo-pasta",
-      source: "home",
-      mealTime: "breakfast",
-      itemName: "Pasta",
-      quantity: "1 bowl",
-      spiceLevel: "medium"
-    },
-    {
-      id: "demo-momos",
-      source: "outside",
-      mealTime: "evening_snack",
-      itemName: "Momos",
-      quantity: "5 pcs",
-      spiceLevel: "high",
-      notes: "street-style chutney"
-    }
-  ]);
+  const [entries, setEntries] = useState<ManualMealEntry[]>([]);
   const [analysis, setAnalysis] = useState<FoodDiaryAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -157,7 +139,7 @@ export function FoodDiaryForm() {
     const response = await fetch("/api/food-diary", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ entries: entriesToAnalyze, demoMode: true })
+      body: JSON.stringify({ entries: entriesToAnalyze, demoMode: false })
     });
     const payload = (await response.json()) as DiaryResponse;
 

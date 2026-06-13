@@ -2,6 +2,8 @@ import Link from "next/link";
 import {
   ArrowRight,
   BadgeCheck,
+  CalendarDays,
+  CreditCard,
   FileText,
   Flame,
   History,
@@ -18,63 +20,62 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { analyzeFoodDiary } from "@/lib/agents/foodDiaryAgent";
-import { analyzeLabel } from "@/lib/agents/labelScanAgent";
-import { analyzeReceipt } from "@/lib/agents/receiptScanAgent";
+import {
+  getAccountOverview,
+  getGreeting,
+  type ActivityType
+} from "@/lib/supabase/account-overview";
+
+const quickActions = [
+  {
+    href: "/dashboard/upload-receipt",
+    label: "Upload receipt",
+    detail: "Bill, order screenshot, or grocery scan",
+    icon: Upload,
+    featured: false
+  },
+  {
+    href: "/dashboard/label-scan",
+    label: "Scan food label",
+    detail: "Nutrition label and ingredients check",
+    icon: ScanLine,
+    featured: true
+  },
+  {
+    href: "/dashboard/food-diary",
+    label: "Add food diary",
+    detail: "Home and outside meals with quantity",
+    icon: Utensils,
+    featured: false
+  }
+];
+
+const activityIcons: Record<ActivityType, typeof Upload> = {
+  receipt: Upload,
+  label: ScanLine,
+  diary: Utensils,
+  report: FileText,
+  payment: CreditCard
+};
 
 export default async function DashboardPage() {
-  const [receipt, label, diary] = await Promise.all([
-    analyzeReceipt({ demoMode: true }),
-    analyzeLabel({ demoMode: true }),
-    analyzeFoodDiary({
-      diaryText:
-        "Aaj breakfast me poha, lunch me dal chawal, evening me samosa, dinner me roti sabzi khayi.",
-      demoMode: true
-    })
-  ]);
-
-  const history = [
-    { date: "Mon", score: 58 },
-    { date: "Tue", score: 61 },
-    { date: "Wed", score: 63 },
-    { date: "Thu", score: 67 },
-    { date: "Fri", score: receipt.healthScore }
-  ];
-
-  const quickActions = [
-    {
-      href: "/dashboard/upload-receipt",
-      label: "Upload receipt",
-      detail: "Bill, order screenshot, or grocery scan",
-      icon: Upload,
-      featured: false
-    },
-    {
-      href: "/dashboard/label-scan",
-      label: "Scan food label",
-      detail: "Nutrition label and ingredients check",
-      icon: ScanLine,
-      featured: true
-    },
-    {
-      href: "/dashboard/food-diary",
-      label: "Add food diary",
-      detail: "Home and outside meals with quantity",
-      icon: Utensils,
-      featured: false
-    }
-  ];
+  const account = await getAccountOverview();
+  const greeting = getGreeting();
+  const riskCount = account.riskSummary.length;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <Badge variant="secondary">Monitoring active</Badge>
+          <Badge variant="secondary">
+            {account.counts.activities > 0 ? "Monitoring active" : "Ready to begin"}
+          </Badge>
           <h1 className="mt-3 text-3xl font-black text-white md:text-4xl">
-            Good morning, Demo Family
+            {greeting}, {account.profile.fullName}
           </h1>
           <p className="mt-1 text-muted-foreground">
-            Your food health overview is ready across scans, diary entries, and reports.
+            Your food health overview is built from your saved scans, label checks,
+            diary entries, reports, and streaks.
           </p>
         </div>
         <div className="glass-panel flex items-center gap-3 rounded-2xl px-4 py-3">
@@ -84,7 +85,9 @@ export default async function DashboardPage() {
           </span>
           <div>
             <p className="mono-label text-[10px] text-muted-foreground">Status</p>
-            <p className="text-sm font-bold text-primary">Ready to scan</p>
+            <p className="text-sm font-bold text-primary">
+              {account.profile.isPremium ? "Premium active" : "Ready to scan"}
+            </p>
           </div>
         </div>
       </div>
@@ -96,15 +99,19 @@ export default async function DashboardPage() {
               <BadgeCheck className="h-5 w-5" />
             </span>
             <div>
-              <p className="font-bold text-white">Premium intelligence preview</p>
+              <p className="font-bold text-white">
+                {account.profile.isPremium ? "Premium intelligence active" : "Premium intelligence preview"}
+              </p>
               <p className="text-sm text-muted-foreground">
-                Unlock deeper reports, full history, and family tracking when ready.
+                {account.profile.isPremium
+                  ? "Your account has premium access for deeper history and reports."
+                  : "Upgrade when you need unlimited scans, full history, and family tracking."}
               </p>
             </div>
           </div>
           <Button asChild variant="outline">
-            <Link href="/pricing">
-              View plans
+            <Link href={account.profile.isPremium ? "/dashboard/profile" : "/pricing"}>
+              {account.profile.isPremium ? "View profile" : "View plans"}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -112,12 +119,35 @@ export default async function DashboardPage() {
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-[320px_1fr]">
-        <HealthScoreGauge score={receipt.healthScore} category={receipt.scoreCategory} />
+        <HealthScoreGauge
+          score={account.score.current}
+          category={account.score.category}
+        />
         <div className="grid gap-4 sm:grid-cols-2">
-          <StatCard label="Weekly risk" value="Low" detail="Sodium slightly elevated" icon={Sparkles} />
-          <StatCard label="Streak count" value={`${diary.streakCount} days`} detail="Diary tracking" icon={Flame} />
-          <StatCard label="Badges earned" value={`${diary.badgesEarned.length}`} detail="Healthy habits unlocked" icon={BadgeCheck} />
-          <StatCard label="Total scans" value="14" detail="Receipts, labels, diaries" icon={ScanLine} />
+          <StatCard
+            label="Risk signals"
+            value={`${riskCount}`}
+            detail={riskCount > 0 ? "From your saved analyses" : "No strong risks yet"}
+            icon={Sparkles}
+          />
+          <StatCard
+            label="Streak count"
+            value={`${account.streak.days} days`}
+            detail={account.streak.label}
+            icon={Flame}
+          />
+          <StatCard
+            label="Badges earned"
+            value={`${account.badges.length}`}
+            detail="Based on your account activity"
+            icon={BadgeCheck}
+          />
+          <StatCard
+            label="Total scans"
+            value={`${account.counts.scans}`}
+            detail={`${account.counts.receipts} receipts, ${account.counts.labels} labels, ${account.counts.diaries} diaries`}
+            icon={ScanLine}
+          />
         </div>
       </div>
 
@@ -161,12 +191,14 @@ export default async function DashboardPage() {
           <CardHeader className="flex-row items-start justify-between space-y-0">
             <div>
               <CardTitle>Index trend</CardTitle>
-              <p className="mt-2 text-sm text-muted-foreground">Last 5 logged days</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Latest saved scores from scans, labels, and diary entries
+              </p>
             </div>
-            <Badge>+5%</Badge>
+            <Badge>{account.score.trendLabel}</Badge>
           </CardHeader>
           <CardContent>
-            <HealthIndexChart data={history} />
+            <HealthIndexChart data={account.score.chart} />
           </CardContent>
         </Card>
         <Card className="glass-panel">
@@ -180,41 +212,43 @@ export default async function DashboardPage() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <div className="flex items-start gap-3">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-secondary/15 text-secondary">
-                  <Upload className="h-5 w-5" />
-                </span>
-                <div className="min-w-0">
-                  <p className="font-semibold text-white">Receipt scan summary</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{receipt.aiSummary}</p>
+            {account.recentActivities.length === 0 ? (
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                <div className="flex items-start gap-3">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
+                    <CalendarDays className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-white">No saved activity yet</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Upload a receipt, scan a label, or add a manual food diary
+                      entry to start building your timeline.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <div className="flex items-start gap-3">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-                  <ScanLine className="h-5 w-5" />
-                </span>
-                <div className="min-w-0">
-                  <p className="font-semibold text-white">LabelScan result</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {label.productName}: {label.safetyLevel}, score {label.labelTruthScore}/100.
-                  </p>
+            ) : null}
+            {account.recentActivities.map((activity) => {
+              const Icon = activityIcons[activity.type];
+              return (
+                <div key={activity.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-start gap-3">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-white">{activity.title}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{activity.description}</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {activity.metrics.slice(0, 3).map((metric) => (
+                          <Badge key={metric} variant="outline">{metric}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <div className="flex items-start gap-3">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-tertiary/15 text-sky-200">
-                  <Utensils className="h-5 w-5" />
-                </span>
-                <div className="min-w-0">
-                  <p className="font-semibold text-white">Food diary insight</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{diary.aiSummary}</p>
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </CardContent>
         </Card>
       </div>
@@ -222,13 +256,19 @@ export default async function DashboardPage() {
       <div className="grid gap-6 xl:grid-cols-2">
         <Card className="glass-panel">
           <CardHeader>
-            <CardTitle>Weekly food risk summary</CardTitle>
+            <CardTitle>Food risk summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {receipt.riskFlags.slice(0, 4).map((risk) => (
-              <div key={risk.label} className="rounded-xl border border-white/10 bg-white/5 p-3">
+            {account.riskSummary.length === 0 ? (
+              <p className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-muted-foreground">
+                No risk summary yet. Run one receipt, label, or diary analysis to
+                see personalized signals here.
+              </p>
+            ) : null}
+            {account.riskSummary.map((risk) => (
+              <div key={`${risk.label}-${risk.detail}`} className="rounded-xl border border-white/10 bg-white/5 p-3">
                 <p className="font-semibold text-white">{risk.label}</p>
-                <p className="text-sm text-muted-foreground">{risk.possibleConcern}</p>
+                <p className="text-sm text-muted-foreground">{risk.detail}</p>
               </div>
             ))}
           </CardContent>
@@ -238,7 +278,13 @@ export default async function DashboardPage() {
             <CardTitle>Badges earned</CardTitle>
           </CardHeader>
           <CardContent>
-            <BadgeGrid badges={diary.badgesEarned} />
+            {account.badges.length > 0 ? (
+              <BadgeGrid badges={account.badges} />
+            ) : (
+              <p className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-muted-foreground">
+                Complete your first analysis to unlock badges.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

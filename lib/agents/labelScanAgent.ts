@@ -17,6 +17,44 @@ Nutrition per 100g: Energy 520 kcal, protein 6g, sugar 12g,
 added sugar 8g, sodium 780mg, fat 31g, saturated fat 13g, trans fat 0.1g.
 `;
 
+const labelExtractionPrompt = `
+You are DabbaDoc's packaged-food label OCR agent for Indian products.
+
+Extract ONLY visible product label text from the uploaded image.
+Prioritize product name, ingredients, nutrition facts, serving size, claims, allergens, additives, sugar, sodium, fat, oil, and protein.
+Return plain text only.
+Do not invent ingredients or nutrition values.
+If the image is unreadable, return exactly: READ_FAILED
+`;
+
+export class LabelExtractionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "LabelExtractionError";
+  }
+}
+
+function cleanExtraction(text: string) {
+  return text
+    .replace(/```(?:text)?/gi, "")
+    .replace(/```/g, "")
+    .replace(/^extracted text:\s*/i, "")
+    .trim();
+}
+
+function isReadableLabelText(text?: string | null) {
+  if (!text) return false;
+
+  const cleaned = cleanExtraction(text);
+  if (cleaned.length < 8) return false;
+  if (/^read_failed$/i.test(cleaned)) return false;
+  if (/unable to (read|extract|identify)|can't (read|extract)|cannot (read|extract)/i.test(cleaned)) {
+    return false;
+  }
+
+  return /[a-zA-Z]/.test(cleaned);
+}
+
 function extractNumber(text: string, label: string) {
   const regex = new RegExp(`${label}[^0-9]*(\\d+(?:\\.\\d+)?)`, "i");
   return Number(text.match(regex)?.[1] ?? 0) || undefined;
@@ -49,24 +87,24 @@ export async function extractLabelText(input: AgentInput) {
   const geminiText = await extractTextFromImageWithGemini({
     dataUri: input.dataUri,
     mimeType: input.mimeType,
-    prompt:
-      "Extract product name, ingredients, nutrition facts, claims, and additives from this packaged food label. Return plain text only."
+    prompt: labelExtractionPrompt
   });
 
-  if (geminiText?.trim()) return geminiText;
+  if (isReadableLabelText(geminiText)) return cleanExtraction(geminiText ?? "");
 
   const groqText = await extractTextFromImageWithGroq({
     dataUri: input.dataUri,
-    prompt:
-      "Extract product name, ingredients, nutrition facts, claims, and additives from this packaged food label. Return plain text only."
+    prompt: labelExtractionPrompt
   });
 
-  if (groqText?.trim()) return groqText;
+  if (isReadableLabelText(groqText)) return cleanExtraction(groqText ?? "");
 
   const tesseractText = await extractTextWithTesseract(input.dataUri);
-  if (tesseractText?.trim()) return tesseractText;
+  if (isReadableLabelText(tesseractText)) return cleanExtraction(tesseractText ?? "");
 
-  return sampleLabelText;
+  throw new LabelExtractionError(
+    "Could not read this food label clearly. Please capture the ingredients/nutrition panel closer, in better light, and without blur."
+  );
 }
 
 export async function analyzeLabel(input: AgentInput): Promise<LabelAnalysis> {
@@ -78,7 +116,7 @@ export async function analyzeLabel(input: AgentInput): Promise<LabelAnalysis> {
   const safetyLevel = getSafetyLevel(labelTruthScore);
 
   const ingredientsMatch = extractedText.match(/ingredients?:([\s\S]*?)(nutrition|$)/i);
-  const ingredients = (ingredientsMatch?.[1] ?? "maida, palm oil, sugar, salt")
+  const ingredients = (ingredientsMatch?.[1] ?? "")
     .split(/,|\n/)
     .map((item) => item.trim())
     .filter(Boolean)
@@ -88,8 +126,11 @@ export async function analyzeLabel(input: AgentInput): Promise<LabelAnalysis> {
     score: labelTruthScore,
     riskFlags: warnings,
     swaps: betterAlternatives,
-    context: extractedText
+    context: extractedText,
+    items
   });
+
+  const hasWarnings = warnings.length > 0;
 
   return {
     extractedText,
@@ -107,9 +148,10 @@ export async function analyzeLabel(input: AgentInput): Promise<LabelAnalysis> {
     },
     labelTruthScore,
     safetyLevel,
-    whatYouThought: "Looks like a quick tasty packaged snack.",
-    whatLabelSays:
-      "The label shows hidden sugar/sodium/oil signals that should stay occasional.",
+    whatYouThought: "The front of pack may look convenient or healthy.",
+    whatLabelSays: hasWarnings
+      ? "The back label shows ingredients/nutrition signals worth keeping occasional."
+      : "No strong hidden sugar/sodium/oil signal was detected from the readable label text.",
     warnings,
     betterAlternatives,
     aiSummary,

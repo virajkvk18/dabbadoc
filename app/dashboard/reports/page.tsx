@@ -3,8 +3,11 @@ import { ReportGenerator } from "@/components/reports/report-generator";
 import { Disclaimer } from "@/components/common/disclaimer";
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getAccountOverview } from "@/lib/supabase/account-overview";
 
-export default function ReportsPage() {
+export default async function ReportsPage() {
+  const account = await getAccountOverview();
+
   return (
     <div className="space-y-6">
       <AppPageHeader
@@ -19,7 +22,10 @@ export default function ReportsPage() {
           { label: "Use", value: "Track / share" }
         ]}
       />
-      <ReportGenerator />
+      <ReportGenerator
+        userName={account.profile.fullName}
+        healthScore={account.score.current}
+      />
       <Card className="glass-panel">
         <CardHeader>
           <CardTitle>Report sections</CardTitle>

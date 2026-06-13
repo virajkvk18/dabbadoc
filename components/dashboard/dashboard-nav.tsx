@@ -11,6 +11,7 @@ import {
   ScanLine,
   Settings,
   Upload,
+  UserRound,
   Utensils
 } from "lucide-react";
 import { DabbaDocLogo } from "@/components/brand/dabbadoc-logo";
@@ -18,6 +19,7 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/dashboard", label: "Overview", icon: Home },
+  { href: "/dashboard/profile", label: "Profile", icon: UserRound },
   { href: "/dashboard/upload-receipt", label: "Receipt scan", icon: Upload },
   { href: "/dashboard/label-scan", label: "LabelScan", icon: ScanLine },
   { href: "/dashboard/food-diary", label: "Food diary", icon: Utensils },

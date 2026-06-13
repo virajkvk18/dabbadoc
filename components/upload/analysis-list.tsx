@@ -2,6 +2,7 @@ import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
+  FileText,
   IndianRupee,
   ListChecks,
   ReceiptText,
@@ -17,6 +18,30 @@ import type {
 } from "@/types";
 import { formatCurrency } from "@/lib/utils";
 
+export function ExtractedReceiptText({
+  text,
+  title = "Extracted receipt text"
+}: {
+  text: string;
+  title?: string;
+}) {
+  return (
+    <Card className="glass-panel">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <FileText className="h-5 w-5 text-primary" />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-xl border border-white/10 bg-black/25 p-4 text-sm leading-relaxed text-muted-foreground">
+          {text || "No readable text was extracted from this upload."}
+        </pre>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function DetectedItems({ items }: { items: FoodItem[] }) {
   return (
     <Card className="glass-panel">
@@ -27,6 +52,12 @@ export function DetectedItems({ items }: { items: FoodItem[] }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-3 sm:grid-cols-2">
+        {items.length === 0 ? (
+          <p className="sm:col-span-2 text-sm text-muted-foreground">
+            No food items were confidently detected. Check the extracted text and
+            try a sharper, cropped image if important items are missing.
+          </p>
+        ) : null}
         {items.map((item) => (
           <div
             key={`${item.name}-${item.category}`}
@@ -35,7 +66,11 @@ export function DetectedItems({ items }: { items: FoodItem[] }) {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="font-semibold text-white">{item.name}</p>
-                <p className="text-sm text-muted-foreground">{item.category}</p>
+                <p className="text-sm text-muted-foreground">
+                  {[item.category, item.quantity, item.price ? formatCurrency(item.price) : null]
+                    .filter(Boolean)
+                    .join(" / ")}
+                </p>
               </div>
               <span className="mt-1 h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_10px_rgba(129,247,89,0.6)]" />
             </div>
@@ -56,6 +91,11 @@ export function RiskFlags({ risks }: { risks: RiskFlag[] }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
+        {risks.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No strong risk flags were detected from this scan.
+          </p>
+        ) : null}
         {risks.map((risk) => (
           <div
             key={risk.label}
@@ -91,6 +131,12 @@ export function SwapList({ swaps }: { swaps: SwapRecommendation[] }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
+        {swaps.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No specific swap was needed from the detected items. Keep portions balanced
+            and add protein/fiber where possible.
+          </p>
+        ) : null}
         {swaps.slice(0, 6).map((swap) => (
           <div
             key={`${swap.original}-${swap.swap}`}

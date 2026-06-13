@@ -5,7 +5,11 @@
 import { useEffect, useState } from "react";
 import { Camera, FileImage, Loader2, PlayCircle, ScanLine } from "lucide-react";
 import { Disclaimer } from "@/components/common/disclaimer";
-import { RiskFlags, SwapList } from "@/components/upload/analysis-list";
+import {
+  ExtractedReceiptText,
+  RiskFlags,
+  SwapList
+} from "@/components/upload/analysis-list";
 import { HealthScoreGauge } from "@/components/dashboard/health-score-gauge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +20,7 @@ import type { LabelAnalysis } from "@/types";
 type LabelResponse = {
   analysis: LabelAnalysis;
   saved: boolean;
+  warning?: string;
   error?: string;
 };
 
@@ -24,6 +29,7 @@ export function LabelScanForm() {
   const [analysis, setAnalysis] = useState<LabelAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -40,11 +46,19 @@ export function LabelScanForm() {
   function chooseFile(nextFile?: File | null) {
     setFile(nextFile ?? null);
     setError(null);
+    setWarning(null);
   }
 
   async function submit(demoMode = false) {
+    if (!demoMode && !file) {
+      setError("Choose a label image or use live capture before analyzing.");
+      setWarning(null);
+      return;
+    }
+
     setLoading(true);
     setError(null);
+    setWarning(null);
 
     const formData = new FormData();
     formData.set("demoMode", String(demoMode));
@@ -63,6 +77,7 @@ export function LabelScanForm() {
     }
 
     setAnalysis(payload.analysis);
+    setWarning(payload.warning ?? null);
   }
 
   return (
@@ -135,6 +150,7 @@ export function LabelScanForm() {
             ) : null}
           </div>
           {error ? <p className="text-sm text-red-200">{error}</p> : null}
+          {warning ? <p className="text-sm text-orange-100">{warning}</p> : null}
           <div className="grid gap-3 sm:flex sm:flex-wrap">
             <Button className="w-full sm:w-auto" onClick={() => submit(false)} disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanLine className="h-4 w-4" />}
@@ -171,11 +187,21 @@ export function LabelScanForm() {
               </CardContent>
             </Card>
           </div>
+          <ExtractedReceiptText
+            text={analysis.extractedText}
+            title="Extracted label text"
+          />
           <Card className="glass-panel">
             <CardHeader>
               <CardTitle>{analysis.productName}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
+              {analysis.ingredients.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No ingredients list was confidently detected. Try a closer image of
+                  the ingredients panel.
+                </p>
+              ) : null}
               {analysis.ingredients.map((ingredient) => (
                 <span key={ingredient} className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-sm text-muted-foreground">
                   {ingredient}

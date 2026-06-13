@@ -8,6 +8,7 @@ import {
   MAX_JSON_BYTES
 } from "@/lib/security/abuse-protection";
 import { generateHealthReportPdf } from "@/lib/reports/pdf";
+import { saveReportRecord } from "@/lib/supabase/mutations";
 import { reportSchema } from "@/lib/validators/api";
 
 export const runtime = "nodejs";
@@ -23,6 +24,18 @@ export async function POST(request: NextRequest) {
       ...payload,
       userName: payload.userName || user.email || "DabbaDoc User"
     });
+    try {
+      await saveReportRecord({
+        userId: user.id,
+        reportData: {
+          ...payload.reportData,
+          userName: payload.userName || user.email || "DabbaDoc User",
+          dateRange: payload.dateRange
+        }
+      });
+    } catch {
+      // Report generation should still succeed if history persistence is temporarily unavailable.
+    }
 
     return new NextResponse(pdf, {
       headers: {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { runReceiptGraph } from "@/lib/agents/graph";
+import { ReceiptExtractionError } from "@/lib/agents/receiptScanAgent";
 import { requireVerifiedUser } from "@/lib/auth/require-user";
 import { ApiError, apiErrorResponse } from "@/lib/security/api-errors";
 import {
@@ -32,6 +33,9 @@ export async function POST(request: NextRequest) {
       sourceType: formData.get("sourceType") ?? "grocery_receipt",
       demoMode: formData.get("demoMode") === "true"
     });
+    if (!parsed.demoMode && !(file instanceof File)) {
+      throw new ApiError("Please upload a receipt image before analyzing.", 400);
+    }
 
     let dataUri: string | undefined;
     let fileUrl: string | null = null;
@@ -57,30 +61,49 @@ export async function POST(request: NextRequest) {
       fileUrl = upload.path;
     }
 
-    const uploadId = await saveUploadRecord({
-      userId: user.id,
-      fileUrl,
-      fileType: mimeType,
-      sourceType: parsed.sourceType
-    });
-
     const analysis = await runReceiptGraph({
       userId: user.id,
       sourceType: parsed.sourceType,
       fileName,
       mimeType,
       dataUri,
-      demoMode: parsed.demoMode || !file
+      demoMode: parsed.demoMode
     });
 
-    await saveReceiptAnalysis({
-      userId: user.id,
-      uploadId,
-      analysis
-    });
+    let saved = false;
+    try {
+      const uploadId = await saveUploadRecord({
+        userId: user.id,
+        fileUrl,
+        fileType: mimeType,
+        sourceType: parsed.sourceType
+      });
 
-    return NextResponse.json({ analysis, saved: true });
+      await saveReceiptAnalysis({
+        userId: user.id,
+        uploadId,
+        analysis
+      });
+      saved = true;
+    } catch {
+      saved = false;
+    }
+
+    return NextResponse.json({
+      analysis,
+      saved,
+      warning: saved
+        ? undefined
+        : "Analysis completed, but history could not be saved yet. Check Supabase tables and policies."
+    });
   } catch (error) {
+    if (error instanceof ReceiptExtractionError) {
+      return apiErrorResponse(new ApiError(error.message, 422), "Receipt analysis failed", 422, {
+        request,
+        route: "/api/analyze-receipt"
+      });
+    }
+
     return apiErrorResponse(error, "Receipt analysis failed", 400, {
       request,
       route: "/api/analyze-receipt"

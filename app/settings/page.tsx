@@ -8,11 +8,16 @@ import {
   SlidersHorizontal,
   User
 } from "lucide-react";
+import Link from "next/link";
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  formatDisplayDate,
+  getAccountOverview
+} from "@/lib/supabase/account-overview";
 
 const preferences = [
   "Weekly report reminders",
@@ -21,7 +26,9 @@ const preferences = [
   "Monthly progress summary"
 ];
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const account = await getAccountOverview();
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
@@ -32,8 +39,8 @@ export default function SettingsPage() {
           description="Manage profile, privacy, notifications, and plan preferences."
           icon={SlidersHorizontal}
           stats={[
-            { label: "Profile", value: "Demo Family" },
-            { label: "Plan", value: "Free trial" },
+            { label: "Profile", value: account.profile.fullName },
+            { label: "Plan", value: account.profile.isPremium ? "Premium" : "Free" },
             { label: "Privacy", value: "Protected" }
           ]}
           actions={(
@@ -55,11 +62,23 @@ export default function SettingsPage() {
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                 <p className="mono-label text-[11px] text-muted-foreground">Name</p>
-                <p className="mt-2 font-semibold text-white">Demo Family</p>
+                <p className="mt-2 font-semibold text-white">{account.profile.fullName}</p>
               </div>
               <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                 <p className="mono-label text-[11px] text-muted-foreground">Email</p>
-                <p className="mt-2 font-semibold text-white">demo@dabbadoc.local</p>
+                <p className="mt-2 break-all font-semibold text-white">{account.profile.email}</p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                <p className="mono-label text-[11px] text-muted-foreground">Member since</p>
+                <p className="mt-2 font-semibold text-white">
+                  {formatDisplayDate(account.profile.createdAt)}
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                <p className="mono-label text-[11px] text-muted-foreground">Streak</p>
+                <p className="mt-2 font-semibold text-white">
+                  {account.streak.days} days
+                </p>
               </div>
               <div className="rounded-xl border border-white/10 bg-white/5 p-4 sm:col-span-2">
                 <p className="mono-label text-[11px] text-muted-foreground">Family profile</p>
@@ -79,13 +98,17 @@ export default function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Badge variant="secondary">Free trial</Badge>
+              <Badge variant={account.profile.isPremium ? "default" : "secondary"}>
+                {account.profile.isPremium ? "Premium active" : "Free trial"}
+              </Badge>
               <p className="text-sm leading-6 text-muted-foreground">
                 Upgrade when you need unlimited scans, full history, family tracking,
                 and downloadable reports.
               </p>
-              <Button className="w-full" variant="secondary">
-                Manage plan
+              <Button asChild className="w-full" variant="secondary">
+                <Link href={account.profile.isPremium ? "/dashboard/profile" : "/pricing"}>
+                  Manage plan
+                </Link>
               </Button>
             </CardContent>
           </Card>

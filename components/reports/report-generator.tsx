@@ -6,7 +6,13 @@ import { DabbaDocLogo } from "@/components/brand/dabbadoc-logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export function ReportGenerator() {
+export function ReportGenerator({
+  userName,
+  healthScore
+}: {
+  userName: string;
+  healthScore: number;
+}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,9 +25,9 @@ export function ReportGenerator() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userName: "Demo Family",
+          userName,
           dateRange: "Last 30 days",
-          reportData: { healthScore: 72 }
+          reportData: { healthScore }
         })
       });
 
