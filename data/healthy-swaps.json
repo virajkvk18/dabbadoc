@@ -1,0 +1,100 @@
+[
+  {
+    "original": "Maggi",
+    "swap": "oats upma",
+    "reason": "More fiber and better satiety than instant noodles.",
+    "costDelta": -120,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Maggi",
+    "swap": "protein oats",
+    "reason": "Improves protein while keeping a quick breakfast format.",
+    "costDelta": 80,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Maggi",
+    "swap": "poha with peanuts",
+    "reason": "Familiar Indian breakfast with better whole-food balance.",
+    "costDelta": -150,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Cola",
+    "swap": "chaas",
+    "reason": "Lower sugar drink with a cooling Indian meal pairing.",
+    "costDelta": -350,
+    "scoreImpact": 12
+  },
+  {
+    "original": "Cola",
+    "swap": "nimbu pani without excess sugar",
+    "reason": "Hydrating and lighter than sugary soda.",
+    "costDelta": -250,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Cola",
+    "swap": "coconut water",
+    "reason": "Naturally sweet option for occasional replacement.",
+    "costDelta": 200,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Chips",
+    "swap": "roasted chana",
+    "reason": "Crunchy snack with more protein and fiber.",
+    "costDelta": -200,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Chips",
+    "swap": "makhana",
+    "reason": "Light roasted snack with less oil load.",
+    "costDelta": 50,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Fried snacks",
+    "swap": "sprouts chaat",
+    "reason": "Keeps the chaat feel while improving protein and fiber.",
+    "costDelta": -180,
+    "scoreImpact": 11
+  },
+  {
+    "original": "Fried snacks",
+    "swap": "paneer salad",
+    "reason": "Higher protein evening snack that is still filling.",
+    "costDelta": 250,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Biscuits",
+    "swap": "fruit and nuts",
+    "reason": "Better snack pattern than refined flour and palm oil.",
+    "costDelta": 180,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Biscuits",
+    "swap": "homemade chilla",
+    "reason": "Higher protein and more satisfying with less packaged load.",
+    "costDelta": -120,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Sugary cereal",
+    "swap": "dalia",
+    "reason": "Warmer whole-grain breakfast with less added sugar.",
+    "costDelta": -250,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Sugary cereal",
+    "swap": "oats with nuts",
+    "reason": "More fiber and protein than sweet packaged cereal.",
+    "costDelta": -100,
+    "scoreImpact": 9
+  }
+]

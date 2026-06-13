@@ -1,0 +1,79 @@
+[
+  {
+    "tag": "high_sugar",
+    "label": "High sugar pattern",
+    "severity": "high",
+    "reason": "Sugary drinks or sweet packaged foods appear repeatedly.",
+    "possibleConcern": "May increase risk of energy crashes, cravings, and long-term lifestyle concerns."
+  },
+  {
+    "tag": "added_sugar",
+    "label": "Added sugar watch",
+    "severity": "medium",
+    "reason": "Added sugar is present in packaged snacks or breakfast foods.",
+    "possibleConcern": "Could make daily sugar load higher than expected."
+  },
+  {
+    "tag": "high_sodium",
+    "label": "High sodium pattern",
+    "severity": "high",
+    "reason": "Instant noodles, chips, or salty packaged foods were found.",
+    "possibleConcern": "May increase risk of excess sodium intake if frequent."
+  },
+  {
+    "tag": "fried",
+    "label": "Frequent fried food",
+    "severity": "medium",
+    "reason": "Fried snacks appeared in the scan or diary.",
+    "possibleConcern": "Could increase calorie and oil load when eaten often."
+  },
+  {
+    "tag": "processed",
+    "label": "Processed food load",
+    "severity": "medium",
+    "reason": "Packaged or instant foods are taking space from whole foods.",
+    "possibleConcern": "May reduce fiber, micronutrient, and protein quality."
+  },
+  {
+    "tag": "low_protein",
+    "label": "Low protein signal",
+    "severity": "medium",
+    "reason": "The pattern has quick carbs or snacks without enough protein.",
+    "possibleConcern": "May affect fullness and balanced daily energy."
+  },
+  {
+    "tag": "maida",
+    "label": "Refined flour signal",
+    "severity": "medium",
+    "reason": "Maida/refined flour appears in the item pattern.",
+    "possibleConcern": "May crowd out whole grains if used frequently."
+  },
+  {
+    "tag": "palm_oil",
+    "label": "Palm/refined oil signal",
+    "severity": "medium",
+    "reason": "Packaged food may include palm oil or refined oils.",
+    "possibleConcern": "Could add hidden fat load when eaten often."
+  },
+  {
+    "tag": "trans_fat",
+    "label": "Trans fat warning",
+    "severity": "high",
+    "reason": "The label mentions trans fat or hydrogenated fat.",
+    "possibleConcern": "Avoid frequent use; consider safer alternatives."
+  },
+  {
+    "tag": "artificial_colors",
+    "label": "Artificial color watch",
+    "severity": "medium",
+    "reason": "The label mentions artificial colors or synthetic additives.",
+    "possibleConcern": "May be better kept occasional, especially for children."
+  },
+  {
+    "tag": "high_spice",
+    "label": "High spice watch",
+    "severity": "medium",
+    "reason": "The meal was marked high in spice.",
+    "possibleConcern": "May cause discomfort for some people if frequent, especially with fried or outside food."
+  }
+]
