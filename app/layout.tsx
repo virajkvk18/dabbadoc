@@ -60,6 +60,34 @@ export default function RootLayout({
                 window.addEventListener("load", () => {
                   window.setTimeout(() => observer.disconnect(), 5000);
                 });
+
+                window.addEventListener(
+                  "unhandledrejection",
+                  (event) => {
+                    if (event.reason instanceof Event) {
+                      event.preventDefault();
+                      event.stopImmediatePropagation();
+                      console.warn(
+                        "Ignored browser event rejection:",
+                        event.reason.type || "unknown"
+                      );
+                    }
+                  },
+                  true
+                );
+
+                window.addEventListener(
+                  "error",
+                  (event) => {
+                    if (event instanceof ErrorEvent) return;
+                    const target = event.target;
+                    const tagName = target?.tagName;
+                    if (tagName === "IMG" || tagName === "LINK" || tagName === "SCRIPT") {
+                      console.warn("Resource failed to load:", tagName);
+                    }
+                  },
+                  true
+                );
               })();
             `
           }}

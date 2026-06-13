@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, Crown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -75,12 +76,14 @@ export function PricingCard({
   plan,
   price,
   features,
-  premium
+  premium,
+  authenticated
 }: {
   plan: string;
   price: string;
   features: string[];
   premium?: boolean;
+  authenticated?: boolean;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -91,87 +94,92 @@ export function PricingCard({
     setLoading(true);
     setMessage(null);
 
-    const response = await fetch("/api/razorpay", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan: "premium" })
-    });
-    const payload = (await response.json()) as {
-      order?: PaymentOrder;
-      error?: string;
-    };
+    try {
+      const response = await fetch("/api/razorpay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: "premium" })
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        order?: PaymentOrder;
+        error?: string;
+      };
 
-    if (!response.ok || !payload.order) {
-      setLoading(false);
-      if (response.status === 401 || response.status === 403) {
-        setMessage("Please log in with a verified account to start premium.");
-        router.push("/auth?next=/pricing");
+      if (!response.ok || !payload.order) {
+        setLoading(false);
+        if (response.status === 401 || response.status === 403) {
+          setMessage("Please log in with a verified account to start premium.");
+          router.push("/auth?next=/pricing");
+          return;
+        }
+
+        setMessage(payload.error ?? "Could not start secure checkout.");
         return;
       }
 
-      setMessage(payload.error ?? "Could not start secure checkout.");
-      return;
-    }
-
-    if (payload.order.mock) {
-      setLoading(false);
-      setMessage("Secure checkout preview created. Add Razorpay test keys for live test mode.");
-      return;
-    }
-
-    const key = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-    if (!key) {
-      setLoading(false);
-      setMessage("Razorpay public key is missing. Restart the dev server after adding it.");
-      return;
-    }
-
-    const loaded = await loadRazorpayCheckout();
-    if (!loaded || !window.Razorpay) {
-      setLoading(false);
-      setMessage("Could not load secure checkout. Check your connection and try again.");
-      return;
-    }
-
-    const checkout = new window.Razorpay({
-      key,
-      name: "DabbaDoc",
-      description: "Premium monthly plan",
-      order_id: payload.order.id,
-      amount: payload.order.amount,
-      currency: payload.order.currency,
-      theme: { color: "#81f759" },
-      modal: {
-        ondismiss() {
-          setLoading(false);
-          setMessage("Checkout was closed.");
-        }
-      },
-      async handler(payment) {
-        setLoading(true);
-        setMessage("Verifying payment...");
-
-        const verifyResponse = await fetch("/api/razorpay/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payment)
-        });
-        const verifyPayload = (await verifyResponse.json().catch(() => ({}))) as {
-          message?: string;
-          error?: string;
-        };
-
+      if (payload.order.mock) {
         setLoading(false);
-        setMessage(
-          verifyResponse.ok
-            ? verifyPayload.message ?? "Payment verified. Premium access updated."
-            : verifyPayload.error ?? "Payment verification failed."
-        );
+        setMessage("Secure checkout preview created. Add Razorpay test keys for live test mode.");
+        return;
       }
-    });
 
-    setLoading(false);
-    checkout.open();
+      const key = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+      if (!key) {
+        setLoading(false);
+        setMessage("Razorpay public key is missing. Restart the dev server after adding it.");
+        return;
+      }
+
+      const loaded = await loadRazorpayCheckout();
+      if (!loaded || !window.Razorpay) {
+        setLoading(false);
+        setMessage("Could not load secure checkout. Check your connection and try again.");
+        return;
+      }
+
+      const checkout = new window.Razorpay({
+        key,
+        name: "DabbaDoc",
+        description: "Premium monthly plan",
+        order_id: payload.order.id,
+        amount: payload.order.amount,
+        currency: payload.order.currency,
+        theme: { color: "#81f759" },
+        modal: {
+          ondismiss() {
+            setLoading(false);
+            setMessage("Checkout was closed.");
+          }
+        },
+        async handler(payment) {
+          setLoading(true);
+          setMessage("Verifying payment...");
+
+          const verifyResponse = await fetch("/api/razorpay/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payment)
+          });
+          const verifyPayload = (await verifyResponse.json().catch(() => ({}))) as {
+            message?: string;
+            error?: string;
+          };
+
+          setLoading(false);
+          setMessage(
+            verifyResponse.ok
+              ? verifyPayload.message ?? "Payment verified. Premium access updated."
+              : verifyPayload.error ?? "Payment verification failed."
+          );
+        }
+      });
+
+      setLoading(false);
+      checkout.open();
+    } catch {
+      setLoading(false);
+      setMessage("Could not start checkout. Please try again.");
+    }
   }
 
   return (
@@ -197,15 +205,28 @@ export function PricingCard({
             </div>
           ))}
         </div>
-        <Button
-          className="w-full"
-          variant={premium ? "default" : "outline"}
-          onClick={startCheckout}
-          disabled={loading || !premium}
-        >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : premium ? <Crown className="h-4 w-4" /> : null}
-          {premium ? "Start premium" : "Current free plan"}
-        </Button>
+        {premium && !authenticated ? (
+          <Button asChild className="w-full">
+            <Link href="/auth?next=/pricing">
+              <Crown className="h-4 w-4" />
+              Log in to start premium
+            </Link>
+          </Button>
+        ) : (
+          <Button
+            className="w-full"
+            variant={premium ? "default" : "outline"}
+            onClick={startCheckout}
+            disabled={loading || !premium}
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : premium ? (
+              <Crown className="h-4 w-4" />
+            ) : null}
+            {premium ? "Start premium" : "Current free plan"}
+          </Button>
+        )}
         {message ? <p className="text-sm text-orange-100">{message}</p> : null}
       </CardContent>
     </Card>

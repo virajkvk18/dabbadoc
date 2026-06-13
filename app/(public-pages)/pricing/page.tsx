@@ -1,6 +1,7 @@
 import { PricingCard } from "@/components/pricing/pricing-card";
 import { SiteHeader } from "@/components/layout/site-header";
 import { AppPageHeader } from "@/components/layout/app-page-header";
+import { getCurrentUser } from "@/lib/supabase/server";
 import { BadgeIndianRupee } from "lucide-react";
 
 const freeFeatures = [
@@ -23,7 +24,9 @@ const premiumFeatures = [
   "Premium food insights"
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const user = await getCurrentUser();
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
@@ -42,7 +45,13 @@ export default function PricingPage() {
         />
         <div className="mx-auto mt-12 grid max-w-5xl gap-6 md:grid-cols-2">
           <PricingCard plan="Free" price="Rs 0 / trial" features={freeFeatures} />
-          <PricingCard plan="Premium" price="Rs 299 / month" features={premiumFeatures} premium />
+          <PricingCard
+            plan="Premium"
+            price="Rs 299 / month"
+            features={premiumFeatures}
+            premium
+            authenticated={Boolean(user)}
+          />
         </div>
       </main>
     </div>

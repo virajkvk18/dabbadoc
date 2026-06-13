@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -32,8 +33,14 @@ const links = [
 export function DashboardNav({ className }: { className?: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
 
   async function logout() {
+    setPendingHref("/auth");
     await fetch("/api/auth/logout", { method: "POST" });
     router.replace("/auth");
     router.refresh();
@@ -50,6 +57,11 @@ export function DashboardNav({ className }: { className?: string }) {
         <DabbaDocLogo href="/" size="md" />
       </div>
       <nav className="space-y-1">
+        {pendingHref ? (
+          <div className="mb-3 overflow-hidden rounded-full bg-white/10">
+            <div className="loading-bar h-1 rounded-full bg-primary" />
+          </div>
+        ) : null}
         {links.map((link) => {
           const Icon = link.icon;
           const active =
@@ -59,15 +71,23 @@ export function DashboardNav({ className }: { className?: string }) {
             <Link
               key={link.href}
               href={link.href}
+              onClick={() => {
+                if (!active) setPendingHref(link.href);
+              }}
               className={cn(
-                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition",
+                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition active:scale-[0.98]",
                 active
                   ? "border-r-4 border-primary bg-primary/15 text-primary shadow-[0_0_20px_rgba(129,247,89,0.12)]"
-                  : "text-muted-foreground hover:bg-white/10 hover:text-white"
+                  : pendingHref === link.href
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-white/10 hover:text-white"
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
               {link.label}
+              {pendingHref === link.href ? (
+                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(129,247,89,0.7)]" />
+              ) : null}
             </Link>
           );
         })}
@@ -86,9 +106,19 @@ export function DashboardNav({ className }: { className?: string }) {
 
 export function DashboardMobileNav() {
   const pathname = usePathname();
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
 
   return (
     <nav className="dashboard-mobile-nav fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-white/10 bg-[#10131c]/92 px-2 pb-safe pt-2 shadow-[0_-10px_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl lg:hidden">
+      {pendingHref ? (
+        <div className="absolute inset-x-4 top-1 overflow-hidden rounded-full bg-white/10">
+          <div className="loading-bar h-1 rounded-full bg-primary" />
+        </div>
+      ) : null}
       <div className="custom-scrollbar mx-auto flex max-w-md gap-1 overflow-x-auto">
         {links.slice(0, 6).map((link) => {
           const Icon = link.icon;
@@ -99,11 +129,16 @@ export function DashboardMobileNav() {
             <Link
               key={link.href}
               href={link.href}
+              onClick={() => {
+                if (!active) setPendingHref(link.href);
+              }}
               className={cn(
-                "flex min-w-20 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-bold transition",
+                "flex min-w-20 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-[11px] font-bold transition active:scale-[0.96]",
                 active
                   ? "scale-[1.03] bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-white/10 hover:text-white"
+                  : pendingHref === link.href
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-white/10 hover:text-white"
               )}
             >
               <Icon className="h-4 w-4" />

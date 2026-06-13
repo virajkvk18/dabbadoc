@@ -20,7 +20,7 @@ export default function DashboardLayout({
       </header>
       <div className="mx-auto flex max-w-7xl gap-6">
         <DashboardNav />
-        <main className="min-w-0 flex-1 pb-12">{children}</main>
+        <main className="page-enter min-w-0 flex-1 pb-12">{children}</main>
       </div>
       <DashboardMobileNav />
     </div>

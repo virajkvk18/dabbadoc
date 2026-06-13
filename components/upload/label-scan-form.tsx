@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import { Camera, FileImage, Loader2, PlayCircle, ScanLine } from "lucide-react";
 import { Disclaimer } from "@/components/common/disclaimer";
+import { ProcessingSteps } from "@/components/common/processing-steps";
 import {
   ExtractedReceiptText,
   RiskFlags,
@@ -163,6 +164,17 @@ export function LabelScanForm() {
           </div>
         </CardContent>
       </Card>
+
+      {loading ? (
+        <ProcessingSteps
+          title="Reading the food label"
+          steps={[
+            "Extracting label text",
+            "Checking nutrition signals",
+            "Preparing safer alternatives"
+          ]}
+        />
+      ) : null}
 
       {analysis ? (
         <div className="space-y-6">

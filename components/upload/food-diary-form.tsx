@@ -12,6 +12,7 @@ import {
   WandSparkles
 } from "lucide-react";
 import { Disclaimer } from "@/components/common/disclaimer";
+import { ProcessingSteps } from "@/components/common/processing-steps";
 import { BadgeGrid } from "@/components/badges/badge-grid";
 import { HealthScoreGauge } from "@/components/dashboard/health-score-gauge";
 import { RiskFlags, SwapList } from "@/components/upload/analysis-list";
@@ -284,6 +285,17 @@ export function FoodDiaryForm() {
           </div>
         </CardContent>
       </Card>
+
+      {loading ? (
+        <ProcessingSteps
+          title="Building your daily food insight"
+          steps={[
+            "Reading meal entries",
+            "Estimating balance",
+            "Preparing tips and badges"
+          ]}
+        />
+      ) : null}
 
       <Card className="glass-panel">
         <CardHeader>

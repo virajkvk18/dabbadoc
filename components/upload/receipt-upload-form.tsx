@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import { Camera, FileImage, Loader2, PlayCircle, Upload } from "lucide-react";
 import { Disclaimer } from "@/components/common/disclaimer";
+import { ProcessingSteps } from "@/components/common/processing-steps";
 import {
   CostSummary,
   DetectedItems,
@@ -168,14 +169,14 @@ export function ReceiptUploadForm() {
       </Card>
 
       {loading ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          {[0, 1, 2].map((item) => (
-            <div
-              key={item}
-              className="h-36 animate-pulse rounded-2xl border border-white/10 bg-white/10"
-            />
-          ))}
-        </div>
+        <ProcessingSteps
+          title="Analyzing your receipt"
+          steps={[
+            "Reading bill text",
+            "Finding food and prices",
+            "Preparing score and swaps"
+          ]}
+        />
       ) : null}
 
       {analysis ? (
