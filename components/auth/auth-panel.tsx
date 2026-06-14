@@ -14,7 +14,20 @@ function friendlyAuthMessage(error: unknown) {
     return "Secure account access is temporarily unavailable.";
   }
 
-  const hiddenWords = ["supabase", ".env", "environment", "configured", "key"];
+  const safePrefixes = [
+    "Auth redirect URL is not allowed.",
+    "Confirmation email could not be sent.",
+    "New account signup is disabled",
+    "This email is already registered.",
+    "Too many attempts.",
+    "Account could not be created"
+  ];
+
+  if (safePrefixes.some((prefix) => error.message.startsWith(prefix))) {
+    return error.message;
+  }
+
+  const hiddenWords = [".env", "environment", "configured", "key", "service_role", "jwt"];
   if (hiddenWords.some((word) => error.message.toLowerCase().includes(word))) {
     return "Secure account access is temporarily unavailable.";
   }
