@@ -1,30 +1,71 @@
 import type { LucideIcon } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+
+interface StatCardProps {
+  label: string;
+  value: string | number;
+  icon: LucideIcon;
+  detail?: string;
+  variant?: "default" | "primary" | "secondary";
+  suffix?: string;
+  className?: string;
+}
 
 export function StatCard({
   label,
   value,
+  icon: Icon,
   detail,
-  icon: Icon
-}: {
-  label: string;
-  value: string;
-  detail: string;
-  icon: LucideIcon;
-}) {
+  variant = "default",
+  suffix,
+  className
+}: StatCardProps) {
+  const variantStyles = {
+    default: {
+      glow: "",
+      icon: "bg-white/10 text-white"
+    },
+    primary: {
+      glow: "hover:shadow-glow-sm",
+      icon: "bg-primary/20 text-primary"
+    },
+    secondary: {
+      glow: "hover:shadow-warm-sm",
+      icon: "bg-secondary/20 text-secondary"
+    }
+  };
+  const styles = variantStyles[variant];
+
   return (
-    <Card className="glass-panel group overflow-hidden">
-      <CardContent className="relative flex min-h-36 items-start justify-between p-5">
-        <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl transition group-hover:bg-primary/15" />
-        <div>
-          <p className="mono-label text-[11px] text-muted-foreground">{label}</p>
-          <p className="mt-3 text-2xl font-black text-white">{value}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
-        </div>
-        <span className="relative grid h-11 w-11 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-primary brand-glow">
-          <Icon className="h-5 w-5" />
-        </span>
-      </CardContent>
-    </Card>
+    <div
+      className={cn(
+        "glass-panel group flex min-h-36 items-start gap-4 rounded-2xl p-5 transition-all duration-250",
+        styles.glow,
+        className
+      )}
+    >
+      <span
+        className={cn(
+          "grid h-11 w-11 shrink-0 place-items-center rounded-xl transition-transform duration-250 group-hover:scale-110",
+          styles.icon
+        )}
+      >
+        <Icon className="h-5 w-5" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-label text-muted-foreground">{label}</p>
+        <p className="mt-3 text-2xl font-black leading-none text-white">
+          {value}
+          {suffix ? (
+            <span className="ml-1 text-sm font-semibold text-muted-foreground">
+              {suffix}
+            </span>
+          ) : null}
+        </p>
+        {detail ? (
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">{detail}</p>
+        ) : null}
+      </div>
+    </div>
   );
 }
