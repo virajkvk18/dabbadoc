@@ -1,8 +1,11 @@
 import {
   AlertTriangle,
   ArrowRight,
+  BadgeInfo,
+  ClipboardList,
   CheckCircle2,
   FileText,
+  FlaskConical,
   HeartPulse,
   IndianRupee,
   ListChecks,
@@ -17,7 +20,10 @@ import type {
   CostComparison,
   FoodItem,
   FutureHealthRisk,
+  IngredientInsight,
   ItemHealthInsight,
+  LabelCoverageSummary,
+  NutritionFact,
   ReceiptCoverageSummary,
   RiskFlag,
   SwapRecommendation
@@ -114,6 +120,148 @@ export function ReceiptCoverage({ coverage }: { coverage?: ReceiptCoverageSummar
         <p className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm leading-6 text-muted-foreground">
           {coverage.confidenceNote}
         </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function LabelCoverage({ coverage }: { coverage?: LabelCoverageSummary }) {
+  if (!coverage) return null;
+
+  return (
+    <Card className="glass-panel border-primary/20">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ScanSearch className="h-5 w-5 text-primary" />
+          Label detection coverage
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-3">
+          {[
+            { label: "Nutrition facts", value: coverage.nutritionFactCount },
+            { label: "Ingredients", value: coverage.ingredientCount },
+            { label: "Additives/signals", value: coverage.additiveCount }
+          ].map((stat) => (
+            <div key={stat.label} className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <p className="mono-label text-[10px] text-muted-foreground">{stat.label}</p>
+              <p className="mt-1 text-2xl font-black text-white">{stat.value}</p>
+            </div>
+          ))}
+        </div>
+        <p className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm leading-6 text-muted-foreground">
+          {coverage.confidenceNote}
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function concernVariant(concern: NutritionFact["concernLevel"] | IngredientInsight["concernLevel"]) {
+  if (concern === "high") return "danger";
+  if (concern === "medium") return "secondary";
+  if (concern === "low") return "default";
+  return "outline";
+}
+
+export function NutritionFacts({ facts }: { facts?: NutritionFact[] }) {
+  return (
+    <Card className="glass-panel">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ClipboardList className="h-5 w-5 text-primary" />
+          Nutrition facts explained
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-3 lg:grid-cols-2">
+        {!facts?.length ? (
+          <p className="lg:col-span-2 text-sm text-muted-foreground">
+            Nutrition table was not clearly detected. Capture the nutrition panel straight,
+            close, and in good light for calorie, sugar, sodium, fat, protein, and fiber details.
+          </p>
+        ) : null}
+        {facts?.map((fact) => (
+          <div
+            key={`${fact.label}-${fact.value}-${fact.unit}`}
+            className="rounded-xl border border-white/10 bg-white/5 p-4"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p className="font-semibold text-white">{fact.label}</p>
+                <p className="text-sm text-muted-foreground">
+                  {typeof fact.value === "number"
+                    ? `${fact.value}${fact.unit ? ` ${fact.unit}` : ""}`
+                    : fact.raw || "Detected"}{" "}
+                  {fact.per ? `(${fact.per})` : ""}
+                </p>
+              </div>
+              <Badge variant={concernVariant(fact.concernLevel)}>
+                {fact.concernLevel}
+              </Badge>
+            </div>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              {fact.interpretation}
+            </p>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function IngredientInsightList({
+  insights
+}: {
+  insights?: IngredientInsight[];
+}) {
+  return (
+    <Card className="glass-panel">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <FlaskConical className="h-5 w-5 text-primary" />
+          Ingredients explained
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-3 lg:grid-cols-2">
+        {!insights?.length ? (
+          <p className="lg:col-span-2 text-sm text-muted-foreground">
+            Ingredients list was not clearly detected. Try a closer image of the
+            ingredients panel.
+          </p>
+        ) : null}
+        {insights?.map((insight) => (
+          <div
+            key={insight.ingredient}
+            className="rounded-xl border border-white/10 bg-white/5 p-4"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <p className="font-semibold text-white">{insight.ingredient}</p>
+              <Badge variant={concernVariant(insight.concernLevel)}>
+                {insight.concernLevel}
+              </Badge>
+            </div>
+            <div className="mt-3 space-y-3">
+              <p className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm leading-6 text-muted-foreground">
+                <span className="font-semibold text-white">Why added: </span>
+                {insight.purposeInFood}
+              </p>
+              <p className="text-sm leading-6 text-muted-foreground">
+                {insight.simpleHinglishExplanation}
+              </p>
+              {insight.possibleRegularUseConcern ? (
+                <p className="rounded-xl border border-secondary/25 bg-secondary/10 p-3 text-sm leading-6 text-orange-100">
+                  <BadgeInfo className="mr-2 inline h-4 w-4" />
+                  {insight.possibleRegularUseConcern}
+                </p>
+              ) : null}
+              {insight.naturalOrBetterAlternative ? (
+                <p className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-sm text-primary">
+                  Better option: {insight.naturalOrBetterAlternative}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        ))}
       </CardContent>
     </Card>
   );

@@ -8,6 +8,15 @@ import { extractTextWithTesseract } from "@/lib/ocr/tesseract";
 import { clamp } from "@/lib/utils";
 import { explainWithDabbaBot } from "./dabbaBotAgent";
 import { parseFoodItemsFromText } from "./foodParser";
+import {
+  buildIngredientInsights,
+  buildLabelCoverageSummary,
+  buildLabelSwaps,
+  buildLabelWarnings,
+  buildRegularLabelUseRisks,
+  extractIngredientsFromLabel,
+  extractNutritionFacts
+} from "./labelNarrative";
 import { analyzeRisks } from "./riskAnalyzerAgent";
 import { recommendSwaps } from "./swapRecommenderAgent";
 
@@ -23,7 +32,9 @@ const labelExtractionPrompt = `
 You are DabbaDoc's packaged-food label OCR agent for Indian products.
 
 Extract ONLY visible product label text from the uploaded image.
-Prioritize product name, ingredients, nutrition facts, serving size, claims, allergens, additives, sugar, sodium, fat, oil, and protein.
+Prioritize product name, complete ingredients list, every nutrition fact, serving size, claims, allergens, additives, sugar, sodium, fat, oil, protein, fiber, preservatives, colours, flavour enhancers, and INS/E numbers.
+Preserve nutrition rows line by line with value and unit when visible.
+Preserve the full ingredients list in original order when visible.
 Return plain text only.
 Do not invent ingredients or nutrition values.
 If the image is unreadable, return exactly: READ_FAILED
@@ -55,11 +66,6 @@ function isReadableLabelText(text?: string | null) {
   }
 
   return /[a-zA-Z]/.test(cleaned);
-}
-
-function extractNumber(text: string, label: string) {
-  const regex = new RegExp(`${label}[^0-9]*(\\d+(?:\\.\\d+)?)`, "i");
-  return Number(text.match(regex)?.[1] ?? 0) || undefined;
 }
 
 function calculateLabelTruthScore(text: string) {
@@ -113,48 +119,79 @@ export async function analyzeLabel(input: AgentInput): Promise<LabelAnalysis> {
   const extractedText = await extractLabelText(input);
   const items = parseFoodItemsFromText(extractedText);
   const warnings = await analyzeRisks(items, extractedText);
-  const betterAlternatives = await recommendSwaps(items);
   const labelTruthScore = calculateLabelTruthScore(extractedText);
   const safetyLevel = getSafetyLevel(labelTruthScore);
-
-  const ingredientsMatch = extractedText.match(/ingredients?:([\s\S]*?)(nutrition|$)/i);
-  const ingredients = (ingredientsMatch?.[1] ?? "")
-    .split(/,|\n/)
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .slice(0, 12);
+  const ingredients = extractIngredientsFromLabel(extractedText);
+  const ingredientInsights = buildIngredientInsights(ingredients);
+  const nutritionDetails = extractNutritionFacts(extractedText);
+  const nutritionByKey = nutritionDetails.byKey as Partial<Record<
+    | "calories"
+    | "protein"
+    | "sugar"
+    | "addedSugar"
+    | "sodium"
+    | "fats"
+    | "saturatedFat"
+    | "transFat"
+    | "carbohydrates"
+    | "fiber",
+    number
+  >>;
+  const mergedWarnings = buildLabelWarnings({
+    baseWarnings: warnings,
+    ingredientInsights,
+    nutritionFacts: nutritionDetails.facts
+  });
+  const betterAlternatives = buildLabelSwaps(await recommendSwaps(items), ingredients);
+  const regularUseRisks = buildRegularLabelUseRisks({
+    nutritionFacts: nutritionDetails.facts,
+    ingredientInsights,
+    ingredients
+  });
+  const labelCoverage = buildLabelCoverageSummary({
+    ingredients,
+    ingredientInsights,
+    nutritionFacts: nutritionDetails.facts
+  });
 
   const aiSummary = await explainWithDabbaBot({
     score: labelTruthScore,
-    riskFlags: warnings,
+    riskFlags: mergedWarnings,
     swaps: betterAlternatives,
     context: extractedText,
     items
   });
 
-  const hasWarnings = warnings.length > 0;
+  const hasWarnings = mergedWarnings.length > 0;
 
   return {
     extractedText,
     productName: extractedText.split("\n").find(Boolean)?.trim() ?? "Packaged food",
     ingredients,
     nutrition: {
-      calories: extractNumber(extractedText, "energy|calories|kcal"),
-      protein: extractNumber(extractedText, "protein"),
-      sugar: extractNumber(extractedText, "sugar"),
-      addedSugar: extractNumber(extractedText, "added sugar"),
-      sodium: extractNumber(extractedText, "sodium"),
-      fats: extractNumber(extractedText, "fat"),
-      saturatedFat: extractNumber(extractedText, "saturated fat"),
-      transFat: extractNumber(extractedText, "trans fat")
+      calories: nutritionByKey.calories,
+      protein: nutritionByKey.protein,
+      sugar: nutritionByKey.sugar,
+      addedSugar: nutritionByKey.addedSugar,
+      sodium: nutritionByKey.sodium,
+      fats: nutritionByKey.fats,
+      saturatedFat: nutritionByKey.saturatedFat,
+      transFat: nutritionByKey.transFat,
+      carbohydrates: nutritionByKey.carbohydrates,
+      fiber: nutritionByKey.fiber,
+      servingSize: nutritionDetails.servingSize,
+      facts: nutritionDetails.facts
     },
+    ingredientInsights,
+    regularUseRisks,
+    labelCoverage,
     labelTruthScore,
     safetyLevel,
     whatYouThought: "The front of pack may look convenient or healthy.",
     whatLabelSays: hasWarnings
-      ? "The back label shows ingredients/nutrition signals worth keeping occasional."
+      ? `Readable label shows ${ingredients.length} ingredients and ${nutritionDetails.facts.length} nutrition facts. Some signals should stay occasional, especially if eaten regularly.`
       : "No strong hidden sugar/sodium/oil signal was detected from the readable label text.",
-    warnings,
+    warnings: mergedWarnings,
     betterAlternatives,
     aiSummary,
     disclaimer: DABBADOC_DISCLAIMER

@@ -17,6 +17,16 @@ def test_detect_ingredients():
     assert any("msg" in n or "monosodium" in n for n in names)
 
 
+def test_detect_common_label_ingredients():
+    insights = detect_ingredient_insights("sugar, liquid glucose, salt, emulsifier and stabilizer")
+    names = {i["ingredient"].lower() for i in insights}
+    assert any("sugar" in n for n in names)
+    assert any("glucose" in n for n in names)
+    assert any("salt" in n or "sodium" in n for n in names)
+    assert any("emulsifier" in n for n in names)
+    assert any("stabilizer" in n for n in names)
+
+
 def test_score_penalty():
     items = detect_food_items("samosa cold drink french fries")
     scoring = score_items(items)

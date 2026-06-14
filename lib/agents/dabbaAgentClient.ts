@@ -6,6 +6,7 @@ import type {
   FoodDiaryAnalysis,
   FoodItem,
   FutureHealthRisk,
+  IngredientInsight,
   LabelAnalysis,
   ManualMealEntry,
   ReceiptAnalysis,
@@ -20,6 +21,15 @@ import {
   buildItemHealthInsights,
   buildReceiptCoverageSummary
 } from "./receiptNarrative";
+import {
+  buildIngredientInsights,
+  buildLabelCoverageSummary,
+  buildLabelSwaps,
+  buildLabelWarnings,
+  buildRegularLabelUseRisks,
+  extractIngredientsFromLabel,
+  extractNutritionFacts
+} from "./labelNarrative";
 import {
   awardBadges,
   buildBlameMap,
@@ -168,6 +178,13 @@ function agentSourceType(sourceType?: SourceType) {
 function normalizeSeverity(value?: string): RiskSeverity {
   if (value === "high" || value === "medium" || value === "low") return value;
   return "medium";
+}
+
+function normalizeConcernLevel(value?: string): IngredientInsight["concernLevel"] {
+  if (value === "high" || value === "medium" || value === "low" || value === "unknown") {
+    return value;
+  }
+  return "unknown";
 }
 
 function mapFoodItems(items?: AgentDetectedItem[]): FoodItem[] {
@@ -357,15 +374,37 @@ function extractNumber(text: string, label: string) {
 }
 
 function parseIngredients(rawText: string, insights?: AgentIngredientInsight[]) {
-  const fromText = (rawText.match(/ingredients?:([\s\S]*?)(nutrition|$)/i)?.[1] ?? "")
-    .split(/,|\n/)
-    .map((item) => item.trim())
-    .filter(Boolean);
   const fromInsights = (insights ?? [])
     .map((insight) => insight.ingredient?.trim())
     .filter(Boolean) as string[];
 
-  return Array.from(new Set([...fromText, ...fromInsights])).slice(0, 16);
+  return extractIngredientsFromLabel(rawText, fromInsights);
+}
+
+function mapIngredientInsights(insights?: AgentIngredientInsight[]): IngredientInsight[] {
+  return (insights ?? [])
+    .filter((insight) => insight.ingredient?.trim())
+    .map((insight) => ({
+      ingredient: insight.ingredient?.trim() ?? "Ingredient",
+      purposeInFood:
+        insight.purpose_in_food?.trim() ||
+        "Taste, texture, shelf life, or product consistency ke liye.",
+      simpleHinglishExplanation:
+        insight.simple_hinglish_explanation?.trim() ||
+        "Is ingredient ka meaning label context par depend karta hai. Frequency aur total diet pattern important hai.",
+      concernLevel: normalizeConcernLevel(insight.concern_level),
+      naturalOrBetterAlternative: insight.natural_or_better_alternative ?? undefined
+    }));
+}
+
+function mergeFutureRisks(primary: FutureHealthRisk[], secondary: FutureHealthRisk[]) {
+  const seen = new Set<string>();
+  return [...primary, ...secondary].filter((risk) => {
+    const key = risk.riskArea.trim().toLowerCase();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 6);
 }
 
 function safetyLevel(score: number): LabelAnalysis["safetyLevel"] {
@@ -389,9 +428,54 @@ export async function analyzeLabelWithDabbaAgent(params: {
   if (!agent) return null;
 
   const warnings = mapRiskFlags(agent.risk_flags, agent.future_health_risks);
-  const betterAlternatives = mapSwaps(agent.healthier_swaps, agent.cost_comparison);
   const labelTruthScore = clamp(agent.dabba_health_index?.score ?? 50);
   const ingredients = parseIngredients(params.rawText, agent.ingredient_insights);
+  const nutritionDetails = extractNutritionFacts(params.rawText);
+  const nutritionByKey = nutritionDetails.byKey as Partial<Record<
+    | "calories"
+    | "protein"
+    | "sugar"
+    | "addedSugar"
+    | "sodium"
+    | "fats"
+    | "saturatedFat"
+    | "transFat"
+    | "carbohydrates"
+    | "fiber",
+    number
+  >>;
+  const ingredientInsights = buildIngredientInsights(
+    ingredients,
+    mapIngredientInsights(agent.ingredient_insights)
+  );
+  const mergedWarnings = buildLabelWarnings({
+    baseWarnings: warnings,
+    ingredientInsights,
+    nutritionFacts: nutritionDetails.facts
+  });
+  const localRegularUseRisks = buildRegularLabelUseRisks({
+    nutritionFacts: nutritionDetails.facts,
+    ingredientInsights,
+    ingredients
+  });
+  const regularUseRisks = mergeFutureRisks(
+    mapFutureHealthRisks(
+      agent.future_health_risks,
+      agent.risk_flags,
+      mapFoodItems(agent.detected_items),
+      warnings
+    ),
+    localRegularUseRisks
+  );
+  const betterAlternatives = buildLabelSwaps(
+    mapSwaps(agent.healthier_swaps, agent.cost_comparison),
+    ingredients
+  );
+  const labelCoverage = buildLabelCoverageSummary({
+    ingredients,
+    ingredientInsights,
+    nutritionFacts: nutritionDetails.facts
+  });
 
   return {
     extractedText: params.rawText,
@@ -401,23 +485,30 @@ export async function analyzeLabelWithDabbaAgent(params: {
       "Packaged food",
     ingredients,
     nutrition: {
-      calories: extractNumber(params.rawText, "energy|calories|kcal"),
-      protein: extractNumber(params.rawText, "protein"),
-      sugar: extractNumber(params.rawText, "sugar"),
-      addedSugar: extractNumber(params.rawText, "added sugar"),
-      sodium: extractNumber(params.rawText, "sodium"),
-      fats: extractNumber(params.rawText, "fat"),
-      saturatedFat: extractNumber(params.rawText, "saturated fat"),
-      transFat: extractNumber(params.rawText, "trans fat")
+      calories: nutritionByKey.calories ?? extractNumber(params.rawText, "energy|calories|kcal"),
+      protein: nutritionByKey.protein ?? extractNumber(params.rawText, "protein"),
+      sugar: nutritionByKey.sugar ?? extractNumber(params.rawText, "sugar"),
+      addedSugar: nutritionByKey.addedSugar ?? extractNumber(params.rawText, "added sugar"),
+      sodium: nutritionByKey.sodium ?? extractNumber(params.rawText, "sodium"),
+      fats: nutritionByKey.fats ?? extractNumber(params.rawText, "fat"),
+      saturatedFat: nutritionByKey.saturatedFat ?? extractNumber(params.rawText, "saturated fat"),
+      transFat: nutritionByKey.transFat ?? extractNumber(params.rawText, "trans fat"),
+      carbohydrates: nutritionByKey.carbohydrates,
+      fiber: nutritionByKey.fiber,
+      servingSize: nutritionDetails.servingSize,
+      facts: nutritionDetails.facts
     },
+    ingredientInsights,
+    regularUseRisks,
+    labelCoverage,
     labelTruthScore,
     safetyLevel: safetyLevel(labelTruthScore),
     whatYouThought: "The front of pack may look convenient or healthy.",
     whatLabelSays:
-      warnings.length > 0
-        ? "The ingredient and nutrition signals show this should stay occasional."
+      mergedWarnings.length > 0
+        ? `Readable label shows ${ingredients.length} ingredients and ${nutritionDetails.facts.length} nutrition facts. Some signals should stay occasional, especially if eaten regularly.`
         : "No strong hidden sugar, sodium, oil, or additive signal was detected from the readable label text.",
-    warnings,
+    warnings: mergedWarnings,
     betterAlternatives,
     aiSummary:
       summaryFromAgent(agent) ||

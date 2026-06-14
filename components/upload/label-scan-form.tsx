@@ -8,6 +8,10 @@ import { Disclaimer } from "@/components/common/disclaimer";
 import { ProcessingSteps } from "@/components/common/processing-steps";
 import {
   ExtractedReceiptText,
+  FutureHealthRisks,
+  IngredientInsightList,
+  LabelCoverage,
+  NutritionFacts,
   RiskFlags,
   SwapList
 } from "@/components/upload/analysis-list";
@@ -203,6 +207,8 @@ export function LabelScanForm() {
             text={analysis.extractedText}
             title="Extracted label text"
           />
+          <LabelCoverage coverage={analysis.labelCoverage} />
+          <NutritionFacts facts={analysis.nutrition.facts} />
           <Card className="glass-panel">
             <CardHeader>
               <CardTitle>{analysis.productName}</CardTitle>
@@ -221,7 +227,9 @@ export function LabelScanForm() {
               ))}
             </CardContent>
           </Card>
+          <IngredientInsightList insights={analysis.ingredientInsights} />
           <RiskFlags risks={analysis.warnings} />
+          <FutureHealthRisks risks={analysis.regularUseRisks} />
           <SwapList swaps={analysis.betterAlternatives} />
           <Card className="glass-panel">
             <CardHeader>

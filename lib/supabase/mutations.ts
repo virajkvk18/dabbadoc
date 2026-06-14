@@ -115,7 +115,12 @@ export async function saveLabelAnalysis(params: {
     upload_id: params.uploadId,
     product_name: params.analysis.productName,
     ingredients: params.analysis.ingredients,
-    nutrition: params.analysis.nutrition,
+    nutrition: {
+      ...params.analysis.nutrition,
+      ingredientInsights: params.analysis.ingredientInsights ?? [],
+      regularUseRisks: params.analysis.regularUseRisks ?? [],
+      labelCoverage: params.analysis.labelCoverage ?? null
+    },
     label_truth_score: params.analysis.labelTruthScore,
     warnings: params.analysis.warnings,
     better_alternatives: params.analysis.betterAlternatives,

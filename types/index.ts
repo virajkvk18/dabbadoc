@@ -74,6 +74,32 @@ export interface FutureHealthRisk {
   timeframe?: string;
 }
 
+export interface NutritionFact {
+  label: string;
+  value?: number;
+  unit?: string;
+  per?: string;
+  raw?: string;
+  interpretation: string;
+  concernLevel: RiskSeverity | "unknown";
+}
+
+export interface IngredientInsight {
+  ingredient: string;
+  purposeInFood: string;
+  simpleHinglishExplanation: string;
+  concernLevel: RiskSeverity | "unknown";
+  naturalOrBetterAlternative?: string | null;
+  possibleRegularUseConcern?: string;
+}
+
+export interface LabelCoverageSummary {
+  nutritionFactCount: number;
+  ingredientCount: number;
+  additiveCount: number;
+  confidenceNote: string;
+}
+
 export interface ItemHealthInsight {
   item: string;
   verdict: "good_choice" | "watch_portion" | "risky_if_frequent" | "unknown";
@@ -139,7 +165,14 @@ export interface LabelAnalysis {
     fats?: number;
     saturatedFat?: number;
     transFat?: number;
+    carbohydrates?: number;
+    fiber?: number;
+    servingSize?: string;
+    facts?: NutritionFact[];
   };
+  ingredientInsights?: IngredientInsight[];
+  regularUseRisks?: FutureHealthRisk[];
+  labelCoverage?: LabelCoverageSummary;
   labelTruthScore: number;
   safetyLevel: "daily-safe" | "sometimes-safe" | "avoid-frequent-use";
   whatYouThought: string;

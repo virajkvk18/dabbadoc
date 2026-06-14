@@ -18,6 +18,9 @@ Schema:
   ],
   "ingredients": ["ingredient names from label if available"],
   "additives": ["INS numbers, preservatives, colours, flavour enhancers if available"],
+  "nutrition_facts": [
+    {"name": "calories/protein/sugar/sodium/fat/etc", "value": "visible value", "unit": "visible unit", "basis": "per serving/per 100g if visible"}
+  ],
   "nutrition_signals": ["high sugar", "high sodium", "palm oil", "maida", "low protein", "trans fat", "etc"],
   "uncertain_items": ["items that are unclear"]
 }
@@ -26,6 +29,7 @@ Rules:
 - Be careful with OCR mistakes.
 - If image is provided, read text from the image.
 - For Indian labels, detect INS numbers, maida/refined wheat flour, palm oil, sugar, salt/sodium, preservatives, colours.
+- For packaged labels, preserve every visible ingredient and every readable nutrition row with values/units.
 - For receipts, separate actual food items from taxes, delivery fee, GST, discount, packaging charge.
 - For receipts/orders, include every visible purchasable food line item. Do not return only top items.
 - If a food line is partly unclear, include the readable part with lower confidence instead of dropping it.
@@ -108,6 +112,8 @@ Tone:
 - For future health risks, explain possible areas like weight gain/obesity, blood sugar, BP, heart-health habits, digestion, and dental health only when evidence supports them.
 - Never say a user "will get" a disease. Say "frequent habit may increase risk over time".
 - Give at least one healthier swap for every detected item that has high sugar, high sodium, fried, refined flour, processed, high fat, low protein, palm oil, or dessert risk tags.
+- For packaged labels, ingredient_insights must explain every visible ingredient when possible, not only chemicals/additives. For each ingredient explain why it is added, what it means in simple Hinglish, concern level, and a better/natural alternative where useful.
+- For packaged labels, mention possible regular-use concerns such as weight gain/obesity, blood-sugar risk, BP-sensitive diet pattern, heart-health habits, digestion/fullness, and dental health only when the label evidence supports it.
 """
 
 
@@ -120,7 +126,8 @@ User profile: {user_profile}
 Input text / OCR / manual entry:
 {preprocessed_text or "No text provided. If image is attached, read the image."}
 
-Extract all food items, groceries, ingredients, additives, preservatives, colours, flavour enhancers, sugar/sodium/fat/refined flour signals.
+Extract all food items, groceries, ingredients, additives, preservatives, colours, flavour enhancers, sugar/sodium/fat/refined flour signals, serving size, and every nutrition fact visible on the label.
+For packaged labels, keep the full ingredient list in original order and do not skip "boring" ingredients like sugar, salt, oil, milk solids, emulsifiers, stabilizers, acidity regulators, or preservatives.
 For receipt/order analysis, every readable food line should become one detected item unless it is clearly tax, fee, discount, address, phone number, payment, or total.
 Return strict JSON only.
 """
@@ -155,6 +162,6 @@ Focus on:
 3. Healthier Indian swaps for every risky or weak item, not only one or two.
 4. Cost comparison.
 5. 7-day action plan.
-6. For packaged labels: explain every detected chemical/additive: why added, what it does, what alternative exists.
+6. For packaged labels: explain every detected ingredient/additive/nutrition concern: why added, what it does in Hinglish, what regular-use concern may increase over time, and what alternative exists.
 Return strict JSON only.
 """
