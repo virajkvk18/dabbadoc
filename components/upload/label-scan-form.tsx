@@ -25,6 +25,8 @@ type LabelResponse = {
   error?: string;
 };
 
+const ANALYSIS_TIMEOUT_MS = 70_000;
+
 export function LabelScanForm() {
   const [file, setFile] = useState<File | null>(null);
   const [analysis, setAnalysis] = useState<LabelAnalysis | null>(null);
@@ -61,24 +63,43 @@ export function LabelScanForm() {
     setError(null);
     setWarning(null);
 
-    const formData = new FormData();
-    formData.set("demoMode", String(demoMode));
-    if (file && !demoMode) formData.set("file", file);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
 
-    const response = await fetch("/api/analyze-label", {
-      method: "POST",
-      body: formData
-    });
-    const payload = (await response.json()) as LabelResponse;
+    try {
+      const formData = new FormData();
+      formData.set("demoMode", String(demoMode));
+      if (file && !demoMode) formData.set("file", file);
 
-    setLoading(false);
-    if (!response.ok) {
-      setError(payload.error ?? "Could not analyze label.");
-      return;
+      const response = await fetch("/api/analyze-label", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal
+      });
+      const payload = (await response.json().catch(() => ({}))) as Partial<LabelResponse>;
+
+      if (!response.ok) {
+        setError(payload.error ?? "Could not analyze label. Please try again.");
+        return;
+      }
+
+      if (!payload.analysis) {
+        setError("Analysis finished without results. Please try a sharper image.");
+        return;
+      }
+
+      setAnalysis(payload.analysis);
+      setWarning(payload.warning ?? null);
+    } catch (error) {
+      setError(
+        error instanceof DOMException && error.name === "AbortError"
+          ? "Analysis took too long. Please try a clearer, smaller image."
+          : "Could not analyze label. Please check your connection and try again."
+      );
+    } finally {
+      window.clearTimeout(timeout);
+      setLoading(false);
     }
-
-    setAnalysis(payload.analysis);
-    setWarning(payload.warning ?? null);
   }
 
   return (
