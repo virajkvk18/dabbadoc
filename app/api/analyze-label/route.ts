@@ -11,6 +11,7 @@ import { ApiError, apiErrorResponse } from "@/lib/security/api-errors";
 import {
   enforceAiGenerationRateLimit,
   enforceRequestSizeLimit,
+  enforceUploadFileType,
   MAX_UPLOAD_BYTES
 } from "@/lib/security/abuse-protection";
 import { saveLabelAnalysis, saveUploadRecord } from "@/lib/supabase/mutations";
@@ -49,6 +50,7 @@ export async function POST(request: NextRequest) {
       if (file.size > MAX_UPLOAD_BYTES) {
         throw new ApiError("Label upload must be 12 MB or smaller.", 413);
       }
+      enforceUploadFileType(file);
 
       const buffer = Buffer.from(await file.arrayBuffer());
       fileName = file.name;

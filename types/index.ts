@@ -64,6 +64,31 @@ export interface SwapRecommendation {
   scoreImpact: number;
 }
 
+export interface FutureHealthRisk {
+  riskArea: string;
+  severity: RiskSeverity;
+  habitFrequency: string;
+  possibleConcern: string;
+  linkedItems: string[];
+  preventionTip: string;
+  timeframe?: string;
+}
+
+export interface ItemHealthInsight {
+  item: string;
+  verdict: "good_choice" | "watch_portion" | "risky_if_frequent" | "unknown";
+  reason: string;
+  linkedRisks: string[];
+  swap?: string;
+}
+
+export interface ReceiptCoverageSummary {
+  detectedCount: number;
+  riskyCount: number;
+  swappedCount: number;
+  confidenceNote: string;
+}
+
 export interface CostComparison {
   currentMonthlyEstimate: number;
   healthierMonthlyEstimate: number;
@@ -87,6 +112,9 @@ export interface ReceiptAnalysis {
   extractedText: string;
   detectedItems: FoodItem[];
   riskFlags: RiskFlag[];
+  futureHealthRisks?: FutureHealthRisk[];
+  itemInsights?: ItemHealthInsight[];
+  coverageSummary?: ReceiptCoverageSummary;
   healthScore: number;
   scoreCategory: string;
   scoreBreakdown: HealthScoreBreakdown;

@@ -1,3 +1,5 @@
+import "server-only";
+
 import crypto from "crypto";
 import Razorpay from "razorpay";
 import type { PaymentOrderResponse } from "@/types";

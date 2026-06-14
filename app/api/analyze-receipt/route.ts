@@ -11,6 +11,7 @@ import { ApiError, apiErrorResponse } from "@/lib/security/api-errors";
 import {
   enforceAiGenerationRateLimit,
   enforceRequestSizeLimit,
+  enforceUploadFileType,
   MAX_UPLOAD_BYTES
 } from "@/lib/security/abuse-protection";
 import { saveReceiptAnalysis, saveUploadRecord } from "@/lib/supabase/mutations";
@@ -50,6 +51,7 @@ export async function POST(request: NextRequest) {
       if (file.size > MAX_UPLOAD_BYTES) {
         throw new ApiError("Receipt upload must be 12 MB or smaller.", 413);
       }
+      enforceUploadFileType(file);
 
       const buffer = Buffer.from(await file.arrayBuffer());
       fileName = file.name;
@@ -77,7 +79,9 @@ export async function POST(request: NextRequest) {
     const analysis =
       (await analyzeReceiptWithDabbaAgent({
         rawText: extractedText,
-        sourceType: parsed.sourceType
+        sourceType: parsed.sourceType,
+        dataUri,
+        mimeType
       })) ??
       (await runReceiptGraph({
         ...agentInput,

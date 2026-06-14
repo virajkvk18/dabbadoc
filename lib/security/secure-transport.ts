@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { logSecurityEvent } from "@/lib/security/audit-log";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 function isHttpsEnforced() {
   return process.env.ENFORCE_HTTPS === "true" || process.env.NODE_ENV === "production";
@@ -22,6 +23,17 @@ function getHostWithoutPort(host: string) {
 
 function isLocalHost(host: string) {
   return LOCAL_HOSTS.has(getHostWithoutPort(host));
+}
+
+function getConfiguredAppOrigin() {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!appUrl) return null;
+
+  try {
+    return new URL(appUrl).origin;
+  } catch {
+    return null;
+  }
 }
 
 function getRequestProtocol(request: NextRequest) {
@@ -78,6 +90,47 @@ export function enforceHttps(request: NextRequest) {
   });
 
   return NextResponse.redirect(secureUrl, 308);
+}
+
+export function rejectUntrustedApiOrigin(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  if (
+    !pathname.startsWith("/api/") ||
+    pathname.startsWith("/api/webhooks/") ||
+    !UNSAFE_METHODS.has(request.method.toUpperCase())
+  ) {
+    return null;
+  }
+
+  const origin = request.headers.get("origin");
+  const fetchSite = request.headers.get("sec-fetch-site");
+  const trustedOrigins = new Set<string>([request.nextUrl.origin]);
+  const configuredAppOrigin = getConfiguredAppOrigin();
+  if (configuredAppOrigin) {
+    trustedOrigins.add(configuredAppOrigin);
+  }
+
+  if (origin && trustedOrigins.has(origin)) {
+    return null;
+  }
+
+  if (!origin && fetchSite !== "cross-site") {
+    return null;
+  }
+
+  logSecurityEvent({
+    type: "suspicious_traffic",
+    severity: "warning",
+    request,
+    status: 403,
+    reason: "untrusted_api_origin",
+    metadata: { pathname, method: request.method, fetchSite }
+  });
+
+  return NextResponse.json(
+    { error: "Untrusted request origin." },
+    { status: 403, headers: { "Cache-Control": "no-store" } }
+  );
 }
 
 export function addSecureDeploymentHeaders(

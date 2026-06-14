@@ -1,3 +1,5 @@
+import "server-only";
+
 import type { AgentInput, ReceiptAnalysis } from "@/types";
 import { analyzeReceipt } from "./receiptScanAgent";
 

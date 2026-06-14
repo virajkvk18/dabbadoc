@@ -1,3 +1,5 @@
+import "server-only";
+
 import type { AgentInput, LabelAnalysis } from "@/types";
 import { DABBADOC_DISCLAIMER } from "@/types";
 import { extractTextFromImageWithGemini } from "@/lib/gemini/client";

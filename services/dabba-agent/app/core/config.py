@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     default_language: str = "hinglish"
     max_image_mb: int = 7
-    max_json_mb: int = 2
+    max_json_mb: int = 10
     rate_limit_per_minute: int = 60
 
     @property

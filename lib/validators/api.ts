@@ -24,6 +24,14 @@ const nextPathSchema = z
     value && value.startsWith("/") && !value.startsWith("//") ? value : "/dashboard"
   );
 
+const optionalTrimmedString = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .optional()
+    .transform((value) => (value ? value : undefined));
+
 export const authLoginSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, "Enter your password.").max(256),
@@ -33,7 +41,7 @@ export const authLoginSchema = z.object({
 export const authSignupSchema = z.object({
   email: emailSchema,
   password: strongPasswordSchema,
-  fullName: z.string().trim().max(120).optional(),
+  fullName: optionalTrimmedString(120),
   next: nextPathSchema
 });
 
@@ -57,7 +65,7 @@ export const labelAnalyzeSchema = z.object({
 });
 
 export const manualMealEntrySchema = z.object({
-  id: z.string().optional(),
+  id: z.string().trim().max(80).optional(),
   source: z.enum(["home", "outside"]),
   mealTime: z.enum([
     "breakfast",
@@ -66,15 +74,15 @@ export const manualMealEntrySchema = z.object({
     "dinner",
     "late_night"
   ]),
-  itemName: z.string().min(2, "Enter the food item."),
-  quantity: z.string().min(1, "Enter quantity."),
+  itemName: z.string().trim().min(2, "Enter the food item.").max(120),
+  quantity: z.string().trim().min(1, "Enter quantity.").max(80),
   spiceLevel: z.enum(["none", "low", "medium", "high"]),
-  notes: z.string().optional()
+  notes: optionalTrimmedString(280)
 });
 
 export const foodDiarySchema = z.object({
-  diaryText: z.string().optional(),
-  entries: z.array(manualMealEntrySchema).optional(),
+  diaryText: optionalTrimmedString(4000),
+  entries: z.array(manualMealEntrySchema).max(25).optional(),
   demoMode: z.boolean().default(false)
 }).refine(
   (value) =>
@@ -83,8 +91,8 @@ export const foodDiarySchema = z.object({
 );
 
 export const reportSchema = z.object({
-  userName: z.string().default("DabbaDoc User"),
-  dateRange: z.string().default("Last 30 days"),
+  userName: z.string().trim().max(120).default("DabbaDoc User"),
+  dateRange: z.string().trim().max(80).default("Last 30 days"),
   reportData: z.record(z.unknown()).optional()
 });
 

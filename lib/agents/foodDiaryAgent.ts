@@ -1,3 +1,5 @@
+import "server-only";
+
 import type { DiaryInput, FoodDiaryAnalysis, FoodItem, ManualMealEntry } from "@/types";
 import { DABBADOC_DISCLAIMER } from "@/types";
 import { compareCosts } from "./costComparisonAgent";

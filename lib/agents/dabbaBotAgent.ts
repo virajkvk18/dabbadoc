@@ -1,3 +1,5 @@
+import "server-only";
+
 import { generateGeminiText } from "@/lib/gemini/client";
 import { generateGroqText } from "@/lib/groq/client";
 import {

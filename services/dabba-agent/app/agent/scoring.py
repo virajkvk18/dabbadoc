@@ -11,8 +11,10 @@ def detect_food_items(text: str) -> list[dict]:
     """Keyword-based fallback extractor for common Indian/western items."""
     lowered = _norm(text)
     found: list[dict] = []
-    for key, data in FOOD_RULES.items():
+    for key, data in sorted(FOOD_RULES.items(), key=lambda row: len(row[0]), reverse=True):
         if key in lowered:
+            if any(key in _norm(item.get("name", "")) or _norm(item.get("name", "")) in key for item in found):
+                continue
             found.append(
                 {
                     "name": key.title(),
@@ -168,10 +170,10 @@ def build_risk_flags(items: list[dict], scoring: dict) -> list[dict]:
                 "flag": tag.replace("_", " ").title(),
                 "severity": lib["severity"],
                 "why_it_matters": lib["why"],
-                "evidence": evidence_by_tag.get(tag, [])[:5],
+                "evidence": evidence_by_tag.get(tag, [])[:10],
             }
         )
-    return flags[:8]
+    return flags
 
 
 def build_future_risks(flags: list[dict]) -> list[dict]:
@@ -179,14 +181,18 @@ def build_future_risks(flags: list[dict]) -> list[dict]:
     used = set()
     for flag in flags:
         key = flag["flag"].lower()
+        evidence = flag.get("evidence", [])
         if "sugar" in key and "blood sugar" not in used:
             used.add("blood sugar")
             risks.append(
                 {
-                    "risk_area": "Blood sugar and cravings",
-                    "simple_reason": "Added sugar ya sugary drinks daily habit banne par sugar spikes aur cravings badh sakte hain.",
-                    "confidence": "medium",
+                    "risk_area": "Blood sugar, weight, and dental health",
+                    "simple_reason": "Added sugar ya sugary drinks frequent habit banne par weight gain/obesity, sugar-control issues, cravings, aur tooth decay ka risk badh sakta hai.",
+                    "confidence": "high",
                     "prevention_tip": "Sugary drink ko chaas, nimbu pani without sugar, ya water se replace karo.",
+                    "habit_frequency": "Agar sugary items most days ya 4-5 din/week repeat hote hain.",
+                    "linked_items": evidence,
+                    "timeframe": "Single meal se disease predict nahi hoti; repeated months/years pattern important hota hai.",
                 }
             )
         if ("sodium" in key or "processed" in key) and "bp" not in used:
@@ -197,6 +203,9 @@ def build_future_risks(flags: list[dict]) -> list[dict]:
                     "simple_reason": "High sodium packaged/restaurant foods frequent hone par BP-sensitive people ke liye concern ho sakta hai.",
                     "confidence": "medium",
                     "prevention_tip": "Packaged masala/sauces kam karo and salad/curd add karo.",
+                    "habit_frequency": "Agar salty packaged ya restaurant foods week mein multiple times repeat hote hain.",
+                    "linked_items": evidence,
+                    "timeframe": "Weeks to months tak pattern repeat ho to monitor karna useful hai.",
                 }
             )
         if ("fried" in key or "fat" in key) and "weight" not in used:
@@ -204,9 +213,12 @@ def build_future_risks(flags: list[dict]) -> list[dict]:
             risks.append(
                 {
                     "risk_area": "Weight and heart-health habits",
-                    "simple_reason": "Fried foods calorie-dense hote hain; frequent habit se calorie surplus easy ho jata hai.",
+                    "simple_reason": "Fried foods calorie-dense hote hain; frequent habit se calorie surplus, weight gain, aur heart-health sensitive eating pattern ka risk badh sakta hai.",
                     "confidence": "medium",
                     "prevention_tip": "Fried snack ko roasted/steamed option se replace karo at least 4 days/week.",
+                    "habit_frequency": "Agar fried snacks/side items 3-4 din/week ya daily repeat hote hain.",
+                    "linked_items": evidence,
+                    "timeframe": "Repeated habit over weeks/months matters more than one occasional treat.",
                 }
             )
         if "refined" in key and "fiber" not in used:
@@ -214,35 +226,92 @@ def build_future_risks(flags: list[dict]) -> list[dict]:
             risks.append(
                 {
                     "risk_area": "Low fiber and poor fullness",
-                    "simple_reason": "Maida/refined carbs se fiber kam milta hai, fullness kam hoti hai aur overeating chances badhte hain.",
+                    "simple_reason": "Maida/refined carbs se fiber kam milta hai, fullness kam hoti hai aur cravings/overeating chances badhte hain.",
                     "confidence": "medium",
                     "prevention_tip": "Atta, dal, sprouts, vegetables, curd ya salad add karo.",
+                    "habit_frequency": "Agar maida/refined-carb foods daily base banne lagte hain.",
+                    "linked_items": evidence,
+                    "timeframe": "Daily pattern over months is the main signal.",
                 }
             )
-    return risks[:5]
+    return risks
+
+
+def _generic_swap_for_tags(item: dict) -> dict | None:
+    tags = set(item.get("risk_tags", []))
+    name = item.get("name", "Current item")
+
+    if {"high_sugar", "sugary_drink", "added_sugar", "dessert"} & tags:
+        return {
+            "replace": name,
+            "with_item": "chaas / unsweetened nimbu pani / fruit-curd bowl",
+            "why_better": "Added sugar load kam hota hai aur fullness/hydration better milti hai.",
+            "indian_context": "Indian homes and restaurants mein easy options.",
+        }
+    if {"fried", "high_fat"} & tags:
+        return {
+            "replace": name,
+            "with_item": "roasted chana / makhana / sprouts chaat / steamed option",
+            "why_better": "Oil and calorie load kam hota hai, protein/fiber balance better hota hai.",
+            "indian_context": "Evening snack ya order side ke liye practical swap.",
+        }
+    if {"high_sodium", "processed", "processed_sauce"} & tags:
+        return {
+            "replace": name,
+            "with_item": "poha with peanuts / oats upma / homemade chilla",
+            "why_better": "Less processed, lower sodium, and better satiety for regular use.",
+            "indian_context": "Quick Indian breakfast/snack format maintain hota hai.",
+        }
+    if {"refined_flour", "low_fiber_if_no_salad"} & tags:
+        return {
+            "replace": name,
+            "with_item": "atta/millet/besan version with curd or salad",
+            "why_better": "Fiber and fullness improve hoti hai compared with refined flour base.",
+            "indian_context": "Roti pizza, besan chilla, atta roll, millet dosa jaise options use karo.",
+        }
+    if "low_protein" in tags:
+        return {
+            "replace": name,
+            "with_item": "same meal plus dal, curd, paneer, egg, chana, tofu, or sprouts",
+            "why_better": "Protein add hone se fullness and meal balance improve hota hai.",
+            "indian_context": "Home or restaurant dono mein side protein add karna easiest hai.",
+        }
+    return None
 
 
 def build_swaps(items: list[dict]) -> list[dict]:
     swaps: list[dict] = []
+    seen = set()
     for item in items:
         lname = _norm(item.get("name", ""))
+        swap = None
         for key, data in FOOD_RULES.items():
             if key in lname:
-                swaps.append(
-                    {
-                        "replace": item.get("name", key.title()),
-                        "with_item": data["swap"],
-                        "why_better": data["why"],
-                        "indian_context": "Indian family friendly, easy to make or order in most cities.",
-                    }
-                )
+                swap = {
+                    "replace": item.get("name", key.title()),
+                    "with_item": data["swap"],
+                    "why_better": data["why"],
+                    "indian_context": "Indian family friendly, easy to make or order in most cities.",
+                }
                 break
-    return swaps[:8]
+
+        if not swap:
+            swap = _generic_swap_for_tags(item)
+
+        if not swap:
+            continue
+
+        key = (_norm(swap["replace"]), _norm(swap["with_item"]))
+        if key in seen:
+            continue
+        seen.add(key)
+        swaps.append(swap)
+    return swaps
 
 
 def build_cost_comparison(swaps: list[dict]) -> list[dict]:
     rows = []
-    for swap in swaps[:6]:
+    for swap in swaps:
         better = swap["with_item"]
         relation = "similar"
         if any(word in better.lower() for word in ["roasted", "chaas", "nimbu", "sprouts", "poha", "dalia"]):

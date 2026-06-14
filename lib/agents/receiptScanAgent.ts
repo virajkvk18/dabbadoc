@@ -1,9 +1,16 @@
+import "server-only";
+
 import type { AgentInput, ReceiptAnalysis } from "@/types";
 import { DABBADOC_DISCLAIMER } from "@/types";
 import { extractTextFromImageWithGemini } from "@/lib/gemini/client";
 import { extractTextFromImageWithGroq } from "@/lib/groq/client";
 import { extractTextWithTesseract } from "@/lib/ocr/tesseract";
 import { buildBlameMap } from "@/lib/scoring/healthIndex";
+import {
+  buildFutureHealthRisks,
+  buildItemHealthInsights,
+  buildReceiptCoverageSummary
+} from "./receiptNarrative";
 import { compareCosts } from "./costComparisonAgent";
 import { explainWithDabbaBot } from "./dabbaBotAgent";
 import { parseFoodItemsFromText } from "./foodParser";
@@ -26,7 +33,9 @@ You are DabbaDoc's receipt OCR agent for Indian grocery, restaurant, food delive
 
 Extract ONLY what is visible in the uploaded receipt/order image.
 Return plain text, one item or line per row.
-Include food item names, brand names, quantities, prices, totals, and store/order text if visible.
+Include every visible food line item, brand name, quantity, unit, price, total, and store/order text if visible.
+Keep uncertain but readable food lines instead of dropping them; mark unclear text with [?].
+Do not summarize the receipt and do not merge multiple items into one line.
 Do not invent Maggi, cola, chips, or any other example items.
 If the image is unreadable, return exactly: READ_FAILED
 `;
@@ -99,6 +108,9 @@ export async function analyzeReceipt(input: AgentInput): Promise<ReceiptAnalysis
   });
   const costSummary = await compareCosts(detectedItems, swaps);
   const blameMap = buildBlameMap(detectedItems, swaps);
+  const futureHealthRisks = buildFutureHealthRisks(detectedItems, riskFlags);
+  const itemInsights = buildItemHealthInsights(detectedItems, riskFlags, swaps);
+  const coverageSummary = buildReceiptCoverageSummary(detectedItems, swaps);
 
   const actionPlan = [
     "Day 1: Replace one sugary drink with chaas or nimbu pani.",
@@ -122,6 +134,9 @@ export async function analyzeReceipt(input: AgentInput): Promise<ReceiptAnalysis
     extractedText,
     detectedItems,
     riskFlags,
+    futureHealthRisks,
+    itemInsights,
+    coverageSummary,
     healthScore: health.score,
     scoreCategory: health.category,
     scoreBreakdown: health.scoreBreakdown,

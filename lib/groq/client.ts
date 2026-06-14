@@ -1,3 +1,5 @@
+import "server-only";
+
 const GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 function getGroqApiKey() {

@@ -1,8 +1,11 @@
+import "server-only";
+
 import type {
   CostComparison,
   DiaryInput,
   FoodDiaryAnalysis,
   FoodItem,
+  FutureHealthRisk,
   LabelAnalysis,
   ManualMealEntry,
   ReceiptAnalysis,
@@ -12,6 +15,11 @@ import type {
   SwapRecommendation
 } from "@/types";
 import { DABBADOC_DISCLAIMER } from "@/types";
+import {
+  buildFutureHealthRisks,
+  buildItemHealthInsights,
+  buildReceiptCoverageSummary
+} from "./receiptNarrative";
 import {
   awardBadges,
   buildBlameMap,
@@ -38,7 +46,11 @@ type AgentRiskFlag = {
 type AgentFutureRisk = {
   risk_area?: string;
   simple_reason?: string;
+  confidence?: string;
   prevention_tip?: string;
+  habit_frequency?: string;
+  linked_items?: string[];
+  timeframe?: string;
 };
 
 type AgentSwap = {
@@ -191,6 +203,35 @@ function mapRiskFlags(
     });
 }
 
+function mapFutureHealthRisks(
+  risks: AgentFutureRisk[] | undefined,
+  flags: AgentRiskFlag[] | undefined,
+  items: FoodItem[],
+  mappedRiskFlags: RiskFlag[]
+): FutureHealthRisk[] {
+  const mapped = (risks ?? [])
+    .filter((risk) => risk.risk_area?.trim() || risk.simple_reason?.trim())
+    .map((risk, index) => ({
+      riskArea: risk.risk_area?.trim() || "Food pattern risk",
+      severity: normalizeSeverity(risk.confidence || flags?.[index]?.severity),
+      habitFrequency:
+        risk.habit_frequency?.trim() ||
+        "If this pattern becomes frequent instead of occasional",
+      possibleConcern:
+        risk.simple_reason?.trim() ||
+        "This pattern may increase long-term lifestyle health risk if repeated often.",
+      linkedItems: risk.linked_items?.filter(Boolean) ?? flags?.[index]?.evidence?.filter(Boolean) ?? [],
+      preventionTip:
+        risk.prevention_tip?.trim() ||
+        "Use the suggested swaps and add protein/fiber to balance the meal.",
+      timeframe:
+        risk.timeframe?.trim() ||
+        "Think in repeated weeks/months, not one single meal."
+    }));
+
+  return mapped.length > 0 ? mapped : buildFutureHealthRisks(items, mappedRiskFlags);
+}
+
 function relationCostDelta(relation?: string) {
   if (relation === "cheaper") return -120;
   if (relation === "slightly_higher") return 120;
@@ -253,20 +294,38 @@ function summaryFromAgent(agent: AgentResponse) {
 export async function analyzeReceiptWithDabbaAgent(params: {
   rawText: string;
   sourceType?: SourceType;
+  dataUri?: string;
+  mimeType?: string;
 }): Promise<ReceiptAnalysis | null> {
-  const agent = await callDabbaAgent("/api/v1/analyze/receipt", {
+  const payload = {
     language: "hinglish",
     source_type: agentSourceType(params.sourceType),
     raw_text: params.rawText,
-    image_base64: null,
-    mime_type: "image/jpeg"
-  });
+    image_base64: params.dataUri ?? null,
+    mime_type: params.mimeType ?? "image/jpeg"
+  };
+  const textOnlyPayload = {
+    ...payload,
+    image_base64: null
+  };
+
+  const agent =
+    (await callDabbaAgent("/api/v1/analyze/receipt", payload)) ??
+    (params.dataUri ? await callDabbaAgent("/api/v1/analyze/receipt", textOnlyPayload) : null);
 
   if (!agent) return null;
 
   const detectedItems = mapFoodItems(agent.detected_items);
   const riskFlags = mapRiskFlags(agent.risk_flags, agent.future_health_risks);
   const swaps = mapSwaps(agent.healthier_swaps, agent.cost_comparison);
+  const futureHealthRisks = mapFutureHealthRisks(
+    agent.future_health_risks,
+    agent.risk_flags,
+    detectedItems,
+    riskFlags
+  );
+  const itemInsights = buildItemHealthInsights(detectedItems, riskFlags, swaps);
+  const coverageSummary = buildReceiptCoverageSummary(detectedItems, swaps);
   const healthScore = clamp(agent.dabba_health_index?.score ?? 50);
   const scoreBreakdown = calculateBreakdown({ items: detectedItems, riskFlags, swaps });
 
@@ -274,6 +333,9 @@ export async function analyzeReceiptWithDabbaAgent(params: {
     extractedText: params.rawText,
     detectedItems,
     riskFlags,
+    futureHealthRisks,
+    itemInsights,
+    coverageSummary,
     healthScore,
     scoreCategory: agent.dabba_health_index?.grade ?? getScoreCategory(healthScore),
     scoreBreakdown,

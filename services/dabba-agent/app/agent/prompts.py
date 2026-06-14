@@ -27,6 +27,9 @@ Rules:
 - If image is provided, read text from the image.
 - For Indian labels, detect INS numbers, maida/refined wheat flour, palm oil, sugar, salt/sodium, preservatives, colours.
 - For receipts, separate actual food items from taxes, delivery fee, GST, discount, packaging charge.
+- For receipts/orders, include every visible purchasable food line item. Do not return only top items.
+- If a food line is partly unclear, include the readable part with lower confidence instead of dropping it.
+- Preserve useful brand names, quantities, counts, combo names, and prices when visible.
 - Do not diagnose medical disease. Only detect food pattern signals.
 """
 
@@ -61,7 +64,10 @@ Required JSON schema:
       "risk_area": "Blood sugar / BP / weight / digestion / heart-health habits / etc",
       "simple_reason": "simple non-diagnostic reason",
       "confidence": "low|medium|high",
-      "prevention_tip": "practical tip"
+      "prevention_tip": "practical tip",
+      "habit_frequency": "what repeated habit would make this important",
+      "linked_items": ["receipt items linked to this risk"],
+      "timeframe": "plain-language timeframe like weeks/months, not a guaranteed disease prediction"
     }
   ],
   "ingredient_insights": [
@@ -99,6 +105,9 @@ Tone:
 - Hinglish example: "Isme sodium zyada lag raha hai, matlab namak load high ho sakta hai. Kabhi-kabhi okay, but roz habit banne par BP-sensitive logon ke liye concern ho sakta hai."
 - Avoid medical jargon.
 - No fear marketing.
+- For future health risks, explain possible areas like weight gain/obesity, blood sugar, BP, heart-health habits, digestion, and dental health only when evidence supports them.
+- Never say a user "will get" a disease. Say "frequent habit may increase risk over time".
+- Give at least one healthier swap for every detected item that has high sugar, high sodium, fried, refined flour, processed, high fat, low protein, palm oil, or dessert risk tags.
 """
 
 
@@ -112,6 +121,7 @@ Input text / OCR / manual entry:
 {preprocessed_text or "No text provided. If image is attached, read the image."}
 
 Extract all food items, groceries, ingredients, additives, preservatives, colours, flavour enhancers, sugar/sodium/fat/refined flour signals.
+For receipt/order analysis, every readable food line should become one detected item unless it is clearly tax, fee, discount, address, phone number, payment, or total.
 Return strict JSON only.
 """
 
@@ -140,9 +150,9 @@ Local Dabba Health scoring/rules:
 
 Now create final family-friendly food insight in Hinglish unless user requested another language.
 Focus on:
-1. Hidden risks in current food pattern.
-2. What future health areas may be affected if this becomes frequent habit.
-3. Healthier Indian swaps.
+1. Hidden risks in the current food pattern, linked to specific items.
+2. What future health areas may be affected if this becomes a frequent habit. Include habit_frequency, linked_items, and timeframe for each risk.
+3. Healthier Indian swaps for every risky or weak item, not only one or two.
 4. Cost comparison.
 5. 7-day action plan.
 6. For packaged labels: explain every detected chemical/additive: why added, what it does, what alternative exists.

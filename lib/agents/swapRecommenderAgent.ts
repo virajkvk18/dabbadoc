@@ -5,6 +5,10 @@ type SwapRow = SwapRecommendation;
 
 const swapRows = swaps as SwapRow[];
 
+function normalize(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
 function genericSwapForItem(item: FoodItem): SwapRecommendation | null {
   const flags = new Set(item.flags ?? []);
 
@@ -72,15 +76,29 @@ function genericSwapForItem(item: FoodItem): SwapRecommendation | null {
 }
 
 export async function recommendSwaps(items: FoodItem[]) {
-  const recommendations = items.flatMap((item) =>
-    swapRows.filter(
-      (swap) => swap.original.toLowerCase() === item.name.toLowerCase()
-    )
-  );
+  const seen = new Set<string>();
+  const recommendations: SwapRecommendation[] = [];
 
-  const genericRecommendations = items
-    .map(genericSwapForItem)
-    .filter((swap): swap is SwapRecommendation => Boolean(swap));
+  for (const item of items) {
+    if ((item.flags ?? []).length === 0) continue;
 
-  return [...recommendations, ...genericRecommendations].slice(0, 8);
+    const exact =
+      swapRows.find((swap) => normalize(swap.original) === normalize(item.name)) ??
+      swapRows.find((swap) => normalize(item.name).includes(normalize(swap.original)));
+    const swap = exact
+      ? {
+          ...exact,
+          original: item.name
+        }
+      : genericSwapForItem(item);
+
+    if (!swap) continue;
+
+    const key = `${normalize(swap.original)}-${normalize(swap.swap)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    recommendations.push(swap);
+  }
+
+  return recommendations;
 }

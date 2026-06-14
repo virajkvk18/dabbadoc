@@ -354,7 +354,7 @@ export function parseFoodItemsFromText(text: string): FoodItem[] {
     );
   });
 
-  return [...knownItems, ...receiptItems].slice(0, 16);
+  return [...knownItems, ...receiptItems].slice(0, 40);
 }
 
 export function findFoodDbRow(name: string) {

@@ -73,6 +73,9 @@ class FutureRisk(BaseModel):
     simple_reason: str
     confidence: Literal["low", "medium", "high"] = "medium"
     prevention_tip: str
+    habit_frequency: str | None = None
+    linked_items: list[str] = Field(default_factory=list)
+    timeframe: str | None = None
 
 
 class HealthierSwap(BaseModel):

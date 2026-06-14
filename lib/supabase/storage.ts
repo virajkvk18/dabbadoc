@@ -1,3 +1,5 @@
+import "server-only";
+
 import { slugify } from "@/lib/utils";
 import { ApiError } from "@/lib/security/api-errors";
 import { createSupabaseAdmin } from "./admin";

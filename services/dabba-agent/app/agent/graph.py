@@ -26,6 +26,22 @@ from .scoring import (
 )
 
 
+def _merge_records(primary: list[dict] | None, fallback: list[dict] | None, key_fields: tuple[str, ...]) -> list[dict]:
+    merged: list[dict] = []
+    seen = set()
+    for row in (primary or []) + (fallback or []):
+        if not isinstance(row, dict):
+            continue
+        key = tuple(str(row.get(field, "")).strip().lower() for field in key_fields)
+        if not any(key):
+            key = (str(row).strip().lower(),)
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(row)
+    return merged
+
+
 class DabbaAgent:
     def __init__(self) -> None:
         self.router = LLMRouter()
@@ -172,6 +188,34 @@ class DabbaAgent:
         scoring = state.get("scoring", {})
         llm = state.get("llm_analysis", {})
         items = scoring.get("items", [])
+        ingredient_insights = _merge_records(
+            llm.get("ingredient_insights"),
+            scoring.get("ingredient_insights", []),
+            ("ingredient",),
+        )
+        risk_flags = _merge_records(
+            llm.get("risk_flags"),
+            scoring.get("risk_flags", []),
+            ("flag",),
+        )
+        future_health_risks = _merge_records(
+            llm.get("future_health_risks"),
+            scoring.get("future_health_risks", []),
+            ("risk_area",),
+        )
+        healthier_swaps = _merge_records(
+            llm.get("healthier_swaps"),
+            scoring.get("healthier_swaps", []),
+            ("replace", "with_item"),
+        )
+        cost_comparison = _merge_records(
+            llm.get("cost_comparison"),
+            scoring.get("cost_comparison", []),
+            ("current_choice", "better_choice"),
+        )
+        action_plan = llm.get("seven_day_action_plan") or []
+        if len(action_plan) < 7:
+            action_plan = scoring.get("seven_day_action_plan", seven_day_plan())
 
         final = {
             "request_id": state.get("request_id"),
@@ -184,13 +228,13 @@ class DabbaAgent:
                 "summary": scoring.get("summary", "Food pattern analyzed."),
             },
             "detected_items": items,
-            "ingredient_insights": llm.get("ingredient_insights") or scoring.get("ingredient_insights", []),
-            "risk_flags": llm.get("risk_flags") or scoring.get("risk_flags", []),
-            "future_health_risks": llm.get("future_health_risks") or scoring.get("future_health_risks", []),
+            "ingredient_insights": ingredient_insights,
+            "risk_flags": risk_flags,
+            "future_health_risks": future_health_risks,
             "hinglish_explanation": llm.get("hinglish_explanation") or "Food pattern analyzed in simple Hinglish.",
-            "healthier_swaps": llm.get("healthier_swaps") or scoring.get("healthier_swaps", []),
-            "cost_comparison": llm.get("cost_comparison") or scoring.get("cost_comparison", []),
-            "seven_day_action_plan": llm.get("seven_day_action_plan") or scoring.get("seven_day_action_plan", seven_day_plan()),
+            "healthier_swaps": healthier_swaps,
+            "cost_comparison": cost_comparison,
+            "seven_day_action_plan": action_plan,
             "family_tip": llm.get("family_tip") or "Weekly food pattern check karo, sirf ek meal nahi.",
             "disclaimer": "Educational food insight only. This is not medical diagnosis or a replacement for a doctor/dietitian.",
             "raw_debug": {

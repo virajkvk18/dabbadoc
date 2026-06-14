@@ -5,7 +5,8 @@ import {
 } from "@/lib/security/abuse-protection";
 import {
   addSecureDeploymentHeaders,
-  enforceHttps
+  enforceHttps,
+  rejectUntrustedApiOrigin
 } from "@/lib/security/secure-transport";
 import { updateSession } from "@/lib/supabase/middleware";
 
@@ -15,6 +16,14 @@ export async function middleware(request: NextRequest) {
     return addSecureDeploymentHeaders(
       request,
       addAbuseProtectionHeaders(request, httpsResponse)
+    );
+  }
+
+  const untrustedOriginResponse = rejectUntrustedApiOrigin(request);
+  if (untrustedOriginResponse) {
+    return addSecureDeploymentHeaders(
+      request,
+      addAbuseProtectionHeaders(request, untrustedOriginResponse)
     );
   }
 

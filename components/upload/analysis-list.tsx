@@ -3,16 +3,22 @@ import {
   ArrowRight,
   CheckCircle2,
   FileText,
+  HeartPulse,
   IndianRupee,
   ListChecks,
   ReceiptText,
-  ShieldAlert
+  ScanSearch,
+  ShieldAlert,
+  TimerReset
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type {
   CostComparison,
   FoodItem,
+  FutureHealthRisk,
+  ItemHealthInsight,
+  ReceiptCoverageSummary,
   RiskFlag,
   SwapRecommendation
 } from "@/types";
@@ -81,6 +87,98 @@ export function DetectedItems({ items }: { items: FoodItem[] }) {
   );
 }
 
+export function ReceiptCoverage({ coverage }: { coverage?: ReceiptCoverageSummary }) {
+  if (!coverage) return null;
+
+  return (
+    <Card className="glass-panel border-primary/20">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ScanSearch className="h-5 w-5 text-primary" />
+          Detection coverage
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-3">
+          {[
+            { label: "Items found", value: coverage.detectedCount },
+            { label: "Need attention", value: coverage.riskyCount },
+            { label: "Swaps ready", value: coverage.swappedCount }
+          ].map((stat) => (
+            <div key={stat.label} className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <p className="mono-label text-[10px] text-muted-foreground">{stat.label}</p>
+              <p className="mt-1 text-2xl font-black text-white">{stat.value}</p>
+            </div>
+          ))}
+        </div>
+        <p className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm leading-6 text-muted-foreground">
+          {coverage.confidenceNote}
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function verdictLabel(verdict: ItemHealthInsight["verdict"]) {
+  if (verdict === "good_choice") return "Good";
+  if (verdict === "watch_portion") return "Watch";
+  if (verdict === "risky_if_frequent") return "Risky if frequent";
+  return "Needs label check";
+}
+
+export function ItemInsightList({ insights }: { insights?: ItemHealthInsight[] }) {
+  if (!insights?.length) return null;
+
+  return (
+    <Card className="glass-panel">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <HeartPulse className="h-5 w-5 text-primary" />
+          Item-by-item health read
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-3 lg:grid-cols-2">
+        {insights.map((insight, index) => (
+          <div
+            key={`${insight.item}-${index}`}
+            className="rounded-xl border border-white/10 bg-white/5 p-4"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-semibold text-white">{insight.item}</p>
+              <Badge
+                variant={
+                  insight.verdict === "risky_if_frequent"
+                    ? "danger"
+                    : insight.verdict === "good_choice"
+                      ? "default"
+                      : "secondary"
+                }
+              >
+                {verdictLabel(insight.verdict)}
+              </Badge>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {insight.reason}
+            </p>
+            {insight.linkedRisks.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {insight.linkedRisks.slice(0, 3).map((risk) => (
+                  <Badge key={risk} variant="outline">{risk}</Badge>
+                ))}
+              </div>
+            ) : null}
+            {insight.swap ? (
+              <p className="mt-3 rounded-xl border border-primary/20 bg-primary/10 p-3 text-sm text-primary">
+                Better swap: {insight.swap}
+              </p>
+            ) : null}
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function RiskFlags({ risks }: { risks: RiskFlag[] }) {
   return (
     <Card className="glass-panel">
@@ -121,6 +219,57 @@ export function RiskFlags({ risks }: { risks: RiskFlag[] }) {
   );
 }
 
+export function FutureHealthRisks({ risks }: { risks?: FutureHealthRisk[] }) {
+  if (!risks?.length) return null;
+
+  return (
+    <Card className="glass-panel border-secondary/25">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <TimerReset className="h-5 w-5 text-secondary" />
+          If this becomes frequent
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-3 lg:grid-cols-2">
+        {risks.map((risk, index) => (
+          <div
+            key={`${risk.riskArea}-${index}`}
+            className="rounded-xl border border-white/10 bg-white/5 p-4"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="font-semibold text-white">{risk.riskArea}</p>
+              <Badge variant={risk.severity === "high" ? "danger" : "secondary"}>
+                {risk.severity}
+              </Badge>
+            </div>
+            <p className="mt-2 text-sm font-semibold text-orange-100">
+              {risk.habitFrequency}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {risk.possibleConcern}
+            </p>
+            {risk.timeframe ? (
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                {risk.timeframe}
+              </p>
+            ) : null}
+            {risk.linkedItems.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {risk.linkedItems.map((item) => (
+                  <Badge key={item} variant="outline">{item}</Badge>
+                ))}
+              </div>
+            ) : null}
+            <p className="mt-3 rounded-xl border border-primary/20 bg-primary/10 p-3 text-sm text-primary">
+              {risk.preventionTip}
+            </p>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function SwapList({ swaps }: { swaps: SwapRecommendation[] }) {
   return (
     <Card className="glass-panel">
@@ -137,7 +286,7 @@ export function SwapList({ swaps }: { swaps: SwapRecommendation[] }) {
             and add protein/fiber where possible.
           </p>
         ) : null}
-        {swaps.slice(0, 6).map((swap) => (
+        {swaps.map((swap) => (
           <div
             key={`${swap.original}-${swap.swap}`}
             className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4"

@@ -1,3 +1,5 @@
+import "server-only";
+
 import type { User } from "@supabase/supabase-js";
 import type { FoodItem, RiskFlag } from "@/types";
 import { ApiError } from "@/lib/security/api-errors";

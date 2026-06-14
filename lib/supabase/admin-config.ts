@@ -1,3 +1,5 @@
+import "server-only";
+
 import { getSupabaseUrl, isSupabaseConfigured } from "./config";
 
 export function isSupabaseAdminConfigured() {

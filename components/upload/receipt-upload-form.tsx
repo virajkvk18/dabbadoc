@@ -10,6 +10,9 @@ import {
   CostSummary,
   DetectedItems,
   ExtractedReceiptText,
+  FutureHealthRisks,
+  ItemInsightList,
+  ReceiptCoverage,
   RiskFlags,
   SwapList
 } from "@/components/upload/analysis-list";
@@ -195,9 +198,12 @@ export function ReceiptUploadForm() {
               </CardContent>
             </Card>
           </div>
+          <ReceiptCoverage coverage={analysis.coverageSummary} />
           <ExtractedReceiptText text={analysis.extractedText} />
           <DetectedItems items={analysis.detectedItems} />
+          <ItemInsightList insights={analysis.itemInsights} />
           <RiskFlags risks={analysis.riskFlags} />
+          <FutureHealthRisks risks={analysis.futureHealthRisks} />
           <SwapList swaps={analysis.swaps} />
           <CostSummary cost={analysis.costSummary} />
           <Card className="glass-panel">

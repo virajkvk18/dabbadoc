@@ -22,6 +22,16 @@ const PAYMENT_USER_RULE: RateLimitRule = { limit: 10, windowMs: 10 * 60 * 1000 }
 export const MAX_UPLOAD_BYTES = 12 * 1024 * 1024;
 export const MAX_JSON_BYTES = 128 * 1024;
 
+const DEFAULT_ALLOWED_UPLOAD_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+  "application/pdf"
+]);
+
 const protectedPrefixes = ["/dashboard", "/settings"];
 const botLikeUserAgent =
   /(curl|wget|python-requests|scrapy|httpclient|go-http-client|libwww-perl|bot|crawler|spider|headlesschrome|phantomjs|selenium|playwright|puppeteer|sqlmap|nikto|nmap|masscan|zgrab)/i;
@@ -216,6 +226,24 @@ export function enforceRequestSizeLimit(
 
   if (Number.isFinite(contentLength) && contentLength > maxBytes) {
     throw new ApiError(message, 413);
+  }
+}
+
+export function enforceUploadFileType(
+  file: { name?: string; type?: string; size?: number },
+  allowedTypes = DEFAULT_ALLOWED_UPLOAD_MIME_TYPES
+) {
+  const mimeType = (file.type ?? "").toLowerCase();
+
+  if (typeof file.size === "number" && file.size <= 0) {
+    throw new ApiError("Upload file is empty.", 400);
+  }
+
+  if (!allowedTypes.has(mimeType)) {
+    throw new ApiError(
+      "Unsupported upload type. Please upload a JPG, PNG, WebP, HEIC, or PDF file.",
+      415
+    );
   }
 }
 
