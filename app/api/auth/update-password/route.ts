@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { authJson, sanitizeAuthError } from "@/lib/auth/responses";
+import { authJson, getAuthErrorMetadata, sanitizeAuthError } from "@/lib/auth/responses";
 import { setSessionStartedCookie } from "@/lib/auth/session";
 import { enforceRequestSizeLimit, MAX_JSON_BYTES } from "@/lib/security/abuse-protection";
 import { logSecurityEvent } from "@/lib/security/audit-log";
@@ -99,7 +99,8 @@ export async function POST(request: NextRequest) {
       request,
       userId: user.id,
       status: 400,
-      reason: "password_update_provider_error"
+      reason: "password_update_provider_error",
+      metadata: getAuthErrorMetadata(error)
     });
     return authJson({ error: sanitizeAuthError(error) }, { status: 400 });
   }

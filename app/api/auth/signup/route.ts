@@ -1,5 +1,10 @@
 import { type NextRequest } from "next/server";
-import { authJson, getRequestOrigin, sanitizeAuthError } from "@/lib/auth/responses";
+import {
+  authJson,
+  getAuthErrorMetadata,
+  getRequestOrigin,
+  sanitizeAuthError
+} from "@/lib/auth/responses";
 import { enforceRequestSizeLimit, MAX_JSON_BYTES } from "@/lib/security/abuse-protection";
 import { logSecurityEvent } from "@/lib/security/audit-log";
 import { checkRateLimit, getClientIp, rateLimitHeaders } from "@/lib/security/rate-limit";
@@ -109,7 +114,8 @@ export async function POST(request: NextRequest) {
       request,
       subject: parsed.data.email,
       status: 400,
-      reason: "signup_provider_error"
+      reason: "signup_provider_error",
+      metadata: getAuthErrorMetadata(error)
     });
     return authJson({ error: sanitizeAuthError(error) }, { status: 400 });
   }
