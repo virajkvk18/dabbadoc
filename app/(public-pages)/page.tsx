@@ -5,10 +5,11 @@ import {
   Award,
   BadgeIndianRupee,
   BrainCircuit,
+  CalendarDays,
   CheckCircle2,
   FileScan,
   Flame,
-  History,
+  Lightbulb,
   MessageCircle,
   ScanLine,
   ShieldCheck,
@@ -40,119 +41,255 @@ const steps = [
   "Dashboard tracks index, streaks, badges, and reports"
 ];
 
-const phoneScreens = [
+const scanRows = [
   {
-    title: "Food Diary",
-    icon: Utensils,
-    score: "82",
-    accent: "primary",
-    rows: ["Masala oats", "Moong chilla", "Masala chai"]
+    name: "Paneer wrap",
+    detail: "Protein rich, watch creamy sauces",
+    status: "Good",
+    tone: "primary"
   },
   {
-    title: "DabbaBot",
-    icon: MessageCircle,
-    score: "Tips",
-    accent: "secondary",
-    rows: ["Add salad with lunch", "Choose medium spice", "Walk after dinner"]
+    name: "Masala chips",
+    detail: "High sodium and fried oil signal",
+    status: "Swap",
+    tone: "secondary"
   },
   {
-    title: "Streaks",
-    icon: Flame,
-    score: "15",
-    accent: "secondary",
-    rows: ["Log meals daily", "Hit 8k steps", "Drink 8 glasses"]
+    name: "Sweet drink",
+    detail: "Sugar load may spike quickly",
+    status: "Limit",
+    tone: "secondary"
   },
   {
-    title: "Badges",
-    icon: Award,
-    score: "6",
-    accent: "primary",
-    rows: ["Consistency King", "Label aware", "Fiber fan"]
-  },
-  {
-    title: "History",
-    icon: History,
-    score: "72",
-    accent: "primary",
-    rows: ["Receipt scan", "Manual diary", "PDF report"]
+    name: "Curd bowl",
+    detail: "Better gut-friendly add-on",
+    status: "Add",
+    tone: "primary"
   }
 ];
 
-function MiniPhone({
-  screen,
-  index
-}: {
-  screen: (typeof phoneScreens)[number];
-  index: number;
-}) {
-  const Icon = screen.icon;
-  const primary = screen.accent === "primary";
+const insightCards = [
+  {
+    icon: ShieldCheck,
+    label: "Risk map",
+    value: "3 alerts",
+    detail: "Sugar, sodium, fried snack"
+  },
+  {
+    icon: BadgeIndianRupee,
+    label: "Better basket",
+    value: "Rs 180 saved",
+    detail: "Swap chips with roasted makhana"
+  },
+  {
+    icon: CalendarDays,
+    label: "History",
+    value: "Saved",
+    detail: "Receipt, label, and diary in timeline"
+  }
+];
 
+function HeroShowcase() {
   return (
-    <div
-      className="phone-shell phone-screen-grid h-[340px] w-[190px] shrink-0 p-4 pt-10 sm:h-[390px] sm:w-[218px]"
-      style={{ animationDelay: `${index * 120}ms` }}
-    >
-      <div className="relative z-10 flex h-full flex-col">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span
-              className={`grid h-8 w-8 place-items-center rounded-xl border ${
-                primary
-                  ? "border-primary/25 bg-primary/15 text-primary"
-                  : "border-secondary/25 bg-secondary/15 text-secondary"
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-            </span>
-            <div>
-              <p className="text-sm font-black text-white">{screen.title}</p>
-              <p className="text-[10px] text-muted-foreground">Today</p>
-            </div>
-          </div>
-          <span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_10px_rgba(129,247,89,0.8)]" />
-        </div>
+    <div className="relative mx-auto w-full max-w-[720px] lg:ml-auto">
+      <div className="absolute -right-8 top-10 hidden h-40 w-40 rounded-full bg-primary/15 blur-3xl md:block" />
+      <div className="absolute -bottom-8 left-6 hidden h-44 w-44 rounded-full bg-secondary/15 blur-3xl md:block" />
 
-        <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="mono-label text-[9px] text-muted-foreground">Daily score</p>
-              <p className="mt-2 text-4xl font-black text-primary">{screen.score}</p>
-            </div>
-            <div className="score-arc grid h-16 w-16 place-items-center rounded-full p-1">
-              <div className="h-11 w-11 rounded-full bg-[#071018]" />
-            </div>
+      <div className="glass-panel scan-frame relative overflow-hidden rounded-2xl p-3 sm:hidden">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-label text-muted-foreground">Live food scan</p>
+            <p className="mt-2 text-4xl font-black leading-none text-primary">82</p>
+            <p className="mt-1 text-xs font-bold text-primary">Good choice</p>
           </div>
-          <div className="mt-4 h-2 rounded-full bg-white/10">
-            <div className="h-2 w-4/5 rounded-full bg-primary" />
+          <div className="score-arc grid h-20 w-20 shrink-0 place-items-center rounded-full p-1.5">
+            <div className="grid h-14 w-14 place-items-center rounded-full bg-[#071018]">
+              <ScanLine className="h-6 w-6 text-primary" />
+            </div>
           </div>
         </div>
-
-        <div className="mt-4 space-y-2">
-          {screen.rows.map((row, rowIndex) => (
+        <div className="mt-3 space-y-2">
+          {scanRows.slice(0, 2).map((row) => (
             <div
-              key={row}
-              className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/20 p-2"
+              key={row.name}
+              className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/25 p-2.5"
             >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-white">{row.name}</p>
+                <p className="truncate text-xs text-muted-foreground">{row.detail}</p>
+              </div>
               <span
-                className={`h-2.5 w-2.5 rounded-full ${
-                  rowIndex === 1 ? "bg-secondary" : "bg-primary"
-                }`}
-              />
-              <span className="truncate text-xs text-muted-foreground">{row}</span>
+                className={
+                  row.tone === "primary"
+                    ? "rounded-full bg-primary/15 px-2 py-1 text-[10px] font-black text-primary"
+                    : "rounded-full bg-secondary/15 px-2 py-1 text-[10px] font-black text-secondary"
+                }
+              >
+                {row.status}
+              </span>
             </div>
           ))}
         </div>
-
-        <div className="mt-auto grid grid-cols-4 gap-2 border-t border-white/10 pt-3">
-          {[0, 1, 2, 3].map((item) => (
-            <span
+        <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+          {["Risk map", "Swaps", "History"].map((item) => (
+            <div
               key={item}
-              className={`mx-auto h-6 w-6 rounded-lg ${
-                item === index % 4 ? "bg-primary/20" : "bg-white/5"
-              }`}
-            />
+              className="rounded-xl border border-white/10 bg-white/5 p-1.5 text-xs font-bold text-white"
+            >
+              {item}
+            </div>
           ))}
+        </div>
+      </div>
+
+      <div className="glass-panel scan-frame relative hidden overflow-hidden rounded-3xl p-4 sm:block sm:p-5">
+        <div className="grid gap-4 lg:grid-cols-[minmax(250px,0.86fr)_1fr] lg:items-center">
+          <div className="phone-shell phone-screen-grid mx-auto h-[430px] w-full max-w-[260px] p-4 pt-10 xl:max-w-[280px]">
+            <div className="relative z-10 flex h-full flex-col">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-black text-white">Food Scan</p>
+                  <p className="text-xs text-muted-foreground">Receipt and label</p>
+                </div>
+                <span className="grid h-9 w-9 place-items-center rounded-xl border border-primary/25 bg-primary/15 text-primary brand-glow">
+                  <ScanLine className="h-4 w-4" />
+                </span>
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-primary/20 bg-primary/10 p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-label text-muted-foreground">Dabba score</p>
+                    <p className="mt-2 text-5xl font-black leading-none text-primary">
+                      82
+                    </p>
+                    <p className="mt-1 text-xs font-bold text-primary">Good choice</p>
+                  </div>
+                  <div className="score-arc grid h-20 w-20 place-items-center rounded-full p-1.5">
+                    <div className="grid h-14 w-14 place-items-center rounded-full bg-[#071018]">
+                      <Sparkles className="h-6 w-6 text-primary" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                {scanRows.map((row) => (
+                  <div
+                    key={row.name}
+                    className="rounded-xl border border-white/10 bg-black/25 p-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-white">
+                          {row.name}
+                        </p>
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                          {row.detail}
+                        </p>
+                      </div>
+                      <span
+                        className={
+                          row.tone === "primary"
+                            ? "rounded-full bg-primary/15 px-2 py-1 text-[10px] font-black text-primary"
+                            : "rounded-full bg-secondary/15 px-2 py-1 text-[10px] font-black text-secondary"
+                        }
+                      >
+                        {row.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-auto rounded-2xl border border-white/10 bg-white/5 p-3">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-secondary/15 text-secondary">
+                    <Lightbulb className="h-4 w-4" />
+                  </span>
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    Add curd or salad today to balance spice and sodium load.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="glass-panel rounded-2xl p-4">
+              <div className="flex items-center gap-3">
+                <span className="grid h-11 w-11 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
+                  <MessageCircle className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="text-sm font-black text-white">DabbaBot insight</p>
+                  <p className="text-xs text-muted-foreground">
+                    Practical guidance after every scan
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 rounded-2xl border border-white/10 bg-black/25 p-4">
+                <p className="text-sm leading-6 text-slate-200">
+                  Your bill is mostly balanced, but chips and sweet drink can
+                  push sodium and sugar up. Swap one snack and add protein at
+                  dinner.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              {insightCards.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={item.label}
+                    className="interactive-surface rounded-2xl border border-white/10 bg-white/5 p-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-label text-muted-foreground">
+                          {item.label}
+                        </p>
+                        <p className="mt-1 truncate text-lg font-black text-white">
+                          {item.value}
+                        </p>
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                          {item.detail}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="glass-panel rounded-2xl p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-black text-white">Daily habit loop</p>
+                  <p className="text-xs text-muted-foreground">
+                    Scan, improve, save history
+                  </p>
+                </div>
+                <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-black text-primary">
+                  15 day streak
+                </span>
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {["Scan", "Swap", "Track"].map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-xl border border-white/10 bg-white/5 p-3 text-center text-xs font-bold text-white"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -164,7 +301,7 @@ export default function LandingPage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main>
-        <section className="relative isolate flex min-h-[calc(100svh-8rem)] items-center overflow-hidden px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <section className="relative isolate flex min-h-[calc(100svh-8rem)] items-center overflow-hidden px-4 py-8 sm:px-6 sm:py-8 lg:px-8">
           <Image
             src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=1800&q=82"
             alt="Indian meal spread"
@@ -176,24 +313,24 @@ export default function LandingPage() {
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(2,6,10,0.94),rgba(5,9,13,0.78),rgba(5,9,13,0.48))]" />
           <div className="absolute inset-x-0 bottom-0 -z-10 h-36 bg-[linear-gradient(0deg,#071018,transparent)]" />
 
-          <div className="mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[0.78fr_1.22fr] lg:items-center">
+          <div className="mx-auto grid w-full max-w-7xl gap-5 sm:gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-center lg:gap-10">
             <div className="page-enter max-w-2xl">
-              <div className="mb-6">
+              <div className="mb-6 hidden sm:block">
                 <DabbaDocLogo size="md" />
               </div>
               <Badge variant="secondary">Food intelligence for Indian families</Badge>
-              <h1 className="mt-4 text-4xl font-black tracking-normal text-white sm:mt-6 sm:text-6xl lg:text-7xl">
+              <h1 className="mt-4 text-4xl font-black tracking-normal text-white sm:mt-5 sm:text-6xl lg:text-6xl">
                 Eat Smart.
                 <span className="block">Track Daily.</span>
                 <span className="block text-gradient-premium">Feel Amazing!</span>
               </h1>
-              <p className="mt-4 max-w-xl text-sm leading-6 text-slate-200 sm:mt-6 sm:text-lg sm:leading-7">
+              <p className="mt-4 max-w-xl text-sm leading-6 text-slate-200 sm:mt-5 sm:text-base sm:leading-7">
                 Scan receipts, labels, and daily meals. Get a Dabba Health Index,
                 hidden-risk flags, Indian swaps, streaks, badges, and reports in
                 one smooth web app.
               </p>
 
-              <div className="mt-7 hidden max-w-xl gap-3 sm:grid sm:grid-cols-2">
+              <div className="mt-5 hidden max-w-xl gap-2 sm:grid sm:grid-cols-2">
                 {[
                   { icon: FileScan, title: "Smart tracking", text: "Receipts, labels, meals" },
                   { icon: MessageCircle, title: "DabbaBot guidance", text: "Simple personal tips" },
@@ -202,10 +339,10 @@ export default function LandingPage() {
                 ].map((item) => {
                   const Icon = item.icon;
                   return (
-                    <div key={item.title} className="glass-panel interactive-surface rounded-2xl p-4">
+                    <div key={item.title} className="glass-panel interactive-surface rounded-2xl p-3">
                       <div className="flex items-center gap-3">
-                        <span className="grid h-10 w-10 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
-                          <Icon className="h-5 w-5" />
+                        <span className="grid h-9 w-9 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
+                          <Icon className="h-4 w-4" />
                         </span>
                         <div>
                           <p className="text-sm font-black text-white">{item.title}</p>
@@ -217,7 +354,7 @@ export default function LandingPage() {
                 })}
               </div>
 
-              <div className="mt-5 flex flex-wrap gap-3 sm:mt-8">
+              <div className="mt-5 flex flex-wrap gap-3 sm:mt-6">
                 <Button asChild size="lg">
                   <Link href="/auth">
                     <Sparkles className="h-5 w-5" />
@@ -233,36 +370,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="glass-panel scan-frame mx-auto w-full max-w-sm rounded-2xl p-3 sm:hidden">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="mono-label text-[10px] text-muted-foreground">Today&apos;s score</p>
-                  <p className="mt-1 text-4xl font-black text-primary">72</p>
-                </div>
-                <div className="score-arc grid h-20 w-20 place-items-center rounded-full p-1.5">
-                  <div className="grid h-14 w-14 place-items-center rounded-full bg-[#071018]">
-                    <Sparkles className="h-6 w-6 text-primary" />
-                  </div>
-                </div>
-              </div>
-              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                {["Scan", "Track", "Improve"].map((item) => (
-                  <div key={item} className="rounded-xl border border-white/10 bg-white/5 p-2 text-xs font-bold text-white">
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="relative hidden min-w-0 overflow-hidden py-4 md:block">
-              <div className="custom-scrollbar flex gap-4 overflow-x-auto pb-4 lg:justify-end">
-                {phoneScreens.map((screen, index) => (
-                  <div key={screen.title} className="animate-float-soft">
-                    <MiniPhone screen={screen} index={index} />
-                  </div>
-                ))}
-              </div>
-            </div>
+            <HeroShowcase />
           </div>
         </section>
 
