@@ -6,6 +6,7 @@ import {
   BadgeIndianRupee,
   BrainCircuit,
   CalendarDays,
+  ChevronDown,
   CheckCircle2,
   FileScan,
   Flame,
@@ -383,10 +384,36 @@ export default function LandingPage() {
             </div>
 
             <HeroShowcase />
+
+            <Link
+              href="#food-decisions"
+              aria-label="Scroll to explore DabbaDoc"
+              className="group mx-auto flex w-fit flex-col items-center gap-2 text-primary transition hover:text-white sm:hidden"
+            >
+              <span className="relative grid h-12 w-12 place-items-center rounded-full border border-primary/30 bg-black/35 shadow-[0_0_24px_rgba(129,247,89,0.22)] backdrop-blur-xl">
+                <span className="absolute inset-0 rounded-full border border-primary/20 opacity-70 motion-safe:animate-ping" />
+                <ChevronDown className="relative h-5 w-5 motion-safe:animate-bounce" />
+              </span>
+            </Link>
           </div>
+
+          <Link
+            href="#food-decisions"
+            aria-label="Scroll to explore DabbaDoc"
+            className="group absolute left-1/2 top-[calc(100svh-9rem)] z-20 hidden -translate-x-1/2 flex-col items-center gap-2 text-primary transition hover:text-white sm:flex"
+          >
+            <span className="text-label text-slate-200/80 transition group-hover:text-white">
+              Explore
+            </span>
+            <span className="relative grid h-14 w-14 place-items-center rounded-full border border-primary/30 bg-black/35 shadow-[0_0_28px_rgba(129,247,89,0.24)] backdrop-blur-xl transition group-hover:border-primary/60 group-hover:bg-primary/15 group-hover:shadow-[0_0_40px_rgba(129,247,89,0.36)]">
+              <span className="absolute inset-0 rounded-full border border-primary/20 opacity-70 motion-safe:animate-ping" />
+              <span className="absolute h-8 w-8 rounded-full bg-primary/10 blur-md transition group-hover:bg-primary/20" />
+              <ChevronDown className="relative h-6 w-6 motion-safe:animate-bounce" />
+            </span>
+          </Link>
         </section>
 
-        <section className="app-section px-4 py-16 sm:px-6 lg:px-8">
+        <section id="food-decisions" className="app-section scroll-mt-24 px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-3">
             {["Problem", "Solution", "Progress"].map((title, index) => (
               <Card key={title} className="glass-panel interactive-surface noise-overlay">
