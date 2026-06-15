@@ -324,11 +324,23 @@ export default function LandingPage() {
                 <span className="block">Track Daily.</span>
                 <span className="block text-gradient-premium">Feel Amazing!</span>
               </h1>
-              <p className="mt-4 max-w-xl text-sm leading-6 text-slate-200 sm:mt-5 sm:text-base sm:leading-7">
-                Scan receipts, labels, and daily meals. Get a Dabba Health Index,
-                hidden-risk flags, Indian swaps, streaks, badges, and reports in
-                one smooth web app.
-              </p>
+              <div className="mt-4 max-w-xl rounded-2xl border border-white/10 bg-black/25 p-4 shadow-[0_18px_42px_rgba(0,0,0,0.24)] backdrop-blur-md sm:mt-5">
+                <p className="text-sm leading-6 text-slate-200 sm:text-base sm:leading-7">
+                  Scan receipts, labels, and daily meals. Get a Dabba Health
+                  Index with hidden-risk flags, Indian food swaps, streaks,
+                  badges, and reports built for everyday family food decisions.
+                </p>
+                <div className="mt-4 hidden grid-cols-3 gap-2 sm:grid">
+                  {["Health index", "Risk signals", "Smart swaps"].map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center text-xs font-bold text-slate-100"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
 
               <div className="mt-5 hidden max-w-xl gap-2 sm:grid sm:grid-cols-2">
                 {[
