@@ -297,6 +297,84 @@ function HeroShowcase() {
   );
 }
 
+function ExplainerVideoSection() {
+  return (
+    <section className="app-section px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.84fr_1.16fr] lg:items-center">
+        <div>
+          <Badge variant="secondary">Product walkthrough</Badge>
+          <h2 className="mt-4 text-3xl font-black tracking-normal text-white sm:text-4xl">
+            See how DabbaDoc turns food choices into action
+          </h2>
+          <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
+            A quick visual walkthrough of scanning, scoring, risk detection,
+            Indian swaps, streaks, history, and reports.
+          </p>
+          <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            {[
+              { icon: ScanLine, label: "Scan", text: "Receipts, labels, and meals" },
+              { icon: BrainCircuit, label: "Understand", text: "Food risks and nutrition signals" },
+              { icon: CheckCircle2, label: "Improve", text: "Swaps, habits, and reports" }
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.label}
+                  className="glass-panel interactive-surface rounded-2xl p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-black text-white">{item.label}</p>
+                      <p className="text-sm text-muted-foreground">{item.text}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="glass-panel scan-frame relative overflow-hidden rounded-3xl p-3 sm:p-4">
+          <div className="absolute right-6 top-6 z-10 hidden rounded-full border border-primary/20 bg-black/45 px-3 py-1 text-xs font-bold text-primary shadow-[0_0_22px_rgba(129,247,89,0.24)] backdrop-blur-xl sm:inline-flex">
+            Scan Before You Eat
+          </div>
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_28px_70px_rgba(0,0,0,0.38)]">
+            <video
+              className="aspect-video w-full bg-black object-contain"
+              src="/videos/dabbadoc-explainer.mp4"
+              style={{ display: "block", height: "auto", maxWidth: "100%", width: "100%" }}
+              controls
+              muted
+              autoPlay
+              loop
+              playsInline
+              preload="metadata"
+            >
+              Your browser does not support the video tag.
+            </video>
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(0deg,rgba(3,7,13,0.75),transparent)]" />
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            {["Receipt intelligence", "Label truth", "Family history"].map((item) => (
+              <div
+                key={item}
+                className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center text-xs font-bold text-slate-100"
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+          <div className="pointer-events-none absolute -bottom-16 -left-10 h-36 w-36 rounded-full bg-primary/15 blur-3xl" />
+          <div className="pointer-events-none absolute -right-10 -top-16 h-36 w-36 rounded-full bg-secondary/15 blur-3xl" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen">
@@ -438,6 +516,8 @@ export default function LandingPage() {
             ))}
           </div>
         </section>
+
+        <ExplainerVideoSection />
 
         <section className="app-section px-4 py-16 sm:px-6 lg:px-8">
           <SectionHeading
