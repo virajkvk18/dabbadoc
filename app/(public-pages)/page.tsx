@@ -390,15 +390,9 @@ export default function LandingPage() {
               aria-label="Scroll to explore DabbaDoc"
               className="group mx-auto flex w-fit flex-col items-center gap-2 text-primary transition hover:text-white sm:hidden"
             >
-              <span className="relative grid h-14 w-10 place-items-center overflow-hidden rounded-[1.35rem] border border-primary/35 bg-black/40 shadow-[0_0_26px_rgba(129,247,89,0.24)] backdrop-blur-xl transition group-hover:border-primary/70">
-                <span className="absolute inset-x-2 top-2 h-px bg-primary/80 shadow-[0_0_14px_rgba(129,247,89,0.9)] motion-safe:animate-bounce" />
-                <span className="absolute left-1 top-1 h-3 w-3 border-l border-t border-primary/60" />
-                <span className="absolute bottom-1 right-1 h-3 w-3 border-b border-r border-secondary/70" />
-                <span className="relative flex flex-col items-center -space-y-2">
-                  <ChevronDown className="h-4 w-4 opacity-35" />
-                  <ChevronDown className="h-5 w-5 opacity-70 motion-safe:animate-pulse" />
-                  <ChevronDown className="h-5 w-5 text-secondary motion-safe:animate-bounce" />
-                </span>
+              <span className="relative grid h-12 w-12 place-items-center rounded-full border border-primary/30 bg-black/35 shadow-[0_0_24px_rgba(129,247,89,0.22)] backdrop-blur-xl">
+                <span className="absolute inset-0 rounded-full border border-primary/20 opacity-70 motion-safe:animate-ping" />
+                <ChevronDown className="relative h-5 w-5 motion-safe:animate-bounce" />
               </span>
             </Link>
           </div>
@@ -411,18 +405,10 @@ export default function LandingPage() {
             <span className="text-label text-slate-200/80 transition group-hover:text-white">
               Explore
             </span>
-            <span className="relative h-20 w-12 overflow-hidden rounded-[1.6rem] border border-primary/35 bg-black/40 shadow-[0_0_30px_rgba(129,247,89,0.26)] backdrop-blur-xl transition group-hover:border-primary/70 group-hover:bg-primary/10 group-hover:shadow-[0_0_46px_rgba(129,247,89,0.38)]">
-              <span className="absolute inset-x-3 top-3 h-px bg-primary/80 shadow-[0_0_16px_rgba(129,247,89,0.95)] motion-safe:animate-bounce" />
-              <span className="absolute left-1.5 top-1.5 h-4 w-4 border-l border-t border-primary/70 transition group-hover:border-primary" />
-              <span className="absolute right-1.5 top-1.5 h-4 w-4 border-r border-t border-primary/25 transition group-hover:border-primary/60" />
-              <span className="absolute bottom-1.5 left-1.5 h-4 w-4 border-b border-l border-secondary/30 transition group-hover:border-secondary/60" />
-              <span className="absolute bottom-1.5 right-1.5 h-4 w-4 border-b border-r border-secondary/70 transition group-hover:border-secondary" />
-              <span className="absolute inset-x-2 top-1/2 h-8 -translate-y-1/2 rounded-[1rem] bg-primary/10 blur-md transition group-hover:bg-primary/20" />
-              <span className="relative flex h-full flex-col items-center justify-center -space-y-2">
-                <ChevronDown className="h-5 w-5 opacity-25" />
-                <ChevronDown className="h-6 w-6 opacity-65 motion-safe:animate-pulse" />
-                <ChevronDown className="h-6 w-6 text-secondary motion-safe:animate-bounce" />
-              </span>
+            <span className="relative grid h-14 w-14 place-items-center rounded-full border border-primary/30 bg-black/35 shadow-[0_0_28px_rgba(129,247,89,0.24)] backdrop-blur-xl transition group-hover:border-primary/60 group-hover:bg-primary/15 group-hover:shadow-[0_0_40px_rgba(129,247,89,0.36)]">
+              <span className="absolute inset-0 rounded-full border border-primary/20 opacity-70 motion-safe:animate-ping" />
+              <span className="absolute h-8 w-8 rounded-full bg-primary/10 blur-md transition group-hover:bg-primary/20" />
+              <ChevronDown className="relative h-6 w-6 motion-safe:animate-bounce" />
             </span>
           </Link>
         </section>
