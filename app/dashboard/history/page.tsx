@@ -50,7 +50,7 @@ export default async function HistoryPage() {
       <AppPageHeader
         eyebrow="Activity timeline"
         title="Health history"
-        description="Every saved receipt scan, LabelScan, manual food diary, report, and payment event for this account appears here."
+        description="A concise timeline of saved scans, diary entries, reports, and payment events for this account."
         icon={CalendarDays}
         stats={[
           { label: "Trend", value: account.score.trendLabel },
@@ -149,10 +149,10 @@ export default async function HistoryPage() {
                   <div className="mt-5 border-t border-white/10 pt-5">
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                       <p className="mono-label text-[10px] text-muted-foreground">
-                        Saved analysis result
+                        Saved summary
                       </p>
                       <Badge variant="outline">
-                        {activity.resultSections.length} result sections
+                        Short view
                       </Badge>
                     </div>
                     <div className="grid gap-3 lg:grid-cols-2">
