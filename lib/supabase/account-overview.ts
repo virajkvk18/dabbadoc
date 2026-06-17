@@ -2,13 +2,8 @@ import "server-only";
 
 import type { User } from "@supabase/supabase-js";
 import type {
-  BlameItem,
   FoodItem,
-  FutureHealthRisk,
-  IngredientInsight,
-  ItemHealthInsight,
   ManualMealEntry,
-  NutritionFact,
   RiskFlag,
   SwapRecommendation
 } from "@/types";
@@ -260,28 +255,12 @@ function asStringArray(value: unknown): string[] {
     .filter(Boolean);
 }
 
-function joinParts(parts: Array<string | number | null | undefined | false>) {
-  return parts
-    .map((part) => (typeof part === "number" ? String(part) : part))
-    .filter(Boolean)
-    .join(" | ");
-}
-
 function formatFlag(value: string) {
   return value.replace(/_/g, " ");
 }
 
-function maybeNumber(value: unknown) {
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
-}
-
 function maybeString(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
-}
-
-function moneyLine(label: string, value: unknown) {
-  const amount = maybeNumber(value);
-  return typeof amount === "number" ? `${label}: INR ${Math.round(amount)}` : null;
 }
 
 function makeSection(
@@ -296,186 +275,19 @@ function makeSection(
   return cleanItems.length > 0 ? { title, items: cleanItems, tone } : null;
 }
 
-function foodItemLine(item: FoodItem) {
-  const flags = item.flags?.length ? `Flags: ${item.flags.map(formatFlag).join(", ")}` : null;
-  return joinParts([
-    item.name,
-    item.quantity,
-    item.category,
-    typeof item.calorieEstimate === "number" ? `${item.calorieEstimate} kcal approx` : null,
-    typeof item.proteinEstimate === "number" ? `${item.proteinEstimate}g protein approx` : null,
-    flags
-  ]);
+function shortText(value: string | null | undefined, max = 120) {
+  if (!value) return null;
+  const clean = value.replace(/\s+/g, " ").trim();
+  if (!clean) return null;
+  return clean.length > max ? `${clean.slice(0, max - 1).trim()}...` : clean;
 }
 
-function riskLine(risk: RiskFlag) {
-  return joinParts([
-    `${risk.severity.toUpperCase()}: ${risk.label}`,
-    risk.reason,
-    risk.possibleConcern
-  ]);
-}
-
-function swapLine(swap: SwapRecommendation) {
-  return joinParts([
-    `${swap.original} -> ${swap.swap}`,
-    swap.reason,
-    typeof swap.scoreImpact === "number" ? `Score impact +${swap.scoreImpact}` : null,
-    typeof swap.costDelta === "number" ? `Cost delta INR ${Math.round(swap.costDelta)}` : null
-  ]);
-}
-
-function futureRiskLine(risk: FutureHealthRisk) {
-  return joinParts([
-    `${risk.severity.toUpperCase()}: ${risk.riskArea}`,
-    risk.habitFrequency,
-    risk.timeframe,
-    risk.linkedItems?.length ? `Linked to ${risk.linkedItems.join(", ")}` : null,
-    risk.possibleConcern,
-    risk.preventionTip ? `Prevention: ${risk.preventionTip}` : null
-  ]);
-}
-
-function itemInsightLine(insight: ItemHealthInsight) {
-  return joinParts([
-    `${insight.item}: ${formatFlag(insight.verdict)}`,
-    insight.reason,
-    insight.linkedRisks?.length ? `Linked risks: ${insight.linkedRisks.join(", ")}` : null,
-    insight.swap ? `Swap: ${insight.swap}` : null
-  ]);
-}
-
-function blameLine(item: BlameItem) {
-  return joinParts([
-    `${item.item}: ${item.impact} impact`,
-    item.reason,
-    item.swap ? `Try ${item.swap}` : null
-  ]);
-}
-
-function ingredientLine(insight: IngredientInsight) {
-  return joinParts([
-    `${insight.ingredient}: ${insight.simpleHinglishExplanation}`,
-    insight.purposeInFood ? `Why it is used: ${insight.purposeInFood}` : null,
-    insight.concernLevel ? `Concern: ${insight.concernLevel}` : null,
-    insight.possibleRegularUseConcern ? `Regular use: ${insight.possibleRegularUseConcern}` : null,
-    insight.naturalOrBetterAlternative ? `Better option: ${insight.naturalOrBetterAlternative}` : null
-  ]);
-}
-
-function nutritionFactLine(fact: NutritionFact) {
-  const amount =
-    typeof fact.value === "number"
-      ? `${fact.value}${fact.unit ? ` ${fact.unit}` : ""}${fact.per ? ` per ${fact.per}` : ""}`
-      : fact.raw;
-
-  return joinParts([
-    fact.label,
-    amount,
-    fact.interpretation,
-    fact.concernLevel ? `Concern: ${fact.concernLevel}` : null
-  ]);
-}
-
-function primitiveNutritionLines(nutrition: Record<string, unknown>) {
-  return [
-    ["Calories", nutrition.calories, "kcal"],
-    ["Protein", nutrition.protein, "g"],
-    ["Sugar", nutrition.sugar, "g"],
-    ["Added sugar", nutrition.addedSugar, "g"],
-    ["Sodium", nutrition.sodium, "mg"],
-    ["Fats", nutrition.fats, "g"],
-    ["Saturated fat", nutrition.saturatedFat, "g"],
-    ["Trans fat", nutrition.transFat, "g"],
-    ["Carbs", nutrition.carbohydrates, "g"],
-    ["Fiber", nutrition.fiber, "g"],
-    ["Serving size", nutrition.servingSize, ""]
-  ].flatMap(([label, value, unit]) => {
-    if (typeof value === "number") return [`${label}: ${value}${unit ? ` ${unit}` : ""}`];
-    if (typeof value === "string" && value.trim()) return [`${label}: ${value.trim()}`];
-    return [];
-  });
-}
-
-function receiptCostSections(value: unknown) {
-  const cost = isRecord(value) ? value : {};
-  const coverage = isRecord(cost.coverageSummary) ? cost.coverageSummary : null;
-  const scoreBreakdown = isRecord(cost.scoreBreakdown) ? cost.scoreBreakdown : null;
-
-  const coverageLine = coverage
-    ? joinParts([
-        typeof coverage.detectedCount === "number" ? `${coverage.detectedCount} detected` : null,
-        typeof coverage.riskyCount === "number" ? `${coverage.riskyCount} risky` : null,
-        typeof coverage.swappedCount === "number" ? `${coverage.swappedCount} swapped` : null,
-        maybeString(coverage.confidenceNote)
-      ])
-    : null;
-
-  const scoreBreakdownLines = scoreBreakdown
-    ? Object.entries(scoreBreakdown)
-        .filter(([, score]) => typeof score === "number")
-        .map(([label, score]) => `${formatFlag(label)}: ${score}/100`)
-    : [];
-
-  return compact([
-    makeSection(
-      "Cost and receipt coverage",
-      [
-        moneyLine("Current monthly estimate", cost.currentMonthlyEstimate),
-        moneyLine("Healthier monthly estimate", cost.healthierMonthlyEstimate),
-        moneyLine("Estimated monthly savings", cost.monthlySavings),
-        maybeString(cost.notes),
-        coverageLine
-      ],
-      "info"
-    ),
-    makeSection("Item-level health insight", asArray<ItemHealthInsight>(cost.itemInsights).map(itemInsightLine), "info"),
-    makeSection("Long-term health risks", asArray<FutureHealthRisk>(cost.futureHealthRisks).map(futureRiskLine), "danger"),
-    makeSection("Why the score changed", asArray<BlameItem>(cost.blameMap).map(blameLine), "warning"),
-    makeSection("Score breakdown", scoreBreakdownLines, "info"),
-    makeSection("Action plan saved for this scan", asStringArray(cost.actionPlan), "good")
-  ]);
-}
-
-function labelNutritionSections(value: unknown) {
-  const nutrition = isRecord(value) ? value : {};
-  const labelCoverage = isRecord(nutrition.labelCoverage) ? nutrition.labelCoverage : null;
-  const coverageLine = labelCoverage
-    ? joinParts([
-        typeof labelCoverage.nutritionFactCount === "number"
-          ? `${labelCoverage.nutritionFactCount} nutrition facts`
-          : null,
-        typeof labelCoverage.ingredientCount === "number"
-          ? `${labelCoverage.ingredientCount} ingredients`
-          : null,
-        typeof labelCoverage.additiveCount === "number"
-          ? `${labelCoverage.additiveCount} additives`
-          : null,
-        maybeString(labelCoverage.confidenceNote)
-      ])
-    : null;
-
-  return compact([
-    makeSection(
-      "Nutrition facts detected",
-      [
-        ...asArray<NutritionFact>(nutrition.facts).map(nutritionFactLine),
-        ...primitiveNutritionLines(nutrition)
-      ],
-      "info"
-    ),
-    makeSection(
-      "Ingredient explanations in Hinglish",
-      asArray<IngredientInsight>(nutrition.ingredientInsights).map(ingredientLine),
-      "info"
-    ),
-    makeSection(
-      "If eaten regularly",
-      asArray<FutureHealthRisk>(nutrition.regularUseRisks).map(futureRiskLine),
-      "danger"
-    ),
-    makeSection("Label coverage", [coverageLine], "info")
-  ]);
+function firstLabels<T>(items: T[], getLabel: (item: T) => string | undefined, max = 3) {
+  return items
+    .map(getLabel)
+    .filter((item): item is string => Boolean(item?.trim()))
+    .slice(0, max)
+    .join(", ");
 }
 
 function diarySuggestionDetails(value: unknown) {
@@ -501,21 +313,13 @@ function diarySuggestionDetails(value: unknown) {
   };
 }
 
-function mealEntryLine(entry: ManualMealEntry) {
-  return joinParts([
-    `${entry.itemName} (${entry.source})`,
-    entry.mealTime ? formatFlag(entry.mealTime) : null,
-    entry.quantity,
-    entry.spiceLevel ? `Spice: ${entry.spiceLevel}` : null,
-    entry.notes
-  ]);
-}
-
 function receiptActivity(row: ReceiptRow): AccountActivity {
   const items = asArray<FoodItem>(row.detected_items);
   const risks = asArray<RiskFlag>(row.risk_flags);
   const swaps = asArray<SwapRecommendation>(row.swaps);
   const names = itemNames(items);
+  const topRisks = firstLabels(risks, (risk) => risk.label);
+  const topSwap = swaps[0] ? `${swaps[0].original} -> ${swaps[0].swap}` : undefined;
 
   return {
     id: `receipt-${row.id}`,
@@ -532,11 +336,16 @@ function receiptActivity(row: ReceiptRow): AccountActivity {
     ]),
     tags: risks.slice(0, 4).map((risk) => risk.label),
     resultSections: compact([
-      makeSection("Detected food items", items.map(foodItemLine), "info"),
-      makeSection("Risk flags from this receipt", risks.map(riskLine), "warning"),
-      makeSection("Healthier swaps suggested", swaps.map(swapLine), "good"),
-      ...receiptCostSections(row.cost_summary),
-      makeSection("Receipt text captured", [row.extracted_text ? textPreview(row.extracted_text, "", 500) : null], "default")
+      makeSection(
+        "Quick summary",
+        [
+          names.length ? `Items: ${names.slice(0, 4).join(", ")}` : null,
+          topRisks ? `Watch: ${topRisks}` : null,
+          topSwap ? `Best swap: ${topSwap}` : null,
+          shortText(row.ai_summary, 140)
+        ],
+        risks.length ? "warning" : "info"
+      )
     ])
   };
 }
@@ -544,6 +353,11 @@ function receiptActivity(row: ReceiptRow): AccountActivity {
 function labelActivity(row: LabelRow): AccountActivity {
   const warnings = asArray<RiskFlag>(row.warnings);
   const alternatives = asArray<SwapRecommendation>(row.better_alternatives);
+  const ingredients = asStringArray(row.ingredients);
+  const topWarnings = firstLabels(warnings, (warning) => warning.label);
+  const topAlternative = alternatives[0]
+    ? `${alternatives[0].original} -> ${alternatives[0].swap}`
+    : undefined;
 
   return {
     id: `label-${row.id}`,
@@ -555,15 +369,21 @@ function labelActivity(row: LabelRow): AccountActivity {
     score: row.label_truth_score ?? undefined,
     metrics: compact([
       typeof row.label_truth_score === "number" ? `Truth score ${row.label_truth_score}/100` : null,
-      `${asArray(row.ingredients).length} ingredients`,
+      `${ingredients.length} ingredients`,
       `${warnings.length} warnings`
     ]),
     tags: warnings.slice(0, 4).map((warning) => warning.label),
     resultSections: compact([
-      ...labelNutritionSections(row.nutrition),
-      makeSection("Ingredients found on pack", asStringArray(row.ingredients), "info"),
-      makeSection("Warnings from this label", warnings.map(riskLine), "warning"),
-      makeSection("Better alternatives", alternatives.map(swapLine), "good")
+      makeSection(
+        "Quick summary",
+        [
+          ingredients.length ? `Ingredients: ${ingredients.slice(0, 4).join(", ")}` : null,
+          topWarnings ? `Watch: ${topWarnings}` : null,
+          topAlternative ? `Better option: ${topAlternative}` : null,
+          shortText(row.ai_summary, 140)
+        ],
+        warnings.length ? "warning" : "info"
+      )
     ])
   };
 }
@@ -573,6 +393,8 @@ function diaryActivity(row: DiaryRow): AccountActivity {
   const riskyItems = asArray<FoodItem>(row.risky_items);
   const names = [...itemNames(goodItems, 3), ...itemNames(riskyItems, 3)];
   const suggestionDetails = diarySuggestionDetails(row.suggestions);
+  const topTips = suggestionDetails.improvementTips.slice(0, 2);
+  const topWatchItems = itemNames(riskyItems, 3).join(", ");
 
   return {
     id: `diary-${row.id}`,
@@ -589,15 +411,16 @@ function diaryActivity(row: DiaryRow): AccountActivity {
     ]),
     tags: riskyItems.slice(0, 4).map((item) => item.name),
     resultSections: compact([
-      makeSection("Manual entry saved", [row.diary_text], "default"),
-      makeSection("Meal-by-meal entries", suggestionDetails.entries.map(mealEntryLine), "info"),
-      makeSection("Good foods detected", goodItems.map(foodItemLine), "good"),
-      makeSection("Foods to watch", riskyItems.map(foodItemLine), "warning"),
-      makeSection("Improvement tips", suggestionDetails.improvementTips, "good"),
-      makeSection("Missing nutrients", suggestionDetails.missingNutrients, "warning"),
-      makeSection("Healthier swaps", suggestionDetails.healthierSwaps.map(swapLine), "good"),
-      makeSection("Badges earned", suggestionDetails.badgesEarned, "info"),
-      makeSection("Diary analysis summary", [suggestionDetails.aiSummary], "default")
+      makeSection(
+        "Quick summary",
+        [
+          shortText(row.diary_text, 120),
+          topWatchItems ? `Watch: ${topWatchItems}` : null,
+          ...topTips.map((tip) => shortText(tip, 110)),
+          shortText(suggestionDetails.aiSummary, 140)
+        ],
+        riskyItems.length ? "warning" : "good"
+      )
     ])
   };
 }
