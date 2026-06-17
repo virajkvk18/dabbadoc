@@ -31,7 +31,7 @@ function FoodHistoryChatSurface({
   compact?: boolean;
   onClose?: () => void;
 }) {
-  const [question, setQuestion] = useState(suggestions[0]);
+  const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "bot",
@@ -50,7 +50,7 @@ function FoodHistoryChatSurface({
 
     setLoading(true);
     setError(null);
-    setQuestion(cleanQuestion);
+    setQuestion("");
     setMessages((items) => [...items, { role: "user", content: cleanQuestion }]);
 
     try {
@@ -127,7 +127,7 @@ function FoodHistoryChatSurface({
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
           onKeyDown={(event) => {
-            if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+            if (event.key === "Enter" && !event.shiftKey) {
               event.preventDefault();
               ask();
             }
