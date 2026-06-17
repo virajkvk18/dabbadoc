@@ -68,6 +68,19 @@ function isReadableReceiptText(text?: string | null) {
   return /[a-zA-Z]/.test(cleaned);
 }
 
+function goalActionTips(goals?: string[]) {
+  const tips: Record<string, string> = {
+    "Weight loss": "Goal tip: Keep fried snacks occasional and add a high-fiber side to stay full.",
+    "Diabetes-friendly": "Goal tip: Prefer low-sugar drinks and pair carbs with protein/fiber.",
+    "High protein": "Goal tip: Add dal, paneer, curd, eggs, chana, sprouts, or tofu to one meal.",
+    "Low sodium": "Goal tip: Limit instant/packaged salty items and choose home-style snacks.",
+    "Kids lunchbox": "Goal tip: Pick a simple tiffin swap like fruit, curd, chilla, poha, or homemade roll.",
+    "Heart-friendly": "Goal tip: Reduce deep-fried/refined-oil items and add nuts, dal, sabzi, or salad."
+  };
+
+  return (goals ?? []).map((goal) => tips[goal]).filter(Boolean).slice(0, 3);
+}
+
 export async function extractReceiptText(input: AgentInput) {
   if (input.rawText) return input.rawText;
   if (input.demoMode) return sampleReceiptText;
@@ -113,6 +126,7 @@ export async function analyzeReceipt(input: AgentInput): Promise<ReceiptAnalysis
   const coverageSummary = buildReceiptCoverageSummary(detectedItems, swaps);
 
   const actionPlan = [
+    ...goalActionTips(input.healthGoals),
     "Day 1: Replace one sugary drink with chaas or nimbu pani.",
     "Day 2: Add one protein item like dal, paneer, eggs, curd, or sprouts.",
     "Day 3: Keep chips or fried snacks out of the evening slot.",
@@ -127,7 +141,8 @@ export async function analyzeReceipt(input: AgentInput): Promise<ReceiptAnalysis
     riskFlags,
     swaps,
     context: extractedText,
-    items: detectedItems
+    items: detectedItems,
+    healthGoals: input.healthGoals
   });
 
   return {

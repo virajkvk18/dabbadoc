@@ -15,6 +15,7 @@ export async function explainWithDabbaBot(params: {
   swaps: SwapRecommendation[];
   context: string;
   items?: FoodItem[];
+  healthGoals?: string[];
 }) {
   const riskText =
     params.riskFlags.length > 0
@@ -30,12 +31,16 @@ export async function explainWithDabbaBot(params: {
   const itemText = params.items?.length
     ? `Detected items: ${params.items.map((item) => item.name).join(", ")}`
     : "Detected items: none";
+  const goalText = params.healthGoals?.length
+    ? `User health goals: ${params.healthGoals.join(", ")}`
+    : "User health goals: general balanced eating";
   const fallback = `Aapka Dabba Health Score ${params.score}/100 hai. Is scan me ${riskText}. Start simple: ${swapText}. ${DABBADOC_DISCLAIMER}`;
 
   const prompt = `
 Explain this DabbaDoc result in friendly Hinglish.
 Score: ${params.score}
 ${itemText}
+${goalText}
 Risks: ${params.riskFlags.map((risk) => risk.label).join(", ")}
 Swaps: ${params.swaps.map((swap) => `${swap.original} to ${swap.swap}`).join(", ")}
 Context: ${params.context}
@@ -44,6 +49,7 @@ Rules:
 - Do not diagnose.
 - Use "may increase risk" or "possible lifestyle concern".
 - Keep it under 90 words.
+- Personalize the tip for the selected goals without sounding medical.
 - Include the disclaimer sentence.
 `;
 

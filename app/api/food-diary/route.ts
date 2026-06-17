@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       diaryText: payload.diaryText,
       entries: payload.entries,
+      healthGoals: payload.healthGoals,
       demoMode: payload.demoMode
     };
     const analysis =

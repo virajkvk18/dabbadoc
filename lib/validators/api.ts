@@ -32,6 +32,15 @@ const optionalTrimmedString = (max: number) =>
     .optional()
     .transform((value) => (value ? value : undefined));
 
+const healthGoalSchema = z.enum([
+  "Weight loss",
+  "Diabetes-friendly",
+  "High protein",
+  "Low sodium",
+  "Kids lunchbox",
+  "Heart-friendly"
+]);
+
 export const authLoginSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, "Enter your password.").max(256),
@@ -58,12 +67,14 @@ export const receiptAnalyzeSchema = z.object({
     .enum(["grocery_receipt", "food_delivery", "quick_commerce"])
     .default("grocery_receipt"),
   demoMode: z.boolean().default(false),
-  rawText: optionalTrimmedString(8000)
+  rawText: optionalTrimmedString(8000),
+  healthGoals: z.array(healthGoalSchema).max(6).default([])
 });
 
 export const labelAnalyzeSchema = z.object({
   demoMode: z.boolean().default(false),
-  rawText: optionalTrimmedString(8000)
+  rawText: optionalTrimmedString(8000),
+  healthGoals: z.array(healthGoalSchema).max(6).default([])
 });
 
 export const manualMealEntrySchema = z.object({
@@ -85,7 +96,8 @@ export const manualMealEntrySchema = z.object({
 export const foodDiarySchema = z.object({
   diaryText: optionalTrimmedString(4000),
   entries: z.array(manualMealEntrySchema).max(25).optional(),
-  demoMode: z.boolean().default(false)
+  demoMode: z.boolean().default(false),
+  healthGoals: z.array(healthGoalSchema).max(6).default([])
 }).refine(
   (value) =>
     Boolean(value.diaryText?.trim()) || Boolean(value.entries && value.entries.length > 0),

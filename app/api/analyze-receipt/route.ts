@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
     const parsed = receiptAnalyzeSchema.parse({
       sourceType: formData.get("sourceType") ?? "grocery_receipt",
       demoMode: formData.get("demoMode") === "true",
-      rawText: formData.get("rawText")
+      rawText: formData.get("rawText"),
+      healthGoals: formData.getAll("healthGoals")
     });
     if (!parsed.demoMode && !parsed.rawText && !(file instanceof File) && typeof storagePath !== "string") {
       throw new ApiError("Please upload a receipt image or reviewed receipt text before analyzing.", 400);
@@ -82,7 +83,8 @@ export async function POST(request: NextRequest) {
       mimeType,
       dataUri,
       demoMode: parsed.demoMode,
-      rawText: parsed.rawText
+      rawText: parsed.rawText,
+      healthGoals: parsed.healthGoals
     };
     const extractedText = await extractReceiptText(agentInput);
     const analysis =
@@ -90,7 +92,8 @@ export async function POST(request: NextRequest) {
         rawText: extractedText,
         sourceType: parsed.sourceType,
         dataUri,
-        mimeType
+        mimeType,
+        healthGoals: parsed.healthGoals
       })) ??
       (await runReceiptGraph({
         ...agentInput,

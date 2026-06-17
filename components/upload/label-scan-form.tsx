@@ -24,6 +24,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { uploadImageDirectly } from "@/lib/client/direct-upload";
 import type { DirectUploadResult } from "@/lib/client/direct-upload";
 import { compressImageForUpload, formatFileSize } from "@/lib/client/image-compression";
+import { HealthGoalSelector } from "@/components/upload/health-goal-selector";
+import { ScanGuide } from "@/components/upload/scan-guide";
 import type { LabelAnalysis } from "@/types";
 
 type LabelResponse = {
@@ -52,6 +54,7 @@ export function LabelScanForm() {
   const [originalSize, setOriginalSize] = useState<number | null>(null);
   const [processingFile, setProcessingFile] = useState(false);
   const [directUpload, setDirectUpload] = useState<DirectUploadResult | null>(null);
+  const [healthGoals, setHealthGoals] = useState<string[]>([]);
 
   useEffect(() => {
     if (!file || !file.type.startsWith("image/")) {
@@ -171,6 +174,7 @@ export function LabelScanForm() {
     try {
       const formData = new FormData();
       formData.set("demoMode", String(demoMode));
+      healthGoals.forEach((goal) => formData.append("healthGoals", goal));
       if (ocrText.trim() && !demoMode) {
         formData.set("rawText", ocrText);
         if (directUpload) {
@@ -217,6 +221,7 @@ export function LabelScanForm() {
 
   return (
     <div className="space-y-6">
+      <ScanGuide title="Smart label scan guide" />
       <Card className="glass-panel">
         <CardHeader>
           <CardTitle>Upload packaged food label</CardTitle>
@@ -285,17 +290,21 @@ export function LabelScanForm() {
               </div>
             ) : null}
           </div>
-          {ocrText ? (
-            <div className="space-y-2">
-              <Label htmlFor="label-ocr">Review extracted label text</Label>
-              <Textarea
-                id="label-ocr"
-                value={ocrText}
-                onChange={(event) => setOcrText(event.target.value)}
-                className="min-h-40"
-              />
-            </div>
-          ) : null}
+          <div className="space-y-2">
+            <Label htmlFor="label-ocr">Paste or review label text</Label>
+            <Textarea
+              id="label-ocr"
+              value={ocrText}
+              onChange={(event) => {
+                setOcrText(event.target.value);
+                setError(null);
+                setWarning(null);
+              }}
+              placeholder="Paste ingredients, nutrition facts, claims, allergens, sugar, sodium, fat, or extracted label text here..."
+              className="min-h-40"
+            />
+          </div>
+          <HealthGoalSelector selectedGoals={healthGoals} onChange={setHealthGoals} />
           {error ? <p className="text-sm text-red-200">{error}</p> : null}
           {warning ? <p className="text-sm text-orange-100">{warning}</p> : null}
           <div className="grid gap-3 sm:flex sm:flex-wrap">

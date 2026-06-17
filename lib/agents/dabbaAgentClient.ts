@@ -333,13 +333,17 @@ export async function analyzeReceiptWithDabbaAgent(params: {
   sourceType?: SourceType;
   dataUri?: string;
   mimeType?: string;
+  healthGoals?: string[];
 }): Promise<ReceiptAnalysis | null> {
   const payload = {
     language: "hinglish",
     source_type: agentSourceType(params.sourceType),
     raw_text: params.rawText,
     image_base64: params.dataUri ?? null,
-    mime_type: params.mimeType ?? "image/jpeg"
+    mime_type: params.mimeType ?? "image/jpeg",
+    user_profile: {
+      goals: params.healthGoals?.length ? params.healthGoals : ["better daily choices", "reduce junk"]
+    }
   };
   const textOnlyPayload = {
     ...payload,
@@ -436,13 +440,17 @@ function safetyLevel(score: number): LabelAnalysis["safetyLevel"] {
 export async function analyzeLabelWithDabbaAgent(params: {
   rawText: string;
   productName?: string;
+  healthGoals?: string[];
 }): Promise<LabelAnalysis | null> {
   const agent = await callDabbaAgent("/api/v1/analyze/label", {
     language: "hinglish",
     product_name: params.productName,
     raw_text: params.rawText,
     image_base64: null,
-    mime_type: "image/jpeg"
+    mime_type: "image/jpeg",
+    user_profile: {
+      goals: params.healthGoals?.length ? params.healthGoals : ["better daily choices", "reduce junk"]
+    }
   });
 
   if (!agent) return null;
@@ -572,7 +580,7 @@ export async function analyzeFoodDiaryWithDabbaAgent(
     user_profile: {
       age_group: "family",
       diet_type: "mixed",
-      goals: ["better daily choices", "reduce junk"]
+      goals: input.healthGoals?.length ? input.healthGoals : ["better daily choices", "reduce junk"]
     }
   });
 

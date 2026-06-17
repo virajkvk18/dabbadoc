@@ -15,6 +15,7 @@ import { Disclaimer } from "@/components/common/disclaimer";
 import { ProcessingSteps } from "@/components/common/processing-steps";
 import { BadgeGrid } from "@/components/badges/badge-grid";
 import { HealthScoreGauge } from "@/components/dashboard/health-score-gauge";
+import { HealthGoalSelector } from "@/components/upload/health-goal-selector";
 import { RiskFlags, SwapList } from "@/components/upload/analysis-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,6 +71,7 @@ export function FoodDiaryForm() {
   const [analysis, setAnalysis] = useState<FoodDiaryAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [healthGoals, setHealthGoals] = useState<string[]>([]);
 
   const canAdd =
     currentEntry.itemName.trim().length > 1 && currentEntry.quantity.trim().length > 0;
@@ -140,7 +142,7 @@ export function FoodDiaryForm() {
     const response = await fetch("/api/food-diary", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ entries: entriesToAnalyze, demoMode: false })
+      body: JSON.stringify({ entries: entriesToAnalyze, healthGoals, demoMode: false })
     });
     const payload = (await response.json()) as DiaryResponse;
 
@@ -262,6 +264,8 @@ export function FoodDiaryForm() {
               })}
             </div>
           </div>
+
+          <HealthGoalSelector selectedGoals={healthGoals} onChange={setHealthGoals} />
 
           {error ? (
             <p className="rounded-xl border border-red-400/25 bg-red-500/10 p-3 text-sm text-red-200">
