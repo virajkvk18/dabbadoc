@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bot, Loader2, MessageCircle, Send, X } from "lucide-react";
+import { Bot, Loader2, Send, Sparkles, Utensils, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -162,10 +162,19 @@ export function FloatingFoodChatbot() {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="ml-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-[0_0_28px_rgba(129,247,89,0.45)] transition hover:scale-105 active:scale-95"
+        className="group relative ml-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border border-primary/40 bg-[#10180f] text-primary shadow-[0_0_28px_rgba(129,247,89,0.45)] transition hover:scale-105 active:scale-95"
         aria-label="Open DabbaBot"
       >
-        {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
+        {open ? (
+          <X className="h-6 w-6" />
+        ) : (
+          <>
+            <span className="absolute inset-0 bg-[radial-gradient(circle_at_35%_25%,rgba(129,247,89,0.22),transparent_42%)]" />
+            <Bot className="relative h-7 w-7" />
+            <Utensils className="absolute bottom-3 right-3 h-4 w-4 rounded-full bg-primary text-primary-foreground p-0.5" />
+            <Sparkles className="absolute right-2 top-2 h-3.5 w-3.5 text-secondary" />
+          </>
+        )}
       </button>
     </div>
   );
