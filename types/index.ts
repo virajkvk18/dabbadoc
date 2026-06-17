@@ -13,13 +13,7 @@ export type SourceType =
 export type PlanType = "free" | "premium";
 
 export type MealSource = "home" | "outside";
-export type HealthGoal =
-  | "Weight loss"
-  | "Diabetes-friendly"
-  | "High protein"
-  | "Low sodium"
-  | "Kids lunchbox"
-  | "Heart-friendly";
+export type HealthGoal = string;
 export type MealTime =
   | "breakfast"
   | "lunch"

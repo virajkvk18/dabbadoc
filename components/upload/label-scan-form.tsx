@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
-import { Camera, FileImage, Loader2, PlayCircle, ScanLine } from "lucide-react";
+import { Barcode, Camera, FileImage, Loader2, PlayCircle, ScanLine } from "lucide-react";
 import { Disclaimer } from "@/components/common/disclaimer";
 import { ProcessingSteps } from "@/components/common/processing-steps";
 import {
@@ -40,6 +40,22 @@ type ExtractResponse = {
   error?: string;
 };
 
+type BarcodeResponse = {
+  productName?: string;
+  labelText?: string;
+  error?: string;
+};
+
+type BarcodeDetectorConstructor = new (options?: {
+  formats?: string[];
+}) => {
+  detect: (source: ImageBitmapSource) => Promise<Array<{ rawValue: string }>>;
+};
+
+type WindowWithBarcodeDetector = Window & {
+  BarcodeDetector?: BarcodeDetectorConstructor;
+};
+
 const ANALYSIS_TIMEOUT_MS = 70_000;
 const DIRECT_UPLOAD_THRESHOLD_BYTES = 3.8 * 1024 * 1024;
 
@@ -55,6 +71,8 @@ export function LabelScanForm() {
   const [processingFile, setProcessingFile] = useState(false);
   const [directUpload, setDirectUpload] = useState<DirectUploadResult | null>(null);
   const [healthGoals, setHealthGoals] = useState<string[]>([]);
+  const [barcode, setBarcode] = useState("");
+  const [barcodeLoading, setBarcodeLoading] = useState(false);
 
   useEffect(() => {
     if (!file || !file.type.startsWith("image/")) {
@@ -149,6 +167,72 @@ export function LabelScanForm() {
     } finally {
       window.clearTimeout(timeout);
       setLoading(false);
+    }
+  }
+
+  async function lookupBarcode(nextBarcode = barcode) {
+    const cleanBarcode = nextBarcode.replace(/\D/g, "");
+    if (!cleanBarcode) {
+      setError("Enter or scan a barcode first.");
+      return;
+    }
+
+    setBarcodeLoading(true);
+    setError(null);
+    setWarning(null);
+
+    try {
+      const response = await fetch(`/api/barcode-product?barcode=${encodeURIComponent(cleanBarcode)}`);
+      const payload = (await response.json().catch(() => ({}))) as BarcodeResponse;
+
+      if (!response.ok || !payload.labelText) {
+        setError(payload.error ?? "Product not found. Paste label text or capture the label.");
+        return;
+      }
+
+      setBarcode(cleanBarcode);
+      setOcrText(payload.labelText);
+      setWarning(`${payload.productName ?? "Product"} found from barcode. Review text, then run AI analysis.`);
+    } catch {
+      setError("Could not fetch barcode details. Paste label text or capture the label.");
+    } finally {
+      setBarcodeLoading(false);
+    }
+  }
+
+  async function detectBarcodeFromImage() {
+    if (!file) {
+      setError("Capture or upload a package image before scanning barcode.");
+      return;
+    }
+
+    const Detector = (window as WindowWithBarcodeDetector).BarcodeDetector;
+    if (!Detector) {
+      setError("Barcode scanning is not supported in this browser. Enter the barcode number manually.");
+      return;
+    }
+
+    setBarcodeLoading(true);
+    setError(null);
+
+    try {
+      const bitmap = await createImageBitmap(file);
+      const detector = new Detector({
+        formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"]
+      });
+      const codes = await detector.detect(bitmap);
+      bitmap.close();
+      const detected = codes[0]?.rawValue?.replace(/\D/g, "");
+      if (!detected) {
+        setError("No barcode detected. Try a clearer barcode photo or enter the number.");
+        return;
+      }
+
+      await lookupBarcode(detected);
+    } catch {
+      setError("Could not scan barcode from this image. Enter the barcode number manually.");
+    } finally {
+      setBarcodeLoading(false);
     }
   }
 
@@ -303,6 +387,30 @@ export function LabelScanForm() {
               placeholder="Paste ingredients, nutrition facts, claims, allergens, sugar, sodium, fat, or extracted label text here..."
               className="min-h-40"
             />
+          </div>
+          <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div>
+              <p className="font-semibold text-white">Barcode lookup</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Scan a packaged food barcode or enter the number to auto-fill product details.
+              </p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+              <Input
+                value={barcode}
+                onChange={(event) => setBarcode(event.target.value.replace(/\D/g, ""))}
+                placeholder="Enter barcode number"
+                inputMode="numeric"
+              />
+              <Button type="button" variant="outline" onClick={() => lookupBarcode()} disabled={barcodeLoading}>
+                {barcodeLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Barcode className="h-4 w-4" />}
+                Lookup
+              </Button>
+              <Button type="button" variant="outline" onClick={detectBarcodeFromImage} disabled={barcodeLoading || !file}>
+                <ScanLine className="h-4 w-4" />
+                Scan image
+              </Button>
+            </div>
           </div>
           <HealthGoalSelector selectedGoals={healthGoals} onChange={setHealthGoals} />
           {error ? <p className="text-sm text-red-200">{error}</p> : null}
