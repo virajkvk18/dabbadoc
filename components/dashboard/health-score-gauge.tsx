@@ -9,6 +9,7 @@ interface HealthScoreGaugeProps {
   category?: string;
   size?: "sm" | "md" | "lg";
   showLabel?: boolean;
+  fillHeight?: boolean;
   className?: string;
 }
 
@@ -17,6 +18,7 @@ export function HealthScoreGauge({
   category,
   size = "lg",
   showLabel = true,
+  fillHeight = false,
   className
 }: HealthScoreGaugeProps) {
   const [mounted, setMounted] = useState(false);
@@ -62,7 +64,12 @@ export function HealthScoreGauge({
 
   return (
     <Card className={cn("glass-panel neon-bloom-primary overflow-hidden", className)}>
-      <CardContent className="p-6">
+      <CardContent
+        className={cn(
+          "p-6",
+          fillHeight && "flex h-full items-center justify-center"
+        )}
+      >
         <div className="flex flex-col items-center text-center">
           <p className="mono-label mb-4 text-muted-foreground">
             Dabba Health Index

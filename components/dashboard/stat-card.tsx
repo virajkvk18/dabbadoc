@@ -39,7 +39,7 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "glass-panel group flex min-h-36 items-start gap-4 rounded-2xl p-5 transition-all duration-250",
+        "glass-panel group flex min-h-36 items-start gap-4 overflow-hidden rounded-2xl p-5 transition-all duration-250 hover:-translate-y-1",
         styles.glow,
         className
       )}

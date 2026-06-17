@@ -5,9 +5,10 @@ import {
   CalendarDays,
   CreditCard,
   FileText,
-  Flame,
   History,
+  LockKeyhole,
   ScanLine,
+  ShieldCheck,
   Sparkles,
   Upload,
   Utensils
@@ -17,6 +18,10 @@ import { HealthIndexChart } from "@/components/charts/health-index-chart";
 import { Disclaimer } from "@/components/common/disclaimer";
 import { HealthScoreGauge } from "@/components/dashboard/health-score-gauge";
 import { StatCard } from "@/components/dashboard/stat-card";
+import {
+  StreakMomentumCard,
+  type StreakDay
+} from "@/components/dashboard/streak-momentum-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,10 +63,56 @@ const activityIcons: Record<ActivityType, typeof Upload> = {
   payment: CreditCard
 };
 
+const weekdayFormatter = new Intl.DateTimeFormat("en-IN", {
+  weekday: "short",
+  timeZone: "Asia/Kolkata"
+});
+
+const dateLabelFormatter = new Intl.DateTimeFormat("en-IN", {
+  day: "numeric",
+  month: "short",
+  timeZone: "Asia/Kolkata"
+});
+
+const dateKeyFormatter = new Intl.DateTimeFormat("en-IN", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  timeZone: "Asia/Kolkata"
+});
+
+function getDateKey(value: string | Date) {
+  const parts = dateKeyFormatter.formatToParts(
+    typeof value === "string" ? new Date(value) : value
+  );
+  const year = parts.find((part) => part.type === "year")?.value ?? "";
+  const month = parts.find((part) => part.type === "month")?.value ?? "";
+  const day = parts.find((part) => part.type === "day")?.value ?? "";
+  return `${year}-${month}-${day}`;
+}
+
+function buildActivityWeek(activityDates: string[]): StreakDay[] {
+  const activeDates = new Set(activityDates.map((date) => getDateKey(date)));
+  const today = new Date();
+
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(today.getTime() - (6 - index) * 24 * 60 * 60 * 1000);
+    return {
+      label: weekdayFormatter.format(date).slice(0, 2),
+      dateLabel: dateLabelFormatter.format(date),
+      active: activeDates.has(getDateKey(date)),
+      today: index === 6
+    };
+  });
+}
+
 export default async function DashboardPage() {
   const account = await getAccountOverview();
   const greeting = getGreeting();
   const riskCount = account.riskSummary.length;
+  const activityWeek = buildActivityWeek(
+    account.allActivities.map((activity) => activity.createdAt)
+  );
 
   return (
     <div className="space-y-6">
@@ -120,37 +171,45 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 xl:grid-cols-[320px_1fr]">
+      <div className="grid items-stretch gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
         <HealthScoreGauge
           score={account.score.current}
           category={account.score.category}
+          className="h-full"
+          fillHeight
         />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <StatCard
-            label="Risk signals"
-            value={`${riskCount}`}
-            detail={riskCount > 0 ? "From your saved analyses" : "No strong risks yet"}
-            icon={Sparkles}
-          />
-          <StatCard
-            label="Streak count"
-            value={`${account.streak.days} days`}
-            detail={account.streak.label}
-            icon={Flame}
-          />
-          <StatCard
-            label="Badges earned"
-            value={`${account.badges.length}`}
-            detail="Based on your account activity"
-            icon={BadgeCheck}
-          />
-          <StatCard
-            label="Total scans"
-            value={`${account.counts.scans}`}
-            detail={`${account.counts.receipts} receipts, ${account.counts.labels} labels, ${account.counts.diaries} diaries`}
-            icon={ScanLine}
-          />
+        <StreakMomentumCard days={account.streak.days} week={activityWeek} />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard
+          label="Risk signals"
+          value={`${riskCount}`}
+          detail={riskCount > 0 ? "From your saved analyses" : "No strong risks yet"}
+          icon={Sparkles}
+          variant="secondary"
+        />
+        <StatCard
+          label="Badges earned"
+          value={`${account.badges.length}`}
+          detail="Based on your account activity"
+          icon={BadgeCheck}
+          variant="primary"
+        />
+        <StatCard
+          label="Total scans"
+          value={`${account.counts.scans}`}
+          detail={`${account.counts.receipts} receipts, ${account.counts.labels} labels, ${account.counts.diaries} diaries`}
+          icon={ScanLine}
+        />
+      </div>
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="mono-label text-[10px] text-primary">Quick capture</p>
+          <h2 className="mt-1 text-xl font-black text-white">What are you logging?</h2>
         </div>
+        <p className="text-sm text-muted-foreground">Each saved entry updates your overview.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -161,16 +220,16 @@ export default async function DashboardPage() {
               <Card
                 className={
                   action.featured
-                    ? "glass-panel neon-bloom-primary h-full border-primary/40"
-                    : "glass-panel h-full"
+                    ? "glass-panel neon-bloom-primary h-full border-primary/40 transition-transform duration-300 hover:-translate-y-1"
+                    : "glass-panel h-full transition-transform duration-300 hover:-translate-y-1"
                 }
               >
                 <CardContent className="group flex min-h-40 flex-col items-center justify-center gap-4 p-6 text-center">
                   <span
                     className={
                       action.featured
-                        ? "grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_0_22px_rgba(129,247,89,0.42)] transition group-hover:scale-110"
-                        : "grid h-14 w-14 place-items-center rounded-full border border-white/10 bg-white/5 text-white transition group-hover:scale-110 group-hover:border-primary/35 group-hover:text-primary"
+                        ? "grid h-14 w-14 place-items-center rounded-xl bg-primary text-primary-foreground shadow-[0_0_22px_rgba(129,247,89,0.42)] transition duration-300 group-hover:scale-110 group-hover:rotate-3"
+                        : "grid h-14 w-14 place-items-center rounded-xl border border-white/10 bg-white/5 text-white transition duration-300 group-hover:scale-110 group-hover:-rotate-3 group-hover:border-primary/35 group-hover:text-primary"
                     }
                   >
                     <Icon className="h-6 w-6" />
@@ -203,7 +262,7 @@ export default async function DashboardPage() {
             <HealthIndexChart data={account.score.chart} />
           </CardContent>
         </Card>
-        <Card className="glass-panel">
+        <Card className="glass-panel min-h-[360px]">
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle>Recent activity</CardTitle>
             <Button asChild variant="ghost" size="sm">
@@ -215,19 +274,20 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {account.recentActivities.length === 0 ? (
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                <div className="flex items-start gap-3">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-                    <CalendarDays className="h-5 w-5" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-white">No saved activity yet</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Upload a receipt, scan a label, or add a manual food diary
-                      entry to start building your timeline.
-                    </p>
-                  </div>
-                </div>
+              <div className="flex min-h-[240px] flex-col items-center justify-center rounded-xl border border-dashed border-primary/25 bg-primary/5 p-6 text-center">
+                <span className="grid h-12 w-12 place-items-center rounded-xl border border-primary/25 bg-primary/10 text-primary motion-safe:animate-pulse">
+                  <CalendarDays className="h-6 w-6" />
+                </span>
+                <p className="mt-4 font-semibold text-white">Your timeline starts with one entry</p>
+                <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
+                  Save today&apos;s meal to begin your streak and build a useful food-health history.
+                </p>
+                <Button asChild size="sm" className="mt-5">
+                  <Link href="/dashboard/food-diary">
+                    Add today&apos;s meal
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
               </div>
             ) : null}
             {account.recentActivities.map((activity) => {
@@ -256,26 +316,32 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <Card className="glass-panel">
+        <Card className="glass-panel h-full">
           <CardHeader>
             <CardTitle>Food risk summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {account.riskSummary.length === 0 ? (
-              <p className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-muted-foreground">
-                No risk summary yet. Run one receipt, label, or diary analysis to
-                see personalized signals here.
-              </p>
+              <div className="flex min-h-44 flex-col justify-center rounded-xl border border-dashed border-primary/20 bg-primary/5 p-5">
+                <ShieldCheck className="h-7 w-7 text-primary" />
+                <p className="mt-3 font-semibold text-white">No saved risk signals yet</p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  A label check is the quickest way to start your personalized summary.
+                </p>
+                <Button asChild variant="outline" size="sm" className="mt-4 w-fit">
+                  <Link href="/dashboard/label-scan">Check a food label</Link>
+                </Button>
+              </div>
             ) : null}
             {account.riskSummary.map((risk) => (
-              <div key={`${risk.label}-${risk.detail}`} className="rounded-xl border border-white/10 bg-white/5 p-3">
+              <div key={`${risk.label}-${risk.detail}`} className="rounded-xl border border-white/10 bg-white/5 p-3 transition-transform duration-200 hover:translate-x-1">
                 <p className="font-semibold text-white">{risk.label}</p>
                 <p className="text-sm text-muted-foreground">{risk.detail}</p>
               </div>
             ))}
           </CardContent>
         </Card>
-        <Card className="glass-panel">
+        <Card className="glass-panel h-full">
           <CardHeader>
             <CardTitle>Badges earned</CardTitle>
           </CardHeader>
@@ -283,9 +349,24 @@ export default async function DashboardPage() {
             {account.badges.length > 0 ? (
               <BadgeGrid badges={account.badges} />
             ) : (
-              <p className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-muted-foreground">
-                Complete your first analysis to unlock badges.
-              </p>
+              <div className="grid gap-2">
+                {["Complete first scan", "Reach a 3-day streak", "Review a food label"].map(
+                  (goal) => (
+                    <div
+                      key={goal}
+                      className="flex min-h-14 items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3"
+                    >
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/5 text-muted-foreground">
+                        <LockKeyhole className="h-4 w-4" />
+                      </span>
+                      <div>
+                        <p className="text-sm font-semibold text-white">{goal}</p>
+                        <p className="text-xs text-muted-foreground">Badge locked</p>
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
             )}
           </CardContent>
         </Card>
