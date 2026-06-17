@@ -3,10 +3,12 @@ import "server-only";
 import type {
   FoodDiaryAnalysis,
   LabelAnalysis,
+  PaidPlanType,
   PlanType,
   ReceiptAnalysis,
   SourceType
 } from "@/types";
+import { isPaidPlan } from "@/lib/plans";
 import { ApiError } from "@/lib/security/api-errors";
 import { createSupabaseAdmin } from "./admin";
 
@@ -273,6 +275,7 @@ export async function markPaymentCaptured(params: {
   userId: string;
   razorpayOrderId: string;
   razorpayPaymentId: string;
+  plan: PaidPlanType;
 }) {
   const supabase = createSupabaseAdmin();
   const userId = requireUserId(params.userId);
@@ -303,7 +306,7 @@ export async function markPaymentCaptured(params: {
     .from("profiles")
     .update({
       is_premium: true,
-      plan: "premium"
+      plan: params.plan
     })
     .eq("id", userId);
 
@@ -330,7 +333,7 @@ export async function markPaymentCapturedByOrderId(params: {
       status: "captured"
     })
     .eq("razorpay_order_id", params.razorpayOrderId)
-    .select("id, user_id")
+    .select("id, user_id, plan")
     .maybeSingle();
 
   if (error) {
@@ -343,7 +346,7 @@ export async function markPaymentCapturedByOrderId(params: {
     .from("profiles")
     .update({
       is_premium: true,
-      plan: "premium"
+      plan: isPaidPlan(data.plan) ? data.plan : "premium"
     })
     .eq("id", data.user_id);
 

@@ -19,9 +19,12 @@ export async function POST(request: NextRequest) {
     enforcePaymentRateLimit(request, user.id);
     enforceRequestSizeLimit(request, MAX_JSON_BYTES);
 
-    razorpayOrderSchema.parse(await request.json().catch(() => ({})));
+    const payload = razorpayOrderSchema.parse(await request.json().catch(() => ({})));
 
-    const order = await createPremiumOrder({ userId: user.id });
+    const order = await createPremiumOrder({
+      userId: user.id,
+      plan: payload.plan
+    });
     const savedOrderId = await savePaymentOrder({
       userId: user.id,
       razorpayOrderId: order.id,

@@ -111,7 +111,7 @@ export const reportSchema = z.object({
 });
 
 export const razorpayOrderSchema = z.object({
-  plan: z.enum(["premium"]).default("premium")
+  plan: z.enum(["premium", "premium_plus"]).default("premium")
 });
 
 export const razorpayVerifySchema = z.object({

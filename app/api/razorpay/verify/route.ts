@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { requireVerifiedUser } from "@/lib/auth/require-user";
 import { verifyRazorpaySignature } from "@/lib/payments/razorpay";
+import { isPaidPlan } from "@/lib/plans";
 import {
   enforcePaymentRateLimit,
   enforceRequestSizeLimit,
@@ -49,7 +50,8 @@ export async function POST(request: NextRequest) {
     await markPaymentCaptured({
       userId: user.id,
       razorpayOrderId: payload.razorpay_order_id,
-      razorpayPaymentId: payload.razorpay_payment_id
+      razorpayPaymentId: payload.razorpay_payment_id,
+      plan: isPaidPlan(ownedOrder.plan) ? ownedOrder.plan : "premium"
     });
 
     return NextResponse.json({

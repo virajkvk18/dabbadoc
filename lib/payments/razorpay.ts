@@ -2,10 +2,9 @@ import "server-only";
 
 import crypto from "crypto";
 import Razorpay from "razorpay";
+import { getPaidPlan } from "@/lib/plans";
 import { ApiError } from "@/lib/security/api-errors";
-import type { PaymentOrderResponse } from "@/types";
-
-const PREMIUM_AMOUNT_PAISE = 29900;
+import type { PaidPlanType, PaymentOrderResponse } from "@/types";
 
 export function isRazorpayConfigured() {
   return Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
@@ -21,8 +20,12 @@ function timingSafeHexCompare(expected: string, received: string) {
   );
 }
 
-export async function createPremiumOrder(params: { userId: string }) {
-  const amount = PREMIUM_AMOUNT_PAISE;
+export async function createPremiumOrder(params: {
+  userId: string;
+  plan: PaidPlanType;
+}) {
+  const selectedPlan = getPaidPlan(params.plan);
+  const amount = selectedPlan.amountPaise;
 
   if (!isRazorpayConfigured()) {
     if (process.env.NODE_ENV === "production") {
@@ -30,10 +33,10 @@ export async function createPremiumOrder(params: { userId: string }) {
     }
 
     return {
-      id: `mock_order_${Date.now()}`,
+      id: `mock_order_${params.plan}_${Date.now()}`,
       amount,
       currency: "INR",
-      plan: "premium",
+      plan: params.plan,
       mock: true
     } satisfies PaymentOrderResponse;
   }
@@ -46,9 +49,9 @@ export async function createPremiumOrder(params: { userId: string }) {
   const order = await razorpay.orders.create({
     amount,
     currency: "INR",
-    receipt: `dabbadoc_${Date.now()}`,
+    receipt: `dd_${params.plan}_${Date.now()}`.slice(0, 40),
     notes: {
-      plan: "premium",
+      plan: params.plan,
       user_id: params.userId
     }
   });
@@ -57,7 +60,7 @@ export async function createPremiumOrder(params: { userId: string }) {
     id: order.id,
     amount: Number(order.amount),
     currency: order.currency,
-    plan: "premium",
+    plan: params.plan,
     mock: false
   } satisfies PaymentOrderResponse;
 }

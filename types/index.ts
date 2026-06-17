@@ -10,7 +10,8 @@ export type SourceType =
   | "packaged_label"
   | "food_diary";
 
-export type PlanType = "free" | "premium";
+export type PlanType = "free" | "premium" | "premium_plus";
+export type PaidPlanType = Exclude<PlanType, "free">;
 
 export type MealSource = "home" | "outside";
 export type HealthGoal =

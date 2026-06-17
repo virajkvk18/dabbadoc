@@ -31,7 +31,7 @@ export default async function ProfilePage() {
         description="Your DabbaDoc account, saved activity, streaks, badges, and plan details in one place."
         icon={UserRound}
         stats={[
-          { label: "Plan", value: account.profile.isPremium ? "Premium" : "Free" },
+          { label: "Plan", value: account.profile.planLabel },
           { label: "Streak", value: `${account.streak.days} days` },
           { label: "Saved activity", value: `${account.counts.activities}` }
         ]}
@@ -84,7 +84,7 @@ export default async function ProfilePage() {
               <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                 <p className="mono-label text-[11px] text-muted-foreground">Plan</p>
                 <p className="mt-2 font-semibold capitalize text-white">
-                  {account.profile.plan}
+                  {account.profile.planLabel}
                 </p>
               </div>
               <div className="rounded-xl border border-white/10 bg-white/5 p-4">

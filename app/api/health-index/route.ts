@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
           fullName: account.profile.fullName,
           email: account.profile.email,
           plan: account.profile.plan,
+          planLabel: account.profile.planLabel,
           isPremium: account.profile.isPremium
         },
         healthIndex: {
@@ -32,7 +33,9 @@ export async function GET(request: NextRequest) {
         },
         weeklyRiskSummary: account.riskSummary,
         totalScansUsed: account.counts.scans,
-        premiumStatus: account.profile.isPremium ? "Premium active" : "Free plan",
+        premiumStatus: account.profile.isPremium
+          ? `${account.profile.planLabel} active`
+          : "Free plan",
         counts: account.counts,
         recentActivities: account.recentActivities
       },

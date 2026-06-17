@@ -86,7 +86,7 @@ export default async function DashboardPage() {
           <div>
             <p className="mono-label text-[10px] text-muted-foreground">Status</p>
             <p className="text-sm font-bold text-primary">
-              {account.profile.isPremium ? "Premium active" : "Ready to scan"}
+              {account.profile.isPremium ? `${account.profile.planLabel} active` : "Ready to scan"}
             </p>
           </div>
         </div>
@@ -100,11 +100,13 @@ export default async function DashboardPage() {
             </span>
             <div>
               <p className="font-bold text-white">
-                {account.profile.isPremium ? "Premium intelligence active" : "Premium intelligence preview"}
+                {account.profile.isPremium
+                  ? `${account.profile.planLabel} intelligence active`
+                  : "Premium intelligence preview"}
               </p>
               <p className="text-sm text-muted-foreground">
                 {account.profile.isPremium
-                  ? "Your account has premium access for deeper history and reports."
+                  ? "Your account has paid access for deeper history, reports, and plan-specific insights."
                   : "Upgrade when you need unlimited scans, full history, and family tracking."}
               </p>
             </div>
