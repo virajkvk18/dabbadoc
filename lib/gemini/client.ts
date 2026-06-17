@@ -3,6 +3,19 @@ import "server-only";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { safeJsonParse } from "@/lib/utils";
 
+const GEMINI_TIMEOUT_MS = 18_000;
+
+async function withTimeout<T>(work: Promise<T>, timeoutMs = GEMINI_TIMEOUT_MS) {
+  let timeout: ReturnType<typeof setTimeout>;
+  const timer = new Promise<null>((resolve) => {
+    timeout = setTimeout(() => resolve(null), timeoutMs);
+  });
+
+  const result = await Promise.race([work, timer]);
+  clearTimeout(timeout!);
+  return result as T | null;
+}
+
 function getGeminiClient() {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
@@ -28,7 +41,8 @@ export async function generateGeminiText(prompt: string) {
         "You are DabbaBot for DabbaDoc. Give general wellness insight only. Never diagnose disease. Use simple Hinglish-friendly wording."
     });
 
-    const result = await model.generateContent(prompt);
+    const result = await withTimeout(model.generateContent(prompt));
+    if (!result) return null;
     return result.response.text();
   } catch {
     return null;
@@ -60,7 +74,7 @@ export async function extractTextFromImageWithGemini(params: {
       model: getGeminiModelName()
     });
 
-    const result = await model.generateContent([
+    const result = await withTimeout(model.generateContent([
       params.prompt,
       {
         inlineData: {
@@ -68,7 +82,8 @@ export async function extractTextFromImageWithGemini(params: {
           mimeType: params.mimeType ?? "image/jpeg"
         }
       }
-    ]);
+    ]));
+    if (!result) return null;
 
     return result.response.text();
   } catch {

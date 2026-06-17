@@ -1,6 +1,7 @@
 import "server-only";
 
 const GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_TIMEOUT_MS = 18_000;
 
 function getGroqApiKey() {
   return process.env.GROQ_API_KEY || "";
@@ -14,6 +15,9 @@ async function callGroq(messages: unknown[], model: string, maxTokens = 600) {
   const apiKey = getGroqApiKey();
   if (!apiKey) return null;
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), GROQ_TIMEOUT_MS);
+
   try {
     const response = await fetch(GROQ_CHAT_URL, {
       method: "POST",
@@ -26,7 +30,8 @@ async function callGroq(messages: unknown[], model: string, maxTokens = 600) {
         messages,
         temperature: 0.35,
         max_tokens: maxTokens
-      })
+      }),
+      signal: controller.signal
     });
 
     if (!response.ok) return null;
@@ -38,6 +43,8 @@ async function callGroq(messages: unknown[], model: string, maxTokens = 600) {
     return data.choices?.[0]?.message?.content ?? null;
   } catch {
     return null;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

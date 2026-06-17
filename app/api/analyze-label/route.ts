@@ -34,11 +34,13 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get("file");
+    const storagePath = formData.get("storagePath");
     const parsed = labelAnalyzeSchema.parse({
-      demoMode: formData.get("demoMode") === "true"
+      demoMode: formData.get("demoMode") === "true",
+      rawText: formData.get("rawText")
     });
-    if (!parsed.demoMode && !(file instanceof File)) {
-      throw new ApiError("Please upload a label image before analyzing.", 400);
+    if (!parsed.demoMode && !parsed.rawText && !(file instanceof File) && typeof storagePath !== "string") {
+      throw new ApiError("Please upload a label image or reviewed label text before analyzing.", 400);
     }
 
     let dataUri: string | undefined;
@@ -64,6 +66,12 @@ export async function POST(request: NextRequest) {
         buffer
       });
       fileUrl = upload.path;
+    } else if (typeof storagePath === "string" && storagePath.startsWith(`${user.id}/`)) {
+      fileUrl = storagePath;
+      fileName = String(formData.get("fileName") || "stored-label.jpg");
+      mimeType = String(formData.get("mimeType") || "image/jpeg");
+    } else if (typeof storagePath === "string") {
+      throw new ApiError("Stored image path is not allowed for this account.", 403);
     }
 
     const agentInput = {
@@ -72,7 +80,8 @@ export async function POST(request: NextRequest) {
       fileName,
       mimeType,
       dataUri,
-      demoMode: parsed.demoMode
+      demoMode: parsed.demoMode,
+      rawText: parsed.rawText
     } as const;
     const extractedText = await extractLabelText(agentInput);
     const analysis =
