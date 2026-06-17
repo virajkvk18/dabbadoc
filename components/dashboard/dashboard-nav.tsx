@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import {
   BadgeCheck,
+  Bot,
   FileText,
   History,
   Home,
@@ -34,6 +35,7 @@ const links: NavLinkItem[] = [
   { href: "/dashboard/upload-receipt", label: "Receipt scan", icon: Upload },
   { href: "/dashboard/label-scan", label: "LabelScan", icon: ScanLine },
   { href: "/dashboard/food-diary", label: "Food diary", icon: Utensils },
+  { href: "/dashboard/food-chat", label: "Food chat", icon: Bot },
   { href: "/dashboard/history", label: "History", icon: History },
   { href: "/dashboard/reports", label: "Reports", icon: FileText }
 ];
@@ -49,6 +51,7 @@ const mobileLinks: MobileNavLinkItem[] = [
   { href: "/dashboard/history", label: "History", icon: History },
   { href: "/dashboard/label-scan", label: "Scan", icon: ScanLine, fab: true },
   { href: "/dashboard/food-diary", label: "Diary", icon: Utensils },
+  { href: "/dashboard/food-chat", label: "Chat", icon: Bot },
   { href: "/dashboard/profile", label: "You", icon: UserRound }
 ];
 

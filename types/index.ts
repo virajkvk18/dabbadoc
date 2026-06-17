@@ -14,13 +14,7 @@ export type PlanType = "free" | "premium" | "premium_plus";
 export type PaidPlanType = Exclude<PlanType, "free">;
 
 export type MealSource = "home" | "outside";
-export type HealthGoal =
-  | "Weight loss"
-  | "Diabetes-friendly"
-  | "High protein"
-  | "Low sodium"
-  | "Kids lunchbox"
-  | "Heart-friendly";
+export type HealthGoal = string;
 export type MealTime =
   | "breakfast"
   | "lunch"

@@ -32,14 +32,12 @@ const optionalTrimmedString = (max: number) =>
     .optional()
     .transform((value) => (value ? value : undefined));
 
-const healthGoalSchema = z.enum([
-  "Weight loss",
-  "Diabetes-friendly",
-  "High protein",
-  "Low sodium",
-  "Kids lunchbox",
-  "Heart-friendly"
-]);
+const healthGoalSchema = z
+  .string()
+  .trim()
+  .min(2)
+  .max(60)
+  .regex(/^[a-zA-Z0-9 ,+&()./-]+$/);
 
 export const authLoginSchema = z.object({
   email: emailSchema,
