@@ -37,7 +37,8 @@ export async function POST(request: NextRequest) {
     const storagePath = formData.get("storagePath");
     const parsed = labelAnalyzeSchema.parse({
       demoMode: formData.get("demoMode") === "true",
-      rawText: formData.get("rawText")
+      rawText: formData.get("rawText"),
+      healthGoals: formData.getAll("healthGoals")
     });
     if (!parsed.demoMode && !parsed.rawText && !(file instanceof File) && typeof storagePath !== "string") {
       throw new ApiError("Please upload a label image or reviewed label text before analyzing.", 400);
@@ -81,13 +82,15 @@ export async function POST(request: NextRequest) {
       mimeType,
       dataUri,
       demoMode: parsed.demoMode,
-      rawText: parsed.rawText
+      rawText: parsed.rawText,
+      healthGoals: parsed.healthGoals
     } as const;
     const extractedText = await extractLabelText(agentInput);
     const analysis =
       (await analyzeLabelWithDabbaAgent({
         rawText: extractedText,
-        productName: extractedText.split("\n").find(Boolean)?.trim()
+        productName: extractedText.split("\n").find(Boolean)?.trim(),
+        healthGoals: parsed.healthGoals
       })) ??
       (await analyzeLabel({
         ...agentInput,

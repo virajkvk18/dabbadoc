@@ -98,6 +98,19 @@ function mergeItems(parsedItems: FoodItem[], entryItems: FoodItem[]) {
   return Array.from(merged.values());
 }
 
+function goalDiaryTips(goals?: string[]) {
+  const tips: Record<string, string> = {
+    "Weight loss": "For weight-loss goals, keep portions steady and add protein/fiber before cutting meals.",
+    "Diabetes-friendly": "For diabetes-friendly goals, pair rice/roti/poha with dal, curd, paneer, eggs, or sprouts.",
+    "High protein": "For high-protein goals, include one protein anchor in breakfast and evening snack.",
+    "Low sodium": "For low-sodium goals, reduce packaged snacks, namkeen, sauces, and instant foods.",
+    "Kids lunchbox": "For kids lunchbox goals, use simple tiffin options like chilla, fruit, curd, poha, or homemade rolls.",
+    "Heart-friendly": "For heart-friendly goals, keep fried foods occasional and add sabzi, dal, nuts, or salad."
+  };
+
+  return (goals ?? []).map((goal) => tips[goal]).filter(Boolean).slice(0, 3);
+}
+
 export async function analyzeFoodDiary(
   input: DiaryInput
 ): Promise<FoodDiaryAnalysis> {
@@ -149,6 +162,7 @@ export async function analyzeFoodDiary(
   ].filter(Boolean) as string[];
 
   const improvementTips = [
+    ...goalDiaryTips(input.healthGoals),
     "Add one protein anchor in breakfast or evening snack.",
     entries.some((entry) => entry.source === "outside")
       ? "Balance outside food with a home-style protein or salad in the next meal."
@@ -165,7 +179,8 @@ export async function analyzeFoodDiary(
     score: health.score,
     riskFlags,
     swaps: healthierSwaps,
-    context: diaryText
+    context: diaryText,
+    healthGoals: input.healthGoals
   });
 
   return {

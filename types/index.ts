@@ -13,6 +13,13 @@ export type SourceType =
 export type PlanType = "free" | "premium";
 
 export type MealSource = "home" | "outside";
+export type HealthGoal =
+  | "Weight loss"
+  | "Diabetes-friendly"
+  | "High protein"
+  | "Low sodium"
+  | "Kids lunchbox"
+  | "Heart-friendly";
 export type MealTime =
   | "breakfast"
   | "lunch"
@@ -227,6 +234,7 @@ export interface AgentInput {
   mimeType?: string;
   dataUri?: string;
   rawText?: string;
+  healthGoals?: HealthGoal[];
   demoMode?: boolean;
 }
 
@@ -234,6 +242,7 @@ export interface DiaryInput {
   userId?: string;
   diaryText?: string;
   entries?: ManualMealEntry[];
+  healthGoals?: HealthGoal[];
   demoMode?: boolean;
 }
 

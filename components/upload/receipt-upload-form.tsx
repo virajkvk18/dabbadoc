@@ -25,6 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { uploadImageDirectly } from "@/lib/client/direct-upload";
 import type { DirectUploadResult } from "@/lib/client/direct-upload";
 import { compressImageForUpload, formatFileSize } from "@/lib/client/image-compression";
+import { HealthGoalSelector } from "@/components/upload/health-goal-selector";
+import { ScanGuide } from "@/components/upload/scan-guide";
 import type { ReceiptAnalysis } from "@/types";
 
 type ReceiptResponse = {
@@ -53,6 +55,7 @@ export function ReceiptUploadForm() {
   const [originalSize, setOriginalSize] = useState<number | null>(null);
   const [processingFile, setProcessingFile] = useState(false);
   const [directUpload, setDirectUpload] = useState<DirectUploadResult | null>(null);
+  const [healthGoals, setHealthGoals] = useState<string[]>([]);
 
   useEffect(() => {
     if (!file || !file.type.startsWith("image/")) {
@@ -174,6 +177,7 @@ export function ReceiptUploadForm() {
       const formData = new FormData();
       formData.set("sourceType", "grocery_receipt");
       formData.set("demoMode", String(demoMode));
+      healthGoals.forEach((goal) => formData.append("healthGoals", goal));
       if (ocrText.trim() && !demoMode) {
         formData.set("rawText", ocrText);
         if (directUpload) {
@@ -220,6 +224,7 @@ export function ReceiptUploadForm() {
 
   return (
     <div className="space-y-6">
+      <ScanGuide />
       <Card className="glass-panel">
         <CardHeader>
           <CardTitle>Upload receipt or order screenshot</CardTitle>
@@ -288,17 +293,21 @@ export function ReceiptUploadForm() {
               </div>
             ) : null}
           </div>
-          {ocrText ? (
-            <div className="space-y-2">
-              <Label htmlFor="receipt-ocr">Review extracted receipt text</Label>
-              <Textarea
-                id="receipt-ocr"
-                value={ocrText}
-                onChange={(event) => setOcrText(event.target.value)}
-                className="min-h-40"
-              />
-            </div>
-          ) : null}
+          <div className="space-y-2">
+            <Label htmlFor="receipt-ocr">Paste or review receipt/order text</Label>
+            <Textarea
+              id="receipt-ocr"
+              value={ocrText}
+              onChange={(event) => {
+                setOcrText(event.target.value);
+                setError(null);
+                setWarning(null);
+              }}
+              placeholder="Paste Swiggy, Zomato, Zepto, Blinkit, grocery bill, or extracted receipt text here..."
+              className="min-h-40"
+            />
+          </div>
+          <HealthGoalSelector selectedGoals={healthGoals} onChange={setHealthGoals} />
           {error ? <p className="text-sm text-red-200">{error}</p> : null}
           {warning ? <p className="text-sm text-orange-100">{warning}</p> : null}
           <div className="grid gap-3 sm:flex sm:flex-wrap">

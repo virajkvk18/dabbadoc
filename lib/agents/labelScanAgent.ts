@@ -88,6 +88,21 @@ function getSafetyLevel(score: number): LabelAnalysis["safetyLevel"] {
   return "avoid-frequent-use";
 }
 
+function goalLabelContext(goals?: string[]) {
+  if (!goals?.length) return "";
+
+  const notes: Record<string, string> = {
+    "Weight loss": "For weight-loss goals, watch calories, refined flour, and high-fat snack frequency.",
+    "Diabetes-friendly": "For diabetes-friendly goals, added sugar and refined carbs need extra attention.",
+    "High protein": "For high-protein goals, compare protein per serving before choosing packaged foods.",
+    "Low sodium": "For low-sodium goals, sodium/salt values should be checked closely.",
+    "Kids lunchbox": "For kids lunchbox goals, prefer shorter ingredient lists and lower sugar/sodium.",
+    "Heart-friendly": "For heart-friendly goals, saturated fat, trans fat, palm oil, and sodium matter."
+  };
+
+  return goals.map((goal) => notes[goal]).filter(Boolean).join(" ");
+}
+
 export async function extractLabelText(input: AgentInput) {
   if (input.rawText) return input.rawText;
   if (input.demoMode) return sampleLabelText;
@@ -117,8 +132,11 @@ export async function extractLabelText(input: AgentInput) {
 
 export async function analyzeLabel(input: AgentInput): Promise<LabelAnalysis> {
   const extractedText = await extractLabelText(input);
+  const personalizedText = [extractedText, goalLabelContext(input.healthGoals)]
+    .filter(Boolean)
+    .join("\n");
   const items = parseFoodItemsFromText(extractedText);
-  const warnings = await analyzeRisks(items, extractedText);
+  const warnings = await analyzeRisks(items, personalizedText);
   const labelTruthScore = calculateLabelTruthScore(extractedText);
   const safetyLevel = getSafetyLevel(labelTruthScore);
   const ingredients = extractIngredientsFromLabel(extractedText);
@@ -158,8 +176,9 @@ export async function analyzeLabel(input: AgentInput): Promise<LabelAnalysis> {
     score: labelTruthScore,
     riskFlags: mergedWarnings,
     swaps: betterAlternatives,
-    context: extractedText,
-    items
+    context: personalizedText,
+    items,
+    healthGoals: input.healthGoals
   });
 
   const hasWarnings = mergedWarnings.length > 0;
