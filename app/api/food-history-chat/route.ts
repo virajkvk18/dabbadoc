@@ -59,6 +59,10 @@ function fallbackAnswer(question: string, account: Awaited<ReturnType<typeof get
   return "This week, pick one simple change: reduce one repeated packaged/fried/sugary item, add one protein anchor, and choose one home-style swap.";
 }
 
+function isGreeting(question: string) {
+  return /^(hi|hello|hey|hii|hola|namaste|namaskar)\b[!. ]*$/i.test(question.trim());
+}
+
 export async function POST(request: NextRequest) {
   try {
     enforceRequestSizeLimit(request, MAX_JSON_BYTES);
@@ -73,6 +77,12 @@ export async function POST(request: NextRequest) {
 
     const account = await getAccountOverview();
     enforceAiGenerationRateLimit(request, account.user.id, "food-history-chat");
+
+    if (isGreeting(question)) {
+      return NextResponse.json({
+        answer: `Hello ${account.profile.fullName}, I'm DabbaBot, your food-talking agent. Ask me about your score, repeated foods, cheaper swaps, or what to improve this week.`
+      });
+    }
 
     const context = account.allActivities.slice(0, 12).map(activityLine).join("\n");
     const prompt = `
