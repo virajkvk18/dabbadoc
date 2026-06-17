@@ -3,6 +3,7 @@ import {
   DashboardNav
 } from "@/components/dashboard/dashboard-nav";
 import { DabbaDocLogo } from "@/components/brand/dabbadoc-logo";
+import { FloatingFoodChatbot } from "@/components/chat/food-history-chat";
 
 export default function DashboardLayout({
   children
@@ -27,6 +28,7 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+      <FloatingFoodChatbot />
       <DashboardMobileNav />
     </div>
   );
