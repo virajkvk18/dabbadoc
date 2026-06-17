@@ -1,7 +1,17 @@
 import "server-only";
 
 import type { User } from "@supabase/supabase-js";
-import type { FoodItem, RiskFlag } from "@/types";
+import type {
+  BlameItem,
+  FoodItem,
+  FutureHealthRisk,
+  IngredientInsight,
+  ItemHealthInsight,
+  ManualMealEntry,
+  NutritionFact,
+  RiskFlag,
+  SwapRecommendation
+} from "@/types";
 import { ApiError } from "@/lib/security/api-errors";
 import { getScoreCategory } from "@/lib/scoring/healthIndex";
 import { createSupabaseServer } from "./server";
@@ -77,6 +87,12 @@ type PaymentRow = {
 
 export type ActivityType = "receipt" | "label" | "diary" | "report" | "payment";
 
+export type AccountActivitySection = {
+  title: string;
+  items: string[];
+  tone?: "default" | "good" | "warning" | "danger" | "info";
+};
+
 export type AccountActivity = {
   id: string;
   type: ActivityType;
@@ -87,6 +103,7 @@ export type AccountActivity = {
   score?: number;
   metrics: string[];
   tags: string[];
+  resultSections: AccountActivitySection[];
 };
 
 export type AccountOverview = {
@@ -229,9 +246,275 @@ function textPreview(value: string, fallback: string, maxLength = 180) {
   return clean.length > maxLength ? `${clean.slice(0, maxLength - 1)}...` : clean;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function asStringArray(value: unknown): string[] {
+  return asArray<unknown>(value)
+    .map((item) => {
+      if (typeof item === "string") return item.trim();
+      if (typeof item === "number") return String(item);
+      return "";
+    })
+    .filter(Boolean);
+}
+
+function joinParts(parts: Array<string | number | null | undefined | false>) {
+  return parts
+    .map((part) => (typeof part === "number" ? String(part) : part))
+    .filter(Boolean)
+    .join(" | ");
+}
+
+function formatFlag(value: string) {
+  return value.replace(/_/g, " ");
+}
+
+function maybeNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function maybeString(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function moneyLine(label: string, value: unknown) {
+  const amount = maybeNumber(value);
+  return typeof amount === "number" ? `${label}: INR ${Math.round(amount)}` : null;
+}
+
+function makeSection(
+  title: string,
+  items: Array<string | null | undefined | false>,
+  tone: AccountActivitySection["tone"] = "default"
+): AccountActivitySection | null {
+  const cleanItems = items
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter(Boolean);
+
+  return cleanItems.length > 0 ? { title, items: cleanItems, tone } : null;
+}
+
+function foodItemLine(item: FoodItem) {
+  const flags = item.flags?.length ? `Flags: ${item.flags.map(formatFlag).join(", ")}` : null;
+  return joinParts([
+    item.name,
+    item.quantity,
+    item.category,
+    typeof item.calorieEstimate === "number" ? `${item.calorieEstimate} kcal approx` : null,
+    typeof item.proteinEstimate === "number" ? `${item.proteinEstimate}g protein approx` : null,
+    flags
+  ]);
+}
+
+function riskLine(risk: RiskFlag) {
+  return joinParts([
+    `${risk.severity.toUpperCase()}: ${risk.label}`,
+    risk.reason,
+    risk.possibleConcern
+  ]);
+}
+
+function swapLine(swap: SwapRecommendation) {
+  return joinParts([
+    `${swap.original} -> ${swap.swap}`,
+    swap.reason,
+    typeof swap.scoreImpact === "number" ? `Score impact +${swap.scoreImpact}` : null,
+    typeof swap.costDelta === "number" ? `Cost delta INR ${Math.round(swap.costDelta)}` : null
+  ]);
+}
+
+function futureRiskLine(risk: FutureHealthRisk) {
+  return joinParts([
+    `${risk.severity.toUpperCase()}: ${risk.riskArea}`,
+    risk.habitFrequency,
+    risk.timeframe,
+    risk.linkedItems?.length ? `Linked to ${risk.linkedItems.join(", ")}` : null,
+    risk.possibleConcern,
+    risk.preventionTip ? `Prevention: ${risk.preventionTip}` : null
+  ]);
+}
+
+function itemInsightLine(insight: ItemHealthInsight) {
+  return joinParts([
+    `${insight.item}: ${formatFlag(insight.verdict)}`,
+    insight.reason,
+    insight.linkedRisks?.length ? `Linked risks: ${insight.linkedRisks.join(", ")}` : null,
+    insight.swap ? `Swap: ${insight.swap}` : null
+  ]);
+}
+
+function blameLine(item: BlameItem) {
+  return joinParts([
+    `${item.item}: ${item.impact} impact`,
+    item.reason,
+    item.swap ? `Try ${item.swap}` : null
+  ]);
+}
+
+function ingredientLine(insight: IngredientInsight) {
+  return joinParts([
+    `${insight.ingredient}: ${insight.simpleHinglishExplanation}`,
+    insight.purposeInFood ? `Why it is used: ${insight.purposeInFood}` : null,
+    insight.concernLevel ? `Concern: ${insight.concernLevel}` : null,
+    insight.possibleRegularUseConcern ? `Regular use: ${insight.possibleRegularUseConcern}` : null,
+    insight.naturalOrBetterAlternative ? `Better option: ${insight.naturalOrBetterAlternative}` : null
+  ]);
+}
+
+function nutritionFactLine(fact: NutritionFact) {
+  const amount =
+    typeof fact.value === "number"
+      ? `${fact.value}${fact.unit ? ` ${fact.unit}` : ""}${fact.per ? ` per ${fact.per}` : ""}`
+      : fact.raw;
+
+  return joinParts([
+    fact.label,
+    amount,
+    fact.interpretation,
+    fact.concernLevel ? `Concern: ${fact.concernLevel}` : null
+  ]);
+}
+
+function primitiveNutritionLines(nutrition: Record<string, unknown>) {
+  return [
+    ["Calories", nutrition.calories, "kcal"],
+    ["Protein", nutrition.protein, "g"],
+    ["Sugar", nutrition.sugar, "g"],
+    ["Added sugar", nutrition.addedSugar, "g"],
+    ["Sodium", nutrition.sodium, "mg"],
+    ["Fats", nutrition.fats, "g"],
+    ["Saturated fat", nutrition.saturatedFat, "g"],
+    ["Trans fat", nutrition.transFat, "g"],
+    ["Carbs", nutrition.carbohydrates, "g"],
+    ["Fiber", nutrition.fiber, "g"],
+    ["Serving size", nutrition.servingSize, ""]
+  ].flatMap(([label, value, unit]) => {
+    if (typeof value === "number") return [`${label}: ${value}${unit ? ` ${unit}` : ""}`];
+    if (typeof value === "string" && value.trim()) return [`${label}: ${value.trim()}`];
+    return [];
+  });
+}
+
+function receiptCostSections(value: unknown) {
+  const cost = isRecord(value) ? value : {};
+  const coverage = isRecord(cost.coverageSummary) ? cost.coverageSummary : null;
+  const scoreBreakdown = isRecord(cost.scoreBreakdown) ? cost.scoreBreakdown : null;
+
+  const coverageLine = coverage
+    ? joinParts([
+        typeof coverage.detectedCount === "number" ? `${coverage.detectedCount} detected` : null,
+        typeof coverage.riskyCount === "number" ? `${coverage.riskyCount} risky` : null,
+        typeof coverage.swappedCount === "number" ? `${coverage.swappedCount} swapped` : null,
+        maybeString(coverage.confidenceNote)
+      ])
+    : null;
+
+  const scoreBreakdownLines = scoreBreakdown
+    ? Object.entries(scoreBreakdown)
+        .filter(([, score]) => typeof score === "number")
+        .map(([label, score]) => `${formatFlag(label)}: ${score}/100`)
+    : [];
+
+  return compact([
+    makeSection(
+      "Cost and receipt coverage",
+      [
+        moneyLine("Current monthly estimate", cost.currentMonthlyEstimate),
+        moneyLine("Healthier monthly estimate", cost.healthierMonthlyEstimate),
+        moneyLine("Estimated monthly savings", cost.monthlySavings),
+        maybeString(cost.notes),
+        coverageLine
+      ],
+      "info"
+    ),
+    makeSection("Item-level health insight", asArray<ItemHealthInsight>(cost.itemInsights).map(itemInsightLine), "info"),
+    makeSection("Long-term health risks", asArray<FutureHealthRisk>(cost.futureHealthRisks).map(futureRiskLine), "danger"),
+    makeSection("Why the score changed", asArray<BlameItem>(cost.blameMap).map(blameLine), "warning"),
+    makeSection("Score breakdown", scoreBreakdownLines, "info"),
+    makeSection("Action plan saved for this scan", asStringArray(cost.actionPlan), "good")
+  ]);
+}
+
+function labelNutritionSections(value: unknown) {
+  const nutrition = isRecord(value) ? value : {};
+  const labelCoverage = isRecord(nutrition.labelCoverage) ? nutrition.labelCoverage : null;
+  const coverageLine = labelCoverage
+    ? joinParts([
+        typeof labelCoverage.nutritionFactCount === "number"
+          ? `${labelCoverage.nutritionFactCount} nutrition facts`
+          : null,
+        typeof labelCoverage.ingredientCount === "number"
+          ? `${labelCoverage.ingredientCount} ingredients`
+          : null,
+        typeof labelCoverage.additiveCount === "number"
+          ? `${labelCoverage.additiveCount} additives`
+          : null,
+        maybeString(labelCoverage.confidenceNote)
+      ])
+    : null;
+
+  return compact([
+    makeSection(
+      "Nutrition facts detected",
+      [
+        ...asArray<NutritionFact>(nutrition.facts).map(nutritionFactLine),
+        ...primitiveNutritionLines(nutrition)
+      ],
+      "info"
+    ),
+    makeSection(
+      "Ingredient explanations in Hinglish",
+      asArray<IngredientInsight>(nutrition.ingredientInsights).map(ingredientLine),
+      "info"
+    ),
+    makeSection(
+      "If eaten regularly",
+      asArray<FutureHealthRisk>(nutrition.regularUseRisks).map(futureRiskLine),
+      "danger"
+    ),
+    makeSection("Label coverage", [coverageLine], "info")
+  ]);
+}
+
+function diarySuggestionDetails(value: unknown) {
+  if (Array.isArray(value)) {
+    return {
+      improvementTips: asStringArray(value),
+      missingNutrients: [] as string[],
+      healthierSwaps: [] as SwapRecommendation[],
+      badgesEarned: [] as string[],
+      entries: [] as ManualMealEntry[],
+      aiSummary: undefined as string | undefined
+    };
+  }
+
+  const details = isRecord(value) ? value : {};
+  return {
+    improvementTips: asStringArray(details.improvementTips ?? details.tips),
+    missingNutrients: asStringArray(details.missingNutrients),
+    healthierSwaps: asArray<SwapRecommendation>(details.healthierSwaps),
+    badgesEarned: asStringArray(details.badgesEarned),
+    entries: asArray<ManualMealEntry>(details.entries),
+    aiSummary: maybeString(details.aiSummary)
+  };
+}
+
+function mealEntryLine(entry: ManualMealEntry) {
+  return joinParts([
+    `${entry.itemName} (${entry.source})`,
+    entry.mealTime ? formatFlag(entry.mealTime) : null,
+    entry.quantity,
+    entry.spiceLevel ? `Spice: ${entry.spiceLevel}` : null,
+    entry.notes
+  ]);
+}
+
 function receiptActivity(row: ReceiptRow): AccountActivity {
   const items = asArray<FoodItem>(row.detected_items);
   const risks = asArray<RiskFlag>(row.risk_flags);
+  const swaps = asArray<SwapRecommendation>(row.swaps);
   const names = itemNames(items);
 
   return {
@@ -247,12 +530,20 @@ function receiptActivity(row: ReceiptRow): AccountActivity {
       `${items.length} detected items`,
       `${risks.length} risk flags`
     ]),
-    tags: risks.slice(0, 4).map((risk) => risk.label)
+    tags: risks.slice(0, 4).map((risk) => risk.label),
+    resultSections: compact([
+      makeSection("Detected food items", items.map(foodItemLine), "info"),
+      makeSection("Risk flags from this receipt", risks.map(riskLine), "warning"),
+      makeSection("Healthier swaps suggested", swaps.map(swapLine), "good"),
+      ...receiptCostSections(row.cost_summary),
+      makeSection("Receipt text captured", [row.extracted_text ? textPreview(row.extracted_text, "", 500) : null], "default")
+    ])
   };
 }
 
 function labelActivity(row: LabelRow): AccountActivity {
   const warnings = asArray<RiskFlag>(row.warnings);
+  const alternatives = asArray<SwapRecommendation>(row.better_alternatives);
 
   return {
     id: `label-${row.id}`,
@@ -267,7 +558,13 @@ function labelActivity(row: LabelRow): AccountActivity {
       `${asArray(row.ingredients).length} ingredients`,
       `${warnings.length} warnings`
     ]),
-    tags: warnings.slice(0, 4).map((warning) => warning.label)
+    tags: warnings.slice(0, 4).map((warning) => warning.label),
+    resultSections: compact([
+      ...labelNutritionSections(row.nutrition),
+      makeSection("Ingredients found on pack", asStringArray(row.ingredients), "info"),
+      makeSection("Warnings from this label", warnings.map(riskLine), "warning"),
+      makeSection("Better alternatives", alternatives.map(swapLine), "good")
+    ])
   };
 }
 
@@ -275,6 +572,7 @@ function diaryActivity(row: DiaryRow): AccountActivity {
   const goodItems = asArray<FoodItem>(row.good_items);
   const riskyItems = asArray<FoodItem>(row.risky_items);
   const names = [...itemNames(goodItems, 3), ...itemNames(riskyItems, 3)];
+  const suggestionDetails = diarySuggestionDetails(row.suggestions);
 
   return {
     id: `diary-${row.id}`,
@@ -289,7 +587,18 @@ function diaryActivity(row: DiaryRow): AccountActivity {
       typeof row.calories_estimate === "number" ? `${row.calories_estimate} kcal approx` : null,
       typeof row.protein_estimate === "number" ? `${row.protein_estimate}g protein approx` : null
     ]),
-    tags: riskyItems.slice(0, 4).map((item) => item.name)
+    tags: riskyItems.slice(0, 4).map((item) => item.name),
+    resultSections: compact([
+      makeSection("Manual entry saved", [row.diary_text], "default"),
+      makeSection("Meal-by-meal entries", suggestionDetails.entries.map(mealEntryLine), "info"),
+      makeSection("Good foods detected", goodItems.map(foodItemLine), "good"),
+      makeSection("Foods to watch", riskyItems.map(foodItemLine), "warning"),
+      makeSection("Improvement tips", suggestionDetails.improvementTips, "good"),
+      makeSection("Missing nutrients", suggestionDetails.missingNutrients, "warning"),
+      makeSection("Healthier swaps", suggestionDetails.healthierSwaps.map(swapLine), "good"),
+      makeSection("Badges earned", suggestionDetails.badgesEarned, "info"),
+      makeSection("Diary analysis summary", [suggestionDetails.aiSummary], "default")
+    ])
   };
 }
 
@@ -310,7 +619,20 @@ function reportActivity(row: ReportRow): AccountActivity {
     createdAt: row.created_at,
     score,
     metrics: compact([score ? `Score ${score}/100` : null, "PDF export"]),
-    tags: ["Report"]
+    tags: ["Report"],
+    resultSections: compact([
+      makeSection(
+        "Report data saved",
+        Object.entries(reportData).map(([key, value]) => {
+          if (typeof value === "string" || typeof value === "number") {
+            return `${formatFlag(key)}: ${value}`;
+          }
+          return null;
+        }),
+        "info"
+      ),
+      makeSection("Report file", [row.report_url ? "PDF report URL saved for this account." : null], "default")
+    ])
   };
 }
 
@@ -326,7 +648,18 @@ function paymentActivity(row: PaymentRow): AccountActivity {
       typeof row.amount === "number" ? `INR ${Math.round(row.amount / 100)}` : null,
       row.status
     ]),
-    tags: ["Billing"]
+    tags: ["Billing"],
+    resultSections: compact([
+      makeSection(
+        "Payment result",
+        [
+          `Status: ${row.status}`,
+          row.plan ? `Plan: ${row.plan}` : null,
+          typeof row.amount === "number" ? `Amount: INR ${Math.round(row.amount / 100)}` : null
+        ],
+        "info"
+      )
+    ])
   };
 }
 

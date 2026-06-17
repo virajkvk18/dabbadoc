@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   formatDisplayDate,
   getAccountOverview,
+  type AccountActivitySection,
   type ActivityType
 } from "@/lib/supabase/account-overview";
 
@@ -31,6 +32,14 @@ const activityTone: Record<ActivityType, string> = {
   diary: "bg-sky-400/10 text-sky-200 border-sky-300/25",
   report: "bg-white/10 text-white border-white/15",
   payment: "bg-orange-500/10 text-orange-100 border-orange-300/25"
+};
+
+const sectionTone: Record<NonNullable<AccountActivitySection["tone"]>, string> = {
+  default: "border-white/10 bg-white/[0.03]",
+  good: "border-primary/20 bg-primary/[0.06]",
+  warning: "border-secondary/25 bg-secondary/[0.06]",
+  danger: "border-red-400/25 bg-red-500/[0.06]",
+  info: "border-sky-300/20 bg-sky-400/[0.05]"
 };
 
 export default async function HistoryPage() {
@@ -135,6 +144,40 @@ export default async function HistoryPage() {
                     {formatDisplayDate(activity.createdAt)}
                   </p>
                 </div>
+
+                {activity.resultSections.length > 0 ? (
+                  <div className="mt-5 border-t border-white/10 pt-5">
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                      <p className="mono-label text-[10px] text-muted-foreground">
+                        Saved analysis result
+                      </p>
+                      <Badge variant="outline">
+                        {activity.resultSections.length} result sections
+                      </Badge>
+                    </div>
+                    <div className="grid gap-3 lg:grid-cols-2">
+                      {activity.resultSections.map((section) => (
+                        <section
+                          key={`${activity.id}-${section.title}`}
+                          className={`rounded-xl border p-3 ${sectionTone[section.tone ?? "default"]}`}
+                        >
+                          <p className="text-sm font-black text-white">{section.title}</p>
+                          <ul className="mt-2 space-y-2 text-sm leading-6 text-muted-foreground">
+                            {section.items.map((item, index) => (
+                              <li
+                                key={`${section.title}-${index}-${item.slice(0, 24)}`}
+                                className="flex gap-2 break-words"
+                              >
+                                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </section>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
           );

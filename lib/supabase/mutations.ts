@@ -89,7 +89,15 @@ export async function saveReceiptAnalysis(params: {
     detected_items: params.analysis.detectedItems,
     risk_flags: params.analysis.riskFlags,
     health_score: params.analysis.healthScore,
-    cost_summary: params.analysis.costSummary,
+    cost_summary: {
+      ...params.analysis.costSummary,
+      actionPlan: params.analysis.actionPlan,
+      blameMap: params.analysis.blameMap,
+      coverageSummary: params.analysis.coverageSummary ?? null,
+      futureHealthRisks: params.analysis.futureHealthRisks ?? [],
+      itemInsights: params.analysis.itemInsights ?? [],
+      scoreBreakdown: params.analysis.scoreBreakdown
+    },
     swaps: params.analysis.swaps,
     ai_summary: params.analysis.aiSummary
   });
@@ -147,7 +155,14 @@ export async function saveFoodDiary(params: {
     protein_estimate: params.analysis.proteinEstimate,
     good_items: params.analysis.goodFoods,
     risky_items: params.analysis.riskyFoods,
-    suggestions: params.analysis.improvementTips,
+    suggestions: {
+      aiSummary: params.analysis.aiSummary,
+      badgesEarned: params.analysis.badgesEarned,
+      entries: params.analysis.entries ?? [],
+      healthierSwaps: params.analysis.healthierSwaps,
+      improvementTips: params.analysis.improvementTips,
+      missingNutrients: params.analysis.missingNutrients
+    },
     daily_score: params.analysis.dailyScore
   });
 
