@@ -57,11 +57,13 @@ export const receiptAnalyzeSchema = z.object({
   sourceType: z
     .enum(["grocery_receipt", "food_delivery", "quick_commerce"])
     .default("grocery_receipt"),
-  demoMode: z.boolean().default(false)
+  demoMode: z.boolean().default(false),
+  rawText: optionalTrimmedString(8000)
 });
 
 export const labelAnalyzeSchema = z.object({
-  demoMode: z.boolean().default(false)
+  demoMode: z.boolean().default(false),
+  rawText: optionalTrimmedString(8000)
 });
 
 export const manualMealEntrySchema = z.object({

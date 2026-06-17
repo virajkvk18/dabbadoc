@@ -21,6 +21,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { uploadImageDirectly } from "@/lib/client/direct-upload";
+import type { DirectUploadResult } from "@/lib/client/direct-upload";
+import { compressImageForUpload, formatFileSize } from "@/lib/client/image-compression";
 import type { ReceiptAnalysis } from "@/types";
 
 type ReceiptResponse = {
@@ -30,7 +34,13 @@ type ReceiptResponse = {
   error?: string;
 };
 
+type ExtractResponse = {
+  extractedText?: string;
+  error?: string;
+};
+
 const ANALYSIS_TIMEOUT_MS = 70_000;
+const DIRECT_UPLOAD_THRESHOLD_BYTES = 3.8 * 1024 * 1024;
 
 export function ReceiptUploadForm() {
   const [file, setFile] = useState<File | null>(null);
@@ -39,6 +49,10 @@ export function ReceiptUploadForm() {
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [ocrText, setOcrText] = useState("");
+  const [originalSize, setOriginalSize] = useState<number | null>(null);
+  const [processingFile, setProcessingFile] = useState(false);
+  const [directUpload, setDirectUpload] = useState<DirectUploadResult | null>(null);
 
   useEffect(() => {
     if (!file || !file.type.startsWith("image/")) {
@@ -51,16 +65,101 @@ export function ReceiptUploadForm() {
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
-  function chooseFile(nextFile?: File | null) {
-    setFile(nextFile ?? null);
+  async function chooseFile(nextFile?: File | null) {
     setError(null);
     setWarning(null);
+    setAnalysis(null);
+    setOcrText("");
+    setOriginalSize(null);
+    setDirectUpload(null);
+
+    if (!nextFile) {
+      setFile(null);
+      return;
+    }
+
+    setProcessingFile(true);
+    try {
+      const result = await compressImageForUpload(nextFile);
+      setFile(result.file);
+      setOriginalSize(result.compressed ? result.originalSize : null);
+      if (result.compressed) {
+        setWarning(
+          `Image compressed from ${formatFileSize(result.originalSize)} to ${formatFileSize(result.file.size)} for faster upload.`
+        );
+      }
+    } catch {
+      setFile(nextFile);
+      setError("Could not compress this image. Try uploading a JPG or PNG.");
+    } finally {
+      setProcessingFile(false);
+    }
+  }
+
+  async function extractText() {
+    if (!file) {
+      setError("Choose a receipt image or use live capture before extracting text.");
+      setWarning(null);
+      return false;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
+
+    try {
+      const formData = new FormData();
+      formData.set("sourceType", "grocery_receipt");
+      formData.set("demoMode", "false");
+      if (file.size > DIRECT_UPLOAD_THRESHOLD_BYTES) {
+        const upload = await uploadImageDirectly(file);
+        setDirectUpload(upload);
+        formData.set("storagePath", upload.path);
+        formData.set("fileName", upload.fileName);
+        formData.set("mimeType", upload.mimeType);
+      } else {
+        formData.set("file", file);
+      }
+
+      const response = await fetch("/api/extract-receipt", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal
+      });
+      const payload = (await response.json().catch(() => ({}))) as ExtractResponse;
+
+      if (!response.ok || !payload.extractedText) {
+        setError(payload.error ?? "Could not read this receipt. Try a clearer, closer photo.");
+        return false;
+      }
+
+      setOcrText(payload.extractedText);
+      setWarning("Review the extracted text, then run AI analysis.");
+      return true;
+    } catch (error) {
+      setError(
+        error instanceof DOMException && error.name === "AbortError"
+          ? "Text extraction took too long. Try a clearer, smaller image."
+          : "Could not extract receipt text. Please check your connection and try again."
+      );
+      return false;
+    } finally {
+      window.clearTimeout(timeout);
+      setLoading(false);
+    }
   }
 
   async function submit(demoMode = false) {
-    if (!demoMode && !file) {
+    if (!demoMode && !file && !ocrText.trim()) {
       setError("Choose a receipt image or use live capture before analyzing.");
       setWarning(null);
+      return;
+    }
+
+    if (!demoMode && !ocrText.trim()) {
+      await extractText();
       return;
     }
 
@@ -75,7 +174,18 @@ export function ReceiptUploadForm() {
       const formData = new FormData();
       formData.set("sourceType", "grocery_receipt");
       formData.set("demoMode", String(demoMode));
-      if (file && !demoMode) formData.set("file", file);
+      if (ocrText.trim() && !demoMode) {
+        formData.set("rawText", ocrText);
+        if (directUpload) {
+          formData.set("storagePath", directUpload.path);
+          formData.set("fileName", directUpload.fileName);
+          formData.set("mimeType", directUpload.mimeType);
+        } else if (file) {
+          formData.set("file", file);
+        }
+      } else if (file && !demoMode) {
+        formData.set("file", file);
+      }
 
       const response = await fetch("/api/analyze-receipt", {
         method: "POST",
@@ -171,18 +281,30 @@ export function ReceiptUploadForm() {
                 <div className="min-w-0 self-center">
                   <p className="truncate font-semibold text-white">{file.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB selected
+                    {formatFileSize(file.size)} selected
+                    {originalSize ? `, compressed from ${formatFileSize(originalSize)}` : ""}
                   </p>
                 </div>
               </div>
             ) : null}
           </div>
+          {ocrText ? (
+            <div className="space-y-2">
+              <Label htmlFor="receipt-ocr">Review extracted receipt text</Label>
+              <Textarea
+                id="receipt-ocr"
+                value={ocrText}
+                onChange={(event) => setOcrText(event.target.value)}
+                className="min-h-40"
+              />
+            </div>
+          ) : null}
           {error ? <p className="text-sm text-red-200">{error}</p> : null}
           {warning ? <p className="text-sm text-orange-100">{warning}</p> : null}
           <div className="grid gap-3 sm:flex sm:flex-wrap">
-            <Button className="w-full sm:w-auto" onClick={() => submit(false)} disabled={loading}>
+            <Button className="w-full sm:w-auto" onClick={() => submit(false)} disabled={loading || processingFile}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-              Analyze upload
+              {ocrText ? "Run AI analysis" : "Extract text"}
             </Button>
             <Button className="w-full sm:w-auto" variant="outline" onClick={() => submit(true)} disabled={loading}>
               <PlayCircle className="h-4 w-4" />

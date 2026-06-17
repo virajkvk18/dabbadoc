@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import {
   BadgeCheck,
+  Activity,
   FileText,
   History,
   Home,
@@ -40,6 +41,7 @@ const links: NavLinkItem[] = [
 
 const bottomLinks: NavLinkItem[] = [
   { href: "/pricing", label: "Premium", icon: BadgeCheck },
+  { href: "/dashboard/diagnostics", label: "Diagnostics", icon: Activity },
   { href: "/settings", label: "Settings", icon: Settings },
   { href: "/dashboard/profile", label: "Profile", icon: UserRound }
 ];

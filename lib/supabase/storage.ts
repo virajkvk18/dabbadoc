@@ -4,7 +4,7 @@ import { slugify } from "@/lib/utils";
 import { ApiError } from "@/lib/security/api-errors";
 import { createSupabaseAdmin } from "./admin";
 
-const BUCKET_NAME = "dabbadoc-uploads";
+export const BUCKET_NAME = "dabbadoc-uploads";
 
 export async function uploadToStorage(params: {
   userId: string;
@@ -56,4 +56,18 @@ export async function uploadToStorage(params: {
     path,
     skipped: false
   };
+}
+
+export async function downloadFromStorage(path: string) {
+  const supabase = createSupabaseAdmin();
+  if (!supabase) {
+    throw new ApiError("Upload storage is temporarily unavailable.", 503);
+  }
+
+  const { data, error } = await supabase.storage.from(BUCKET_NAME).download(path);
+  if (error || !data) {
+    throw new ApiError("Could not read uploaded image from storage.", 400);
+  }
+
+  return Buffer.from(await data.arrayBuffer());
 }
