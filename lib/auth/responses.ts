@@ -12,7 +12,24 @@ export function authJson(
 }
 
 export function getRequestOrigin(request: Request) {
-  return process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
+  const fallbackOrigin = new URL(request.url).origin;
+  const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL;
+
+  if (!configuredAppUrl) return fallbackOrigin;
+
+  try {
+    const configuredOrigin = new URL(configuredAppUrl).origin;
+    if (
+      process.env.NODE_ENV === "production" &&
+      configuredOrigin.startsWith("http://")
+    ) {
+      return fallbackOrigin;
+    }
+
+    return configuredOrigin;
+  } catch {
+    return fallbackOrigin;
+  }
 }
 
 type AuthProviderError = {

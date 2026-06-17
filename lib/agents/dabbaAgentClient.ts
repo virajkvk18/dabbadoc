@@ -118,8 +118,28 @@ function getAgentToken() {
   return process.env.DABBA_AGENT_TOKEN;
 }
 
+function isAllowedAgentUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    if (process.env.NODE_ENV === "production" && parsed.protocol !== "https:") {
+      console.warn("Dabba Agent URL must use HTTPS in production.");
+      return false;
+    }
+
+    return (
+      parsed.protocol === "https:" ||
+      parsed.hostname === "localhost" ||
+      parsed.hostname === "127.0.0.1"
+    );
+  } catch {
+    console.warn("Dabba Agent URL is invalid.");
+    return false;
+  }
+}
+
 export function isDabbaAgentConfigured() {
-  return Boolean(getAgentUrl() && getAgentToken());
+  const url = getAgentUrl();
+  return Boolean(url && getAgentToken() && isAllowedAgentUrl(url));
 }
 
 function timeoutMs() {
@@ -130,7 +150,7 @@ function timeoutMs() {
 async function callDabbaAgent(path: string, payload: unknown) {
   const url = getAgentUrl();
   const token = getAgentToken();
-  if (!url || !token) return null;
+  if (!url || !token || !isAllowedAgentUrl(url)) return null;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs());

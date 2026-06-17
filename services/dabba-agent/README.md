@@ -84,7 +84,7 @@ Dabba_Agent/
 │   ├── receipt_scan.json
 │   └── label_scan.json
 ├── integrations/
-│   ├── react_fetch_examples.ts
+│   ├── server_client_examples.ts
 │   └── node_client.ts
 ├── scripts/
 │   └── run_demo.py
@@ -134,7 +134,7 @@ cp .env.example .env
 Update `.env`:
 
 ```env
-API_AUTH_TOKEN=your-long-random-token
+API_AUTH_TOKEN=your-long-random-token-at-least-32-chars
 CORS_ORIGINS=http://localhost:3000
 GEMINI_API_KEY=your_gemini_key_here
 GROK_API_KEY=your_xai_grok_key_here
@@ -159,8 +159,9 @@ http://localhost:8000/docs
 ```
 
 For production, deploy this as a private backend service, restrict
-`CORS_ORIGINS` to your real app domain, set a long random `API_AUTH_TOKEN`,
-and keep Gemini/Grok keys only in backend environment variables.
+`CORS_ORIGINS` to your real app domain, set a long random `API_AUTH_TOKEN`
+of at least 32 characters, and keep Gemini/Grok keys only in backend
+environment variables.
 
 ---
 
@@ -299,10 +300,10 @@ The agent returns frontend-ready JSON like:
 
 ## Connect With Your React / Next.js App
 
-Use examples in:
+Use these server-only examples from Next.js route handlers or another backend:
 
 ```txt
-integrations/react_fetch_examples.ts
+integrations/server_client_examples.ts
 integrations/node_client.ts
 ```
 
@@ -311,7 +312,9 @@ Typical frontend flow:
 ```txt
 User uploads receipt/label/manual entry
         ↓
-Frontend sends request to Dabba Agent API
+Frontend sends request to your Next.js API route
+        ↓
+Next.js server calls Dabba Agent with the private token
         ↓
 API returns structured JSON
         ↓
@@ -338,7 +341,7 @@ Before going live:
 
 ```env
 APP_ENV=development
-API_AUTH_TOKEN=change-me-for-private-api
+API_AUTH_TOKEN=your-long-random-token-at-least-32-chars
 GEMINI_API_KEY=
 GROK_API_KEY=
 GEMINI_MODEL=gemini-2.5-flash

@@ -1,5 +1,6 @@
 from __future__ import annotations
 import base64
+import hashlib
 import logging
 import secrets
 import time
@@ -29,6 +30,14 @@ agent = DabbaAgent()
 logger = logging.getLogger("dabba_agent")
 logging.basicConfig(level=logging.INFO)
 _rate_buckets: dict[str, deque[float]] = defaultdict(deque)
+ALLOWED_UPLOAD_MIME_TYPES = {
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+    "image/heic",
+    "image/heif",
+}
 
 app.add_middleware(
     CORSMiddleware,
@@ -56,7 +65,8 @@ def _client_key(request: Request) -> str:
     forwarded = request.headers.get("x-forwarded-for", "")
     ip = forwarded.split(",")[0].strip() or (request.client.host if request.client else "unknown")
     auth = request.headers.get("authorization", "")
-    return f"{ip}:{auth[-12:]}"
+    fingerprint = hashlib.sha256(f"{ip}:{auth}".encode("utf-8")).hexdigest()[:24]
+    return fingerprint
 
 
 def enforce_request_limits(request: Request) -> None:
@@ -86,7 +96,7 @@ def require_api_auth(
 ) -> None:
     enforce_request_limits(request)
     token = settings.api_auth_token
-    if not token or token == "change-me-for-private-api":
+    if not token or token == "change-me-for-private-api" or len(token) < 32:
         logger.error("API_AUTH_TOKEN is not configured")
         raise HTTPException(status_code=503, detail="Agent API token is not configured.")
 
@@ -102,8 +112,8 @@ def validate_upload(file: UploadFile, data: bytes) -> None:
         raise HTTPException(status_code=413, detail=f"Image too large. Max {settings.max_image_mb} MB allowed.")
 
     mime_type = file.content_type or ""
-    if not mime_type.startswith("image/"):
-        raise HTTPException(status_code=415, detail="Only image uploads are supported by Dabba Agent.")
+    if mime_type.lower() not in ALLOWED_UPLOAD_MIME_TYPES:
+        raise HTTPException(status_code=415, detail="Only JPG, PNG, WebP, HEIC, or HEIF uploads are supported.")
 
 
 @app.get("/health")

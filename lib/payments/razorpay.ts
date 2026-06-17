@@ -2,6 +2,7 @@ import "server-only";
 
 import crypto from "crypto";
 import Razorpay from "razorpay";
+import { ApiError } from "@/lib/security/api-errors";
 import type { PaymentOrderResponse } from "@/types";
 
 const PREMIUM_AMOUNT_PAISE = 29900;
@@ -24,6 +25,10 @@ export async function createPremiumOrder(params: { userId: string }) {
   const amount = PREMIUM_AMOUNT_PAISE;
 
   if (!isRazorpayConfigured()) {
+    if (process.env.NODE_ENV === "production") {
+      throw new ApiError("Secure checkout is not configured.", 503);
+    }
+
     return {
       id: `mock_order_${Date.now()}`,
       amount,

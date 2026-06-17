@@ -26,7 +26,13 @@ export async function uploadToStorage(params: {
   }
 
   const safeName = slugify(params.fileName.replace(/\.[^.]+$/, "")) || "upload";
-  const ext = params.fileName.split(".").pop() || "bin";
+  const ext =
+    params.fileName
+      .split(".")
+      .pop()
+      ?.replace(/[^a-z0-9]/gi, "")
+      .slice(0, 8)
+      .toLowerCase() || "bin";
   const path = `${params.userId}/${Date.now()}-${safeName}.${ext}`;
 
   const { error } = await supabase.storage

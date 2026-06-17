@@ -8,6 +8,7 @@ import {
   MAX_JSON_BYTES
 } from "@/lib/security/abuse-protection";
 import { generateHealthReportPdf } from "@/lib/reports/pdf";
+import { getAccountOverview } from "@/lib/supabase/account-overview";
 import { saveReportRecord } from "@/lib/supabase/mutations";
 import { reportSchema } from "@/lib/validators/api";
 
@@ -20,16 +21,34 @@ export async function POST(request: NextRequest) {
     enforceRequestSizeLimit(request, MAX_JSON_BYTES);
 
     const payload = reportSchema.parse(await request.json());
+    const account = await getAccountOverview();
+    const reportData = {
+      healthScore: account.score.current,
+      scoreCategory: account.score.category,
+      scoreTrend: account.score.trendLabel,
+      streakDays: account.streak.days,
+      badges: account.badges,
+      counts: account.counts,
+      weeklyRiskSummary: account.riskSummary,
+      recentActivities: account.recentActivities.map((activity) => ({
+        type: activity.type,
+        title: activity.title,
+        detail: activity.detail,
+        createdAt: activity.createdAt,
+        score: activity.score
+      }))
+    };
     const pdf = generateHealthReportPdf({
-      ...payload,
-      userName: payload.userName || user.email || "DabbaDoc User"
+      userName: account.profile.fullName || user.email || "DabbaDoc User",
+      dateRange: payload.dateRange,
+      reportData
     });
     try {
       await saveReportRecord({
         userId: user.id,
         reportData: {
-          ...payload.reportData,
-          userName: payload.userName || user.email || "DabbaDoc User",
+          ...reportData,
+          userName: account.profile.fullName || user.email || "DabbaDoc User",
           dateRange: payload.dateRange
         }
       });

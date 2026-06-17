@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { setSessionStartedCookie } from "@/lib/auth/session";
+import { logSecurityEvent } from "@/lib/security/audit-log";
 import { createSupabaseServer } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -21,10 +22,32 @@ export async function GET(request: NextRequest) {
       : { error: new Error("Auth unavailable") };
 
     if (!error) {
+      logSecurityEvent({
+        type: "auth_success",
+        request,
+        status: 302,
+        reason: "auth_callback_success"
+      });
       const response = NextResponse.redirect(redirectUrl);
       setSessionStartedCookie(response);
       return response;
     }
+
+    logSecurityEvent({
+      type: "auth_failure",
+      severity: "warning",
+      request,
+      status: 302,
+      reason: "auth_callback_exchange_failed"
+    });
+  } else {
+    logSecurityEvent({
+      type: "auth_failure",
+      severity: "warning",
+      request,
+      status: 302,
+      reason: "auth_callback_missing_code"
+    });
   }
 
   return NextResponse.redirect(new URL("/auth?error=callback", requestUrl.origin));
