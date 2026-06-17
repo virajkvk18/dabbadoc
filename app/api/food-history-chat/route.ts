@@ -60,7 +60,11 @@ function fallbackAnswer(question: string, account: Awaited<ReturnType<typeof get
 }
 
 function isGreeting(question: string) {
-  return /^(hi|hello|hey|hii|hola|namaste|namaskar)\b[!. ]*$/i.test(question.trim());
+  return /^(hi|hello|hey|hii|hola|namaste|namaskar|good morning|good afternoon|good evening|good night)\b[!. ]*$/i.test(question.trim());
+}
+
+function isCasual(question: string) {
+  return /^(how are you|who are you|what can you do|thanks|thank you|ok|okay|cool|nice)\b[?!. ]*$/i.test(question.trim());
 }
 
 export async function POST(request: NextRequest) {
@@ -80,14 +84,21 @@ export async function POST(request: NextRequest) {
 
     if (isGreeting(question)) {
       return NextResponse.json({
-        answer: `Hello ${account.profile.fullName}, I'm DabbaBot, your food-talking agent. Ask me about your score, repeated foods, cheaper swaps, or what to improve this week.`
+        answer: `Hello ${account.profile.fullName}, I'm DabbaBot, your food-talking agent. Ask me about your meals, labels, receipts, score, repeated foods, cheaper swaps, or what to improve this week.`
+      });
+    }
+
+    if (isCasual(question)) {
+      return NextResponse.json({
+        answer: `I'm doing great, ${account.profile.fullName}. I'm here as your food bot, so I can help with meal choices, label doubts, receipt patterns, repeated foods, grocery swaps, and your Dabba Health score.`
       });
     }
 
     const context = account.allActivities.slice(0, 12).map(activityLine).join("\n");
     const prompt = `
 You are DabbaDoc food-history chat.
-Answer only from the user's saved DabbaDoc history below.
+Answer like a normal friendly food chatbot, but stay focused on food, nutrition labels, receipts, grocery choices, and DabbaDoc history.
+Use saved DabbaDoc history when the question asks about the user's score, repeated foods, scans, diary, or patterns.
 Be concise, practical, and Hinglish-friendly.
 Do not diagnose disease.
 If the data is insufficient, say what scan/diary the user should add next.
