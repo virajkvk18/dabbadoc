@@ -124,5 +124,23 @@
     "calories": 360,
     "protein": 12,
     "monthlyCost": 1100
+  },
+  {
+    "name": "Biryani",
+    "aliases": ["biryani", "chicken biryani", "veg biryani", "mutton biryani", "paneer biryani"],
+    "category": "outside_food",
+    "riskTags": ["high_sodium", "high_fat"],
+    "calories": 520,
+    "protein": 18,
+    "monthlyCost": 1600
+  },
+  {
+    "name": "Butter naan",
+    "aliases": ["butter naan", "naan", "nan", "garlic naan", "plain naan", "tandoori naan"],
+    "category": "outside_food",
+    "riskTags": ["refined_flour", "high_fat"],
+    "calories": 310,
+    "protein": 8,
+    "monthlyCost": 900
   }
 ]

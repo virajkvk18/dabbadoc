@@ -53,5 +53,5 @@ Rules:
 - Include the disclaimer sentence.
 `;
 
-  return (await generateGeminiText(prompt)) ?? (await generateGroqText(prompt)) ?? fallback;
+  return (await generateGroqText(prompt)) ?? (await generateGeminiText(prompt)) ?? fallback;
 }

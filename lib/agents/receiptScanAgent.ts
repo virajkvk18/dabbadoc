@@ -2,9 +2,16 @@ import "server-only";
 
 import type { AgentInput, ReceiptAnalysis } from "@/types";
 import { DABBADOC_DISCLAIMER } from "@/types";
-import { extractTextFromImageWithGemini } from "@/lib/gemini/client";
-import { extractTextFromImageWithGroq } from "@/lib/groq/client";
+import {
+  extractTextFromImageWithGemini,
+  generateGeminiJson
+} from "@/lib/gemini/client";
+import {
+  extractTextFromImageWithGroq,
+  generateGroqText
+} from "@/lib/groq/client";
 import { extractTextWithTesseract } from "@/lib/ocr/tesseract";
+import { safeJsonParse } from "@/lib/utils";
 import {
   buildFutureHealthRisks,
   buildItemHealthInsights,
@@ -12,7 +19,11 @@ import {
 } from "./receiptNarrative";
 import { compareCosts } from "./costComparisonAgent";
 import { explainWithDabbaBot } from "./dabbaBotAgent";
-import { parseFoodItemsFromText } from "./foodParser";
+import {
+  foodItemFromName,
+  mergeFoodItems,
+  parseFoodItemsFromText
+} from "./foodParser";
 import { updateHealthIndex } from "./healthIndexAgent";
 import { analyzeRisks } from "./riskAnalyzerAgent";
 import { recommendSwaps } from "./swapRecommenderAgent";
@@ -38,6 +49,13 @@ Do not summarize the receipt and do not merge multiple items into one line.
 Do not invent Maggi, cola, chips, or any other example items.
 If the image is unreadable, return exactly: READ_FAILED
 `;
+
+type AiReceiptItems = {
+  items?: Array<{
+    name?: string;
+    line?: string;
+  }>;
+};
 
 export class ReceiptExtractionError extends Error {
   constructor(message: string) {
@@ -86,9 +104,64 @@ function withHealthContext(text: string, healthContext?: string) {
     .join("\n");
 }
 
+function buildReceiptItemPrompt(text: string) {
+  return `Extract every visible food item from this Indian receipt/order text.
+
+Rules:
+- Return only food/menu/product line items, not totals, taxes, addresses, phone numbers, dates, or payment lines.
+- Keep separate items separate. Example: if text has "Biryani" and "Butter Naan", return both.
+- Do not invent items that are not visible.
+- Preserve restaurant foods like biryani, naan, roti, paratha, kulcha, curry, paneer, dal, rice, beverages, desserts, and sides.
+- If quantity or price is visible, keep it in the line field.
+
+Receipt text:
+${text}
+
+Return JSON only:
+{
+  "items": [
+    { "name": "Butter naan", "line": "Butter naan 2 x 80" }
+  ]
+}`;
+}
+
+async function extractReceiptItemsWithAi(text: string) {
+  const fallback: AiReceiptItems = { items: [] };
+  const prompt = `${buildReceiptItemPrompt(text)}\n\nReturn only valid JSON. Do not include markdown.`;
+  const groqText = await generateGroqText(prompt);
+  if (groqText) {
+    const parsed = safeJsonParse<AiReceiptItems>(groqText, fallback);
+    const items = mapAiReceiptItems(parsed);
+    if (items.length > 0) return items;
+  }
+
+  const geminiParsed = await generateGeminiJson<AiReceiptItems>(
+    buildReceiptItemPrompt(text),
+    fallback
+  );
+  return mapAiReceiptItems(geminiParsed);
+}
+
+function mapAiReceiptItems(response: AiReceiptItems) {
+  return (response.items ?? [])
+    .map((item) => {
+      const name = item.name?.trim();
+      if (!name) return null;
+      return foodItemFromName(name, item.line ?? name);
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+}
+
 export async function extractReceiptText(input: AgentInput) {
   if (input.rawText) return input.rawText;
   if (input.demoMode) return sampleReceiptText;
+
+  const groqText = await extractTextFromImageWithGroq({
+    dataUri: input.dataUri,
+    prompt: receiptExtractionPrompt
+  });
+
+  if (isReadableReceiptText(groqText)) return cleanExtraction(groqText ?? "");
 
   const geminiText = await extractTextFromImageWithGemini({
     dataUri: input.dataUri,
@@ -97,13 +170,6 @@ export async function extractReceiptText(input: AgentInput) {
   });
 
   if (isReadableReceiptText(geminiText)) return cleanExtraction(geminiText ?? "");
-
-  const groqText = await extractTextFromImageWithGroq({
-    dataUri: input.dataUri,
-    prompt: receiptExtractionPrompt
-  });
-
-  if (isReadableReceiptText(groqText)) return cleanExtraction(groqText ?? "");
 
   const tesseractText = await extractTextWithTesseract(input.dataUri);
   if (isReadableReceiptText(tesseractText)) return cleanExtraction(tesseractText ?? "");
@@ -115,7 +181,10 @@ export async function extractReceiptText(input: AgentInput) {
 
 export async function analyzeReceipt(input: AgentInput): Promise<ReceiptAnalysis> {
   const extractedText = await extractReceiptText(input);
-  const detectedItems = parseFoodItemsFromText(extractedText);
+  const detectedItems = mergeFoodItems([
+    ...parseFoodItemsFromText(extractedText),
+    ...(await extractReceiptItemsWithAi(extractedText))
+  ]);
   const personalizedText = withHealthContext(extractedText, input.healthContext);
   const riskFlags = await analyzeRisks(detectedItems, personalizedText);
   const swaps = await recommendSwaps(detectedItems);

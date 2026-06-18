@@ -3,6 +3,8 @@ import { FoodHistoryChat } from "@/components/chat/food-history-chat";
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import { getAccountOverview } from "@/lib/supabase/account-overview";
 
+export const dynamic = "force-dynamic";
+
 export default async function FoodChatPage() {
   const account = await getAccountOverview();
 

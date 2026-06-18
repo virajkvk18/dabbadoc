@@ -112,6 +112,13 @@ const categoryRules: Array<{
       "shawarma",
       "sandwich",
       "pav",
+      "naan",
+      "nan",
+      "butter naan",
+      "garlic naan",
+      "tandoori roti",
+      "paratha",
+      "kulcha",
       "frankie",
       "biryani",
       "fried rice",
@@ -194,6 +201,10 @@ function normalizeText(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
+export function normalizeFoodText(value: string) {
+  return normalizeText(value);
+}
+
 function parsePrice(line: string) {
   const match = line.match(pricePattern);
   if (!match) return undefined;
@@ -267,6 +278,40 @@ function inferItemProfile(name: string) {
   };
 }
 
+export function foodItemFromName(name: string, sourceLine = ""): FoodItem | null {
+  const cleanedName = cleanItemName(name);
+  const normalizedName = normalizeText(cleanedName);
+  if (normalizedName.length < 3 || /^(no|na|nil|none|item)$/.test(normalizedName)) {
+    return null;
+  }
+
+  const row = findFoodDbRow(cleanedName);
+  if (row) {
+    return {
+      name: row.name,
+      category: row.category,
+      quantity: parseQuantity(sourceLine),
+      price: parsePrice(sourceLine),
+      flags: row.riskTags,
+      confidence: 0.92,
+      calorieEstimate: row.calories,
+      proteinEstimate: row.protein
+    };
+  }
+
+  const profile = inferItemProfile(cleanedName);
+  return {
+    name: cleanedName,
+    category: profile.category,
+    quantity: parseQuantity(sourceLine),
+    price: parsePrice(sourceLine),
+    flags: profile.flags,
+    confidence: containsFoodKeyword(cleanedName) ? 0.78 : 0.62,
+    calorieEstimate: profile.calorieEstimate,
+    proteinEstimate: profile.proteinEstimate
+  };
+}
+
 function findLineForAlias(lines: string[], aliases: string[]) {
   return lines.find((line) =>
     aliases.some((alias) => normalizeText(line).includes(normalizeText(alias)))
@@ -308,18 +353,9 @@ function parseReceiptLineItems(lines: string[]) {
     if (normalizedName.length < 3 || seen.has(normalizedName)) continue;
     if (/^(no|na|nil|none|item)$/.test(normalizedName)) continue;
 
-    const profile = inferItemProfile(name);
     seen.add(normalizedName);
-    items.push({
-      name,
-      category: profile.category,
-      quantity: parseQuantity(line),
-      price: parsePrice(line),
-      flags: profile.flags,
-      confidence: containsFoodKeyword(name) ? 0.78 : 0.62,
-      calorieEstimate: profile.calorieEstimate,
-      proteinEstimate: profile.proteinEstimate
-    });
+    const item = foodItemFromName(name, line);
+    if (item) items.push(item);
   }
 
   return items;
@@ -355,6 +391,35 @@ export function parseFoodItemsFromText(text: string): FoodItem[] {
   });
 
   return [...knownItems, ...receiptItems].slice(0, 40);
+}
+
+export function mergeFoodItems(items: FoodItem[]) {
+  const merged = new Map<string, FoodItem>();
+
+  for (const item of items) {
+    const key = normalizeText(item.name);
+    if (!key) continue;
+
+    const existing = merged.get(key);
+    if (!existing) {
+      merged.set(key, item);
+      continue;
+    }
+
+    merged.set(key, {
+      ...existing,
+      ...item,
+      name: existing.name.length <= item.name.length ? existing.name : item.name,
+      quantity: existing.quantity ?? item.quantity,
+      price: existing.price ?? item.price,
+      confidence: Math.max(existing.confidence ?? 0, item.confidence ?? 0),
+      flags: Array.from(new Set([...(existing.flags ?? []), ...(item.flags ?? [])])),
+      calorieEstimate: existing.calorieEstimate ?? item.calorieEstimate,
+      proteinEstimate: existing.proteinEstimate ?? item.proteinEstimate
+    });
+  }
+
+  return Array.from(merged.values()).slice(0, 40);
 }
 
 export function findFoodDbRow(name: string) {
