@@ -111,6 +111,13 @@ export async function extractLabelText(input: AgentInput) {
   if (input.rawText) return input.rawText;
   if (input.demoMode) return sampleLabelText;
 
+  const groqText = await extractTextFromImageWithGroq({
+    dataUri: input.dataUri,
+    prompt: labelExtractionPrompt
+  });
+
+  if (isReadableLabelText(groqText)) return cleanExtraction(groqText ?? "");
+
   const geminiText = await extractTextFromImageWithGemini({
     dataUri: input.dataUri,
     mimeType: input.mimeType,
@@ -118,13 +125,6 @@ export async function extractLabelText(input: AgentInput) {
   });
 
   if (isReadableLabelText(geminiText)) return cleanExtraction(geminiText ?? "");
-
-  const groqText = await extractTextFromImageWithGroq({
-    dataUri: input.dataUri,
-    prompt: labelExtractionPrompt
-  });
-
-  if (isReadableLabelText(groqText)) return cleanExtraction(groqText ?? "");
 
   const tesseractText = await extractTextWithTesseract(input.dataUri);
   if (isReadableLabelText(tesseractText)) return cleanExtraction(tesseractText ?? "");

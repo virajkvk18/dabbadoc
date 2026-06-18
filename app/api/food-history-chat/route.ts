@@ -130,8 +130,8 @@ Return 3-5 short bullet points maximum.
 `;
 
     const answer =
-      (await generateGeminiText(prompt)) ??
       (await generateGroqText(prompt)) ??
+      (await generateGeminiText(prompt)) ??
       fallbackAnswer(question, account, healthContext);
 
     return NextResponse.json({ answer });

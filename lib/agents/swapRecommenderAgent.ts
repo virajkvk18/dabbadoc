@@ -99,12 +99,15 @@ export async function recommendSwaps(items: FoodItem[]) {
   if (candidates.length === 0) return [];
 
   const prompt = buildSwapPrompt(candidates);
-  const geminiResponse = await generateGeminiJson<AiSwapResponse>(prompt, { swaps: [] });
-  const geminiSwaps = sanitizeAiSwaps(geminiResponse, candidates);
-  if (geminiSwaps.length > 0) return geminiSwaps;
-
   const groqText = await generateGroqText(`${prompt}\n\nReturn only valid JSON. Do not include markdown.`);
-  if (!groqText) return [];
+  if (groqText) {
+    const groqSwaps = sanitizeAiSwaps(
+      safeJsonParse<AiSwapResponse>(groqText, { swaps: [] }),
+      candidates
+    );
+    if (groqSwaps.length > 0) return groqSwaps;
+  }
 
-  return sanitizeAiSwaps(safeJsonParse<AiSwapResponse>(groqText, { swaps: [] }), candidates);
+  const geminiResponse = await generateGeminiJson<AiSwapResponse>(prompt, { swaps: [] });
+  return sanitizeAiSwaps(geminiResponse, candidates);
 }

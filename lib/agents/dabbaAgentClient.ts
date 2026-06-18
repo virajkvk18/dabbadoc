@@ -30,6 +30,7 @@ import {
   extractIngredientsFromLabel,
   extractNutritionFacts
 } from "./labelNarrative";
+import { mergeFoodItems, parseFoodItemsFromText } from "./foodParser";
 import { filterContextualSwaps } from "./swapPolicy";
 import {
   awardBadges,
@@ -364,7 +365,10 @@ export async function analyzeReceiptWithDabbaAgent(params: {
 
   if (!agent) return null;
 
-  const detectedItems = mapFoodItems(agent.detected_items);
+  const detectedItems = mergeFoodItems([
+    ...mapFoodItems(agent.detected_items),
+    ...parseFoodItemsFromText(params.rawText)
+  ]);
   const riskFlags = mapRiskFlags(agent.risk_flags, agent.future_health_risks);
   const swaps = mapSwaps(agent.healthier_swaps, agent.cost_comparison, detectedItems);
   const futureHealthRisks = mapFutureHealthRisks(
