@@ -10,7 +10,6 @@ import {
   CostSummary,
   DetectedItems,
   ExtractedReceiptText,
-  FoodBlameMap,
   FutureHealthRisks,
   ItemInsightList,
   BudgetHealthCombo,
@@ -353,7 +352,6 @@ export function ReceiptUploadForm() {
               </CardContent>
             </Card>
           </div>
-          <FoodBlameMap blameMap={analysis.blameMap} />
           <ReceiptCoverage coverage={analysis.coverageSummary} />
           <ExtractedReceiptText text={analysis.extractedText} />
           <DetectedItems items={analysis.detectedItems} />
