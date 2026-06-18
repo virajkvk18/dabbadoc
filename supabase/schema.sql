@@ -90,6 +90,21 @@ create table if not exists public.reports (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.family_connections (
+  id uuid primary key default gen_random_uuid(),
+  owner_user_id uuid not null references public.profiles(id) on delete cascade,
+  family_member_user_id uuid references public.profiles(id) on delete cascade,
+  invited_email text not null,
+  relationship text not null,
+  status text not null default 'pending'
+    check (status in ('pending', 'accepted', 'rejected', 'revoked')),
+  created_at timestamptz not null default now(),
+  accepted_at timestamptz,
+  rejected_at timestamptz,
+  revoked_at timestamptz,
+  check (owner_user_id <> family_member_user_id)
+);
+
 create index if not exists uploads_user_id_idx on public.uploads (user_id);
 create index if not exists receipt_analyses_user_upload_idx on public.receipt_analyses (user_id, upload_id);
 create index if not exists label_analyses_user_upload_idx on public.label_analyses (user_id, upload_id);
@@ -100,6 +115,12 @@ create unique index if not exists payments_razorpay_order_id_unique
   where razorpay_order_id is not null;
 create index if not exists payments_user_order_idx on public.payments (user_id, razorpay_order_id);
 create index if not exists reports_user_id_idx on public.reports (user_id);
+create index if not exists family_connections_owner_idx on public.family_connections (owner_user_id, status);
+create index if not exists family_connections_member_idx on public.family_connections (family_member_user_id, status);
+create index if not exists family_connections_invited_email_idx on public.family_connections (lower(invited_email), status);
+create unique index if not exists family_connections_unique_active
+  on public.family_connections (owner_user_id, invited_email)
+  where status in ('pending', 'accepted');
 
 create or replace function public.handle_new_user()
 returns trigger

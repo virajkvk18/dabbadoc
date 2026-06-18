@@ -117,3 +117,25 @@ export const razorpayVerifySchema = z.object({
   razorpay_payment_id: z.string().trim().min(1).max(120),
   razorpay_signature: z.string().trim().min(32).max(256)
 });
+
+export const familyRelationshipSchema = z.enum([
+  "Father",
+  "Mother",
+  "Spouse",
+  "Son",
+  "Daughter",
+  "Brother",
+  "Sister",
+  "Grandparent",
+  "Other"
+]);
+
+export const familyInviteSchema = z.object({
+  email: emailSchema,
+  relationship: familyRelationshipSchema
+});
+
+export const familyAcceptSchema = z.object({
+  connectionId: z.string().uuid(),
+  action: z.enum(["accept", "reject"]).default("accept")
+});

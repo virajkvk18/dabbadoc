@@ -14,6 +14,7 @@ import {
   Settings,
   Upload,
   UserRound,
+  UsersRound,
   Utensils
 } from "lucide-react";
 import { DabbaDocLogo } from "@/components/brand/dabbadoc-logo";
@@ -34,6 +35,7 @@ const links: NavLinkItem[] = [
   { href: "/dashboard/upload-receipt", label: "Receipt scan", icon: Upload },
   { href: "/dashboard/label-scan", label: "LabelScan", icon: ScanLine },
   { href: "/dashboard/food-diary", label: "Food diary", icon: Utensils },
+  { href: "/dashboard/family", label: "Family", icon: UsersRound },
   { href: "/dashboard/history", label: "History", icon: History },
   { href: "/dashboard/reports", label: "Reports", icon: FileText }
 ];
@@ -48,7 +50,7 @@ const mobileLinks: MobileNavLinkItem[] = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/dashboard/history", label: "History", icon: History },
   { href: "/dashboard/label-scan", label: "Scan", icon: ScanLine, fab: true },
-  { href: "/dashboard/food-diary", label: "Diary", icon: Utensils },
+  { href: "/dashboard/family", label: "Family", icon: UsersRound },
   { href: "/dashboard/profile", label: "You", icon: UserRound }
 ];
 

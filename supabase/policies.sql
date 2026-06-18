@@ -6,6 +6,7 @@ alter table public.food_diaries enable row level security;
 alter table public.health_index enable row level security;
 alter table public.payments enable row level security;
 alter table public.reports enable row level security;
+alter table public.family_connections enable row level security;
 
 drop policy if exists "Users can read own profile" on public.profiles;
 drop policy if exists "Users can update own profile" on public.profiles;
@@ -41,6 +42,11 @@ drop policy if exists "Users can read own reports" on public.reports;
 drop policy if exists "Users can insert own reports" on public.reports;
 drop policy if exists "Users can update own reports" on public.reports;
 drop policy if exists "Users can delete own reports" on public.reports;
+
+drop policy if exists "Users can read family connections" on public.family_connections;
+drop policy if exists "Users can invite family members" on public.family_connections;
+drop policy if exists "Users can update family connections" on public.family_connections;
+drop policy if exists "Users can delete family connections" on public.family_connections;
 
 drop policy if exists "Users can upload own files" on storage.objects;
 drop policy if exists "Users can read own files" on storage.objects;
@@ -205,6 +211,38 @@ with check (auth.uid() = user_id);
 create policy "Users can delete own reports"
 on public.reports for delete
 using (auth.uid() = user_id);
+
+create policy "Users can read family connections"
+on public.family_connections for select
+using (
+  auth.uid() = owner_user_id
+  or auth.uid() = family_member_user_id
+  or lower(coalesce(auth.jwt()->>'email', '')) = lower(invited_email)
+);
+
+create policy "Users can invite family members"
+on public.family_connections for insert
+with check (auth.uid() = owner_user_id);
+
+create policy "Users can update family connections"
+on public.family_connections for update
+using (
+  auth.uid() = owner_user_id
+  or auth.uid() = family_member_user_id
+  or lower(coalesce(auth.jwt()->>'email', '')) = lower(invited_email)
+)
+with check (
+  auth.uid() = owner_user_id
+  or auth.uid() = family_member_user_id
+  or lower(coalesce(auth.jwt()->>'email', '')) = lower(invited_email)
+);
+
+create policy "Users can delete family connections"
+on public.family_connections for delete
+using (
+  auth.uid() = owner_user_id
+  or auth.uid() = family_member_user_id
+);
 
 create policy "Users can upload own files"
 on storage.objects for insert
