@@ -45,7 +45,7 @@ export function FamilyInviteForm() {
       });
       const payload = (await response.json().catch(() => ({}))) as ApiResponse;
       if (!response.ok) {
-        setError(payload.error ?? "Could not create invite.");
+        setError(payload.error ?? "Family setup is pending. Apply the Supabase migration, then try again.");
         return;
       }
       setEmail("");
