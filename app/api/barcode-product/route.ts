@@ -65,6 +65,10 @@ export async function GET(request: NextRequest) {
     );
 
     if (!response.ok) {
+      if (response.status === 404) {
+        throw new ApiError("Product was not found for this barcode. Try another barcode or paste label text in LabelScan.", 404);
+      }
+
       throw new ApiError("Barcode lookup failed. Try manual label text.", 502);
     }
 

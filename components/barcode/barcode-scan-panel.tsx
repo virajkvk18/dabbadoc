@@ -4,6 +4,8 @@
 
 import { useEffect, useState } from "react";
 import { Barcode, FileImage, Loader2, ScanLine } from "lucide-react";
+import { BrowserMultiFormatReader } from "@zxing/browser";
+import { BarcodeFormat, DecodeHintType } from "@zxing/library";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,6 +28,28 @@ type BarcodeDetectorConstructor = new (options?: {
 type WindowWithBarcodeDetector = Window & {
   BarcodeDetector?: BarcodeDetectorConstructor;
 };
+
+async function decodeBarcodeWithZxing(file: File) {
+  const hints = new Map();
+  hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+    BarcodeFormat.EAN_13,
+    BarcodeFormat.EAN_8,
+    BarcodeFormat.UPC_A,
+    BarcodeFormat.UPC_E,
+    BarcodeFormat.CODE_128
+  ]);
+  hints.set(DecodeHintType.TRY_HARDER, true);
+
+  const reader = new BrowserMultiFormatReader(hints);
+  const url = URL.createObjectURL(file);
+
+  try {
+    const result = await reader.decodeFromImageUrl(url);
+    return result.getText().replace(/\D/g, "");
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
 
 export function BarcodeScanPanel() {
   const [barcode, setBarcode] = useState("");
@@ -87,28 +111,30 @@ export function BarcodeScanPanel() {
       return;
     }
 
-    const Detector = (window as WindowWithBarcodeDetector).BarcodeDetector;
-    if (!Detector) {
-      setError("Barcode scanning is not supported in this browser. Enter the barcode number manually.");
-      setMessage(null);
-      return;
-    }
-
     setLoading(true);
     setError(null);
     setMessage(null);
 
     try {
-      const bitmap = await createImageBitmap(file);
-      const detector = new Detector({
-        formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"]
-      });
-      const codes = await detector.detect(bitmap);
-      bitmap.close();
+      let detected = "";
+      const Detector = (window as WindowWithBarcodeDetector).BarcodeDetector;
 
-      const detected = codes[0]?.rawValue?.replace(/\D/g, "");
+      if (Detector) {
+        const bitmap = await createImageBitmap(file);
+        const detector = new Detector({
+          formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"]
+        });
+        const codes = await detector.detect(bitmap);
+        bitmap.close();
+        detected = codes[0]?.rawValue?.replace(/\D/g, "") ?? "";
+      }
+
       if (!detected) {
-        setError("No barcode detected. Try a closer barcode photo or enter the number.");
+        detected = await decodeBarcodeWithZxing(file);
+      }
+
+      if (!detected) {
+        setError("No barcode detected. Try a clearer barcode photo or enter the number manually.");
         return;
       }
 
