@@ -4,8 +4,7 @@ import { isPaidPlan } from "@/lib/plans";
 const CREATOR_EMAILS = new Set([
   "aanya1407.jain@gmail.com",
   "jainaanya1407@gmail.com",
-  "virajvishwakarma672@gmail.com",
-  "yashjain18092005@gmail.com"
+  "virajvishwakarma672@gmail.com"
 ]);
 
 export function isCreatorEmail(email?: string | null) {
