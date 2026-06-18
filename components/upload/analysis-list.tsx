@@ -5,7 +5,6 @@ import {
   ClipboardList,
   CheckCircle2,
   FileText,
-  Flame,
   FlaskConical,
   HeartPulse,
   IndianRupee,
@@ -20,7 +19,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type {
-  BlameItem,
   CostComparison,
   FoodItem,
   FutureHealthRisk,
@@ -504,55 +502,6 @@ export function SwapList({ swaps }: { swaps: SwapRecommendation[] }) {
               </p>
               <p className="text-sm text-muted-foreground">{swap.reason}</p>
             </div>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  );
-}
-
-export function FoodBlameMap({ blameMap }: { blameMap?: BlameItem[] }) {
-  const items = (blameMap ?? [])
-    .filter((item) => item.item.trim())
-    .sort((a, b) => b.impact - a.impact)
-    .slice(0, 6);
-  const maxImpact = Math.max(1, ...items.map((item) => item.impact));
-
-  return (
-    <Card className="glass-panel border-secondary/25">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Flame className="h-5 w-5 text-secondary" />
-          Food Blame Map
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Why your score changed, item by item.
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {items.length === 0 ? (
-          <p className="rounded-xl border border-primary/20 bg-primary/10 p-4 text-sm text-primary">
-            No major score-reducing item was found. Keep the same pattern and add protein/fiber for a stronger score.
-          </p>
-        ) : null}
-        {items.map((item) => (
-          <div key={`${item.item}-${item.impact}`} className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="font-semibold text-white">{item.item}</p>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.reason}</p>
-              </div>
-              <Badge variant="danger">-{item.impact}</Badge>
-            </div>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-              <div
-                className="h-full rounded-full bg-secondary"
-                style={{ width: `${Math.max(12, (item.impact / maxImpact) * 100)}%` }}
-              />
-            </div>
-            <p className="mt-3 rounded-xl border border-primary/20 bg-primary/10 p-3 text-sm text-primary">
-              Better swap: {item.swap}
-            </p>
           </div>
         ))}
       </CardContent>

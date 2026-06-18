@@ -1,5 +1,4 @@
 import type {
-  BlameItem,
   FoodItem,
   HealthIndexSnapshot,
   HealthScoreBreakdown,
@@ -98,28 +97,6 @@ export function calculateHealthScore(breakdown: HealthScoreBreakdown) {
       return score + value * weights[key as keyof HealthScoreBreakdown];
     }, 0)
   );
-}
-
-export function buildBlameMap(
-  items: FoodItem[],
-  swaps: SwapRecommendation[]
-): BlameItem[] {
-  return items
-    .filter((item) => (item.flags ?? []).some((flag) => flag !== "balanced"))
-    .slice(0, 6)
-    .map((item) => {
-      const match =
-        swaps.find(
-          (swap) => swap.original.toLowerCase() === item.name.toLowerCase()
-        ) ?? swaps[0];
-
-      return {
-        item: item.name,
-        impact: Math.min(28, (item.flags?.length ?? 1) * 7),
-        reason: `Pulling the score down because of ${(item.flags ?? []).join(", ")}.`,
-        swap: match?.swap ?? "home-style balanced option"
-      };
-    });
 }
 
 export function awardBadges(params: {

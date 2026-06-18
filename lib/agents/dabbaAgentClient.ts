@@ -33,7 +33,6 @@ import {
 import { filterContextualSwaps } from "./swapPolicy";
 import {
   awardBadges,
-  buildBlameMap,
   calculateBreakdown,
   getScoreCategory
 } from "@/lib/scoring/healthIndex";
@@ -389,7 +388,7 @@ export async function analyzeReceiptWithDabbaAgent(params: {
     healthScore,
     scoreCategory: agent.dabba_health_index?.grade ?? getScoreCategory(healthScore),
     scoreBreakdown,
-    blameMap: buildBlameMap(detectedItems, swaps),
+    blameMap: [],
     swaps,
     costSummary: mapCostSummary(agent.cost_comparison),
     actionPlan: mapActionPlan(agent.seven_day_action_plan),

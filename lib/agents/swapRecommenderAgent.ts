@@ -44,8 +44,9 @@ function buildSwapPrompt(items: FoodItem[]) {
 Very important rules:
 - Recommend swaps ONLY for the candidate foods listed below.
 - The "original" field must exactly match one candidate food name.
-- Do not swap normal healthy homemade Indian staples like roti, chapati, dal, poha, upma, idli, dosa, sabzi, curd, khichdi, sprouts, salad, or home food unless that exact item has a risky flag such as high_sugar, fried, high_sodium, processed, maida, palm_oil, or low_protein.
+- Do not swap normal healthy homemade Indian staples like roti, chapati, dal, poha, upma, idli, dosa, sabzi, curd, khichdi, sprouts, salad, or home food unless the item name itself clearly says it is fried, sugary, packaged, instant, maida-based, palm-oil based, or ultra-processed.
 - If an item is already balanced or only has positive flags like whole_food, fiber, protein, vegetable, return no swap for it.
+- Do not replace an item just because it is low in protein. That should become an "add protein on the side" tip elsewhere, not a food swap.
 - Keep swaps practical for Indian households and explain the reason in one short Hinglish-friendly sentence.
 - Do not give medical advice or disease diagnosis.
 

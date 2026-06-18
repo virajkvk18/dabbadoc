@@ -5,7 +5,6 @@ import { DABBADOC_DISCLAIMER } from "@/types";
 import { extractTextFromImageWithGemini } from "@/lib/gemini/client";
 import { extractTextFromImageWithGroq } from "@/lib/groq/client";
 import { extractTextWithTesseract } from "@/lib/ocr/tesseract";
-import { buildBlameMap } from "@/lib/scoring/healthIndex";
 import {
   buildFutureHealthRisks,
   buildItemHealthInsights,
@@ -127,7 +126,6 @@ export async function analyzeReceipt(input: AgentInput): Promise<ReceiptAnalysis
     streakCount: 2
   });
   const costSummary = await compareCosts(detectedItems, swaps);
-  const blameMap = buildBlameMap(detectedItems, swaps);
   const futureHealthRisks = buildFutureHealthRisks(detectedItems, riskFlags);
   const itemInsights = buildItemHealthInsights(detectedItems, riskFlags, swaps);
   const coverageSummary = buildReceiptCoverageSummary(detectedItems, swaps);
@@ -162,7 +160,7 @@ export async function analyzeReceipt(input: AgentInput): Promise<ReceiptAnalysis
     healthScore: health.score,
     scoreCategory: health.category,
     scoreBreakdown: health.scoreBreakdown,
-    blameMap,
+    blameMap: [],
     swaps,
     costSummary,
     actionPlan,
