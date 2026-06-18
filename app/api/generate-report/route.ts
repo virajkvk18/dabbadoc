@@ -22,7 +22,9 @@ export async function POST(request: NextRequest) {
 
     const payload = reportSchema.parse(await request.json());
     const account = await getAccountOverview();
+    const generatedAt = new Date().toISOString();
     const reportData = {
+      generatedAt,
       healthScore: account.score.current,
       scoreCategory: account.score.category,
       scoreTrend: account.score.trendLabel,
@@ -41,6 +43,7 @@ export async function POST(request: NextRequest) {
     const pdf = generateHealthReportPdf({
       userName: account.profile.fullName || user.email || "DabbaDoc User",
       dateRange: payload.dateRange,
+      generatedAt,
       reportData
     });
     try {

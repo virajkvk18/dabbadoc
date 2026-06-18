@@ -12,6 +12,7 @@ import {
   WandSparkles
 } from "lucide-react";
 import { Disclaimer } from "@/components/common/disclaimer";
+import { LiveDateTime } from "@/components/common/live-date-time";
 import { ProcessingSteps } from "@/components/common/processing-steps";
 import { BadgeGrid } from "@/components/badges/badge-grid";
 import { HealthScoreGauge } from "@/components/dashboard/health-score-gauge";
@@ -22,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { FoodDiaryAnalysis, ManualMealEntry, MealTime, SpiceLevel } from "@/types";
+import { formatAppDateTime } from "@/lib/date-time";
 import { cn } from "@/lib/utils";
 
 type DiaryResponse = {
@@ -64,7 +66,7 @@ function entrySummary(entry: ManualMealEntry) {
   return `${source} • ${meal} • ${entry.quantity} • ${entry.spiceLevel} spice`;
 }
 
-export function FoodDiaryForm() {
+export function FoodDiaryForm({ initialNow }: { initialNow: string }) {
   const [currentEntry, setCurrentEntry] =
     useState<Omit<ManualMealEntry, "id">>(defaultEntry);
   const [entries, setEntries] = useState<ManualMealEntry[]>([]);
@@ -105,7 +107,8 @@ export function FoodDiaryForm() {
         itemName: currentEntry.itemName.trim(),
         quantity: currentEntry.quantity.trim(),
         notes: currentEntry.notes?.trim(),
-        id: crypto.randomUUID()
+        id: crypto.randomUUID(),
+        loggedAt: new Date().toISOString()
       }
     ]);
     setCurrentEntry({
@@ -127,7 +130,8 @@ export function FoodDiaryForm() {
         itemName: currentEntry.itemName.trim(),
         quantity: currentEntry.quantity.trim(),
         notes: currentEntry.notes?.trim(),
-        id: crypto.randomUUID()
+        id: crypto.randomUUID(),
+        loggedAt: new Date().toISOString()
       });
     }
 
@@ -302,11 +306,12 @@ export function FoodDiaryForm() {
       ) : null}
 
       <Card className="glass-panel">
-        <CardHeader>
+        <CardHeader className="gap-3">
           <CardTitle className="flex items-center gap-2">
             <Clock3 className="h-5 w-5 text-primary" />
             Today&apos;s entries
           </CardTitle>
+          <LiveDateTime initialNow={initialNow} />
         </CardHeader>
         <CardContent className="space-y-3">
           {entries.length === 0 ? (
@@ -322,6 +327,15 @@ export function FoodDiaryForm() {
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-white">{entry.itemName}</p>
                   <p className="mt-1 text-sm text-muted-foreground">{entrySummary(entry)}</p>
+                  {entry.loggedAt ? (
+                    <time
+                      className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-primary"
+                      dateTime={entry.loggedAt}
+                    >
+                      <Clock3 className="h-3.5 w-3.5" />
+                      Logged {formatAppDateTime(entry.loggedAt)}
+                    </time>
+                  ) : null}
                   {entry.notes ? (
                     <p className="mt-1 text-xs text-orange-100">{entry.notes}</p>
                   ) : null}
@@ -391,6 +405,15 @@ export function FoodDiaryForm() {
                     <p className="mt-1 text-sm text-muted-foreground">
                       {entrySummary(entry)}
                     </p>
+                    {entry.loggedAt ? (
+                      <time
+                        className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-primary"
+                        dateTime={entry.loggedAt}
+                      >
+                        <Clock3 className="h-3.5 w-3.5" />
+                        Logged {formatAppDateTime(entry.loggedAt)}
+                      </time>
+                    ) : null}
                   </div>
                 ))}
               </CardContent>

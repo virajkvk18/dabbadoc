@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { getAppDateKey } from "@/lib/date-time";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -36,7 +37,7 @@ export function safeJsonParse<T>(value: string, fallback: T): T {
 }
 
 export function todayIso() {
-  return new Date().toISOString().slice(0, 10);
+  return getAppDateKey();
 }
 
 export function slugify(value: string) {

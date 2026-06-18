@@ -198,9 +198,12 @@ export default async function ProfilePage() {
                           {activity.detail}
                         </p>
                       </div>
-                      <p className="shrink-0 text-xs text-muted-foreground">
+                      <time
+                        className="shrink-0 text-xs text-muted-foreground"
+                        dateTime={activity.createdAt}
+                      >
                         {formatDisplayDate(activity.createdAt)}
-                      </p>
+                      </time>
                     </div>
                     {activity.metrics.length > 0 ? (
                       <div className="mt-3 flex flex-wrap gap-2">

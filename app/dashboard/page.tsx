@@ -17,6 +17,7 @@ import {
 import { BadgeGrid } from "@/components/badges/badge-grid";
 import { HealthIndexChart } from "@/components/charts/health-index-chart";
 import { Disclaimer } from "@/components/common/disclaimer";
+import { LiveGreeting } from "@/components/common/live-date-time";
 import { HealthScoreGauge } from "@/components/dashboard/health-score-gauge";
 import { StatCard } from "@/components/dashboard/stat-card";
 import {
@@ -27,8 +28,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  appDateKeyToDate,
+  formatAppMonthDay,
+  formatAppWeekday,
+  getAppDateKey,
+  shiftAppDateKey
+} from "@/lib/date-time";
+import {
+  formatDisplayDate,
   getAccountOverview,
-  getGreeting,
   type ActivityType
 } from "@/lib/supabase/account-overview";
 
@@ -61,55 +69,29 @@ const activityIcons: Record<ActivityType, typeof Upload> = {
   payment: CreditCard
 };
 
-const weekdayFormatter = new Intl.DateTimeFormat("en-IN", {
-  weekday: "short",
-  timeZone: "Asia/Kolkata"
-});
-
-const dateLabelFormatter = new Intl.DateTimeFormat("en-IN", {
-  day: "numeric",
-  month: "short",
-  timeZone: "Asia/Kolkata"
-});
-
-const dateKeyFormatter = new Intl.DateTimeFormat("en-IN", {
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  timeZone: "Asia/Kolkata"
-});
-
-function getDateKey(value: string | Date) {
-  const parts = dateKeyFormatter.formatToParts(
-    typeof value === "string" ? new Date(value) : value
-  );
-  const year = parts.find((part) => part.type === "year")?.value ?? "";
-  const month = parts.find((part) => part.type === "month")?.value ?? "";
-  const day = parts.find((part) => part.type === "day")?.value ?? "";
-  return `${year}-${month}-${day}`;
-}
-
-function buildActivityWeek(activityDates: string[]): StreakDay[] {
-  const activeDates = new Set(activityDates.map((date) => getDateKey(date)));
-  const today = new Date();
+function buildActivityWeek(activityDates: string[], now: Date): StreakDay[] {
+  const activeDates = new Set(activityDates.map((date) => getAppDateKey(date)));
+  const todayKey = getAppDateKey(now);
 
   return Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(today.getTime() - (6 - index) * 24 * 60 * 60 * 1000);
+    const dateKey = shiftAppDateKey(todayKey, index - 6);
+    const date = appDateKeyToDate(dateKey);
     return {
-      label: weekdayFormatter.format(date).slice(0, 2),
-      dateLabel: dateLabelFormatter.format(date),
-      active: activeDates.has(getDateKey(date)),
-      today: index === 6
+      label: formatAppWeekday(date).slice(0, 2),
+      dateLabel: formatAppMonthDay(date),
+      active: activeDates.has(dateKey),
+      today: dateKey === todayKey
     };
   });
 }
 
 export default async function DashboardPage() {
   const account = await getAccountOverview();
-  const greeting = getGreeting();
+  const now = new Date();
   const riskCount = account.riskSummary.length;
   const activityWeek = buildActivityWeek(
-    account.allActivities.map((activity) => activity.createdAt)
+    account.allActivities.map((activity) => activity.createdAt),
+    now
   );
 
   return (
@@ -119,10 +101,8 @@ export default async function DashboardPage() {
           <Badge variant="secondary">
             {account.counts.activities > 0 ? "Monitoring active" : "Ready to begin"}
           </Badge>
-          <h1 className="mt-3 text-3xl font-black text-white md:text-4xl">
-            {greeting}, {account.profile.fullName}
-          </h1>
-          <p className="mt-1 text-muted-foreground">
+          <LiveGreeting name={account.profile.fullName} initialNow={now.toISOString()} />
+          <p className="mt-2 text-muted-foreground">
             Your food health overview is built from your saved scans, label checks,
             diary entries, reports, and streaks.
           </p>
@@ -405,6 +385,12 @@ export default async function DashboardPage() {
                       <div className="min-w-0">
                         <p className="font-semibold text-white">{activity.title}</p>
                         <p className="mt-1 text-sm text-muted-foreground">{activity.description}</p>
+                        <time
+                          className="mt-2 block text-xs font-semibold text-primary"
+                          dateTime={activity.createdAt}
+                        >
+                          {formatDisplayDate(activity.createdAt)}
+                        </time>
                         <div className="mt-2 flex flex-wrap gap-2">
                           {activity.metrics.slice(0, 3).map((metric) => (
                             <Badge key={metric} variant="outline">{metric}</Badge>

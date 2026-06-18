@@ -180,9 +180,12 @@ export default async function HistoryPage() {
                       </div>
                     </div>
                   </div>
-                  <p className="shrink-0 text-xs text-muted-foreground lg:text-right">
+                  <time
+                    className="shrink-0 text-xs text-muted-foreground lg:text-right"
+                    dateTime={activity.createdAt}
+                  >
                     {formatDisplayDate(activity.createdAt)}
-                  </p>
+                  </time>
                 </div>
 
                 {activity.resultSections.length > 0 ? (
