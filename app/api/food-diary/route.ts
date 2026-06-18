@@ -9,6 +9,7 @@ import {
   enforceRequestSizeLimit,
   MAX_JSON_BYTES
 } from "@/lib/security/abuse-protection";
+import { getHealthContextForUser } from "@/lib/supabase/health-profile";
 import { saveFoodDiary, saveHealthIndex } from "@/lib/supabase/mutations";
 import { foodDiarySchema } from "@/lib/validators/api";
 
@@ -21,11 +22,14 @@ export async function POST(request: NextRequest) {
     enforceRequestSizeLimit(request, MAX_JSON_BYTES);
 
     const payload = foodDiarySchema.parse(await request.json());
+    const healthContext = await getHealthContextForUser(user.id);
+    const healthGoals = Array.from(new Set([...healthContext.goals, ...payload.healthGoals]));
     const diaryInput = {
       userId: user.id,
       diaryText: payload.diaryText,
       entries: payload.entries,
-      healthGoals: payload.healthGoals,
+      healthGoals,
+      healthContext: healthContext.context,
       demoMode: payload.demoMode
     };
     const analysis =

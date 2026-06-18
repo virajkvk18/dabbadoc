@@ -7,6 +7,8 @@ alter table public.health_index enable row level security;
 alter table public.payments enable row level security;
 alter table public.reports enable row level security;
 alter table public.family_connections enable row level security;
+alter table public.health_profiles enable row level security;
+alter table public.wellness_logs enable row level security;
 
 drop policy if exists "Users can read own profile" on public.profiles;
 drop policy if exists "Users can update own profile" on public.profiles;
@@ -47,6 +49,16 @@ drop policy if exists "Users can read family connections" on public.family_conne
 drop policy if exists "Users can invite family members" on public.family_connections;
 drop policy if exists "Users can update family connections" on public.family_connections;
 drop policy if exists "Users can delete family connections" on public.family_connections;
+
+drop policy if exists "Users can read own health profile" on public.health_profiles;
+drop policy if exists "Users can insert own health profile" on public.health_profiles;
+drop policy if exists "Users can update own health profile" on public.health_profiles;
+drop policy if exists "Users can delete own health profile" on public.health_profiles;
+
+drop policy if exists "Users can read own wellness logs" on public.wellness_logs;
+drop policy if exists "Users can insert own wellness logs" on public.wellness_logs;
+drop policy if exists "Users can update own wellness logs" on public.wellness_logs;
+drop policy if exists "Users can delete own wellness logs" on public.wellness_logs;
 
 drop policy if exists "Users can upload own files" on storage.objects;
 drop policy if exists "Users can read own files" on storage.objects;
@@ -243,6 +255,40 @@ using (
   auth.uid() = owner_user_id
   or auth.uid() = family_member_user_id
 );
+
+create policy "Users can read own health profile"
+on public.health_profiles for select
+using (auth.uid() = user_id);
+
+create policy "Users can insert own health profile"
+on public.health_profiles for insert
+with check (auth.uid() = user_id);
+
+create policy "Users can update own health profile"
+on public.health_profiles for update
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+create policy "Users can delete own health profile"
+on public.health_profiles for delete
+using (auth.uid() = user_id);
+
+create policy "Users can read own wellness logs"
+on public.wellness_logs for select
+using (auth.uid() = user_id);
+
+create policy "Users can insert own wellness logs"
+on public.wellness_logs for insert
+with check (auth.uid() = user_id);
+
+create policy "Users can update own wellness logs"
+on public.wellness_logs for update
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+create policy "Users can delete own wellness logs"
+on public.wellness_logs for delete
+using (auth.uid() = user_id);
 
 create policy "Users can upload own files"
 on storage.objects for insert

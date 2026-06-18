@@ -103,6 +103,10 @@ function goalLabelContext(goals?: string[]) {
   return goals.map((goal) => notes[goal]).filter(Boolean).join(" ");
 }
 
+function profileLabelContext(healthContext?: string) {
+  return healthContext ? `User health profile: ${healthContext}` : "";
+}
+
 export async function extractLabelText(input: AgentInput) {
   if (input.rawText) return input.rawText;
   if (input.demoMode) return sampleLabelText;
@@ -132,7 +136,7 @@ export async function extractLabelText(input: AgentInput) {
 
 export async function analyzeLabel(input: AgentInput): Promise<LabelAnalysis> {
   const extractedText = await extractLabelText(input);
-  const personalizedText = [extractedText, goalLabelContext(input.healthGoals)]
+  const personalizedText = [extractedText, goalLabelContext(input.healthGoals), profileLabelContext(input.healthContext)]
     .filter(Boolean)
     .join("\n");
   const items = parseFoodItemsFromText(extractedText);

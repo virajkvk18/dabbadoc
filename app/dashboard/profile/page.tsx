@@ -14,6 +14,7 @@ import {
   Utensils
 } from "lucide-react";
 import { BadgeGrid } from "@/components/badges/badge-grid";
+import { HealthProfileManager } from "@/components/profile/health-profile-manager";
 import { HealthIndexChart } from "@/components/charts/health-index-chart";
 import { ProfileActivityMix } from "@/components/profile/profile-activity-mix";
 import { ProfileHeroCard } from "@/components/profile/profile-hero-card";
@@ -25,6 +26,7 @@ import {
   getAccountOverview,
   type ActivityType
 } from "@/lib/supabase/account-overview";
+import { getHealthProfileDashboard } from "@/lib/supabase/health-profile";
 
 const activityIcons: Record<ActivityType, typeof Upload> = {
   receipt: ReceiptText,
@@ -50,6 +52,7 @@ const lockedBadgeGoals = [
 
 export default async function ProfilePage() {
   const account = await getAccountOverview();
+  const healthProfile = await getHealthProfileDashboard(account.user.id);
   const memberSince = formatDisplayDate(account.profile.createdAt);
 
   return (
@@ -106,6 +109,12 @@ export default async function ProfilePage() {
           reports={account.counts.reports}
         />
       </div>
+
+      <HealthProfileManager
+        initialProfile={healthProfile.profile}
+        initialLogs={healthProfile.logs}
+        setupRequired={healthProfile.setupRequired}
+      />
 
       <div className="grid items-start gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <Card className="glass-panel overflow-hidden">

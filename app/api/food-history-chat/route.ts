@@ -9,6 +9,7 @@ import {
   MAX_JSON_BYTES
 } from "@/lib/security/abuse-protection";
 import { getAccountOverview } from "@/lib/supabase/account-overview";
+import { getHealthContextForUser } from "@/lib/supabase/health-profile";
 
 export const runtime = "nodejs";
 
@@ -28,7 +29,11 @@ function activityLine(activity: Awaited<ReturnType<typeof getAccountOverview>>["
     .join(" | ");
 }
 
-function fallbackAnswer(question: string, account: Awaited<ReturnType<typeof getAccountOverview>>) {
+function fallbackAnswer(
+  question: string,
+  account: Awaited<ReturnType<typeof getAccountOverview>>,
+  healthContext: Awaited<ReturnType<typeof getHealthContextForUser>>
+) {
   const activities = account.allActivities.slice(0, 8);
   const repeated = new Map<string, number>();
   activities.forEach((activity) => {
@@ -47,7 +52,10 @@ function fallbackAnswer(question: string, account: Awaited<ReturnType<typeof get
   }
 
   if (/cheap|cost|grocery|list/i.test(question)) {
-    return "Cheaper healthy list: dal/chana/rajma, curd, seasonal sabzi, poha/dalia/oats, eggs or paneer/tofu, roasted chana/makhana, fruits in season. Keep packaged snacks occasional.";
+    const goalHint = healthContext.goals.length
+      ? ` Keep it aligned with: ${healthContext.goals.slice(0, 3).join(", ")}.`
+      : "";
+    return `Cheaper healthy list: dal/chana/rajma, curd, seasonal sabzi, poha/dalia/oats, eggs or paneer/tofu, roasted chana/makhana, fruits in season. Keep packaged snacks occasional.${goalHint}`;
   }
 
   if (/score|low|why/i.test(question)) {
@@ -81,6 +89,7 @@ export async function POST(request: NextRequest) {
 
     const account = await getAccountOverview();
     enforceAiGenerationRateLimit(request, account.user.id, "food-history-chat");
+    const healthContext = await getHealthContextForUser(account.user.id);
 
     if (isGreeting(question)) {
       return NextResponse.json({
@@ -114,13 +123,16 @@ Badges: ${account.badges.join(", ") || "none"}
 Recent saved food history:
 ${context || "No saved activity yet."}
 
+Saved health profile:
+${healthContext.context || "No saved health profile yet."}
+
 Return 3-5 short bullet points maximum.
 `;
 
     const answer =
       (await generateGeminiText(prompt)) ??
       (await generateGroqText(prompt)) ??
-      fallbackAnswer(question, account);
+      fallbackAnswer(question, account, healthContext);
 
     return NextResponse.json({ answer });
   } catch (error) {
