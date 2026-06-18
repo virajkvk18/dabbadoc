@@ -42,6 +42,10 @@ type ScoredActivityRow = ActivityRow & {
   health_score?: number | null;
   label_truth_score?: number | null;
   daily_score?: number | null;
+  detected_items?: unknown;
+  product_name?: string | null;
+  diary_text?: string | null;
+  good_items?: unknown;
   risk_flags?: unknown;
   warnings?: unknown;
   risky_items?: unknown;
@@ -79,6 +83,16 @@ type ScoreEvent = {
   created_at: string;
   source: "health_index" | "receipt" | "label" | "diary";
   streak_count?: number | null;
+};
+
+type NamedFoodItem = {
+  name?: string;
+  flags?: string[];
+};
+
+type NamedRisk = {
+  label?: string;
+  severity?: string;
 };
 
 function adminClient() {
@@ -192,6 +206,95 @@ function titleCase(value: string) {
   return value
     .replace(/[_-]+/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function foodNames(value: unknown, limit = 4) {
+  return asArray<NamedFoodItem>(value)
+    .map((item) => item.name?.trim())
+    .filter((item): item is string => Boolean(item))
+    .slice(0, limit);
+}
+
+function riskLabels(value: unknown, limit = 4) {
+  return asArray<NamedRisk>(value)
+    .map((risk) => risk.label?.trim())
+    .filter((item): item is string => Boolean(item))
+    .slice(0, limit);
+}
+
+function shortText(value?: string | null, max = 90) {
+  const clean = value?.replace(/\s+/g, " ").trim();
+  if (!clean) return null;
+  return clean.length > max ? `${clean.slice(0, max - 1).trim()}...` : clean;
+}
+
+function repeatedWatchItems(params: {
+  receipts: ScoredActivityRow[];
+  labels: ScoredActivityRow[];
+  diaries: ScoredActivityRow[];
+}) {
+  const counts = new Map<string, number>();
+  const add = (value?: string | null) => {
+    const clean = value?.trim();
+    if (!clean) return;
+    counts.set(clean, (counts.get(clean) ?? 0) + 1);
+  };
+
+  params.receipts.forEach((receipt) => {
+    riskLabels(receipt.risk_flags, 6).forEach(add);
+    foodNames(receipt.detected_items, 6).forEach(add);
+  });
+  params.labels.forEach((label) => {
+    riskLabels(label.warnings, 6).forEach(add);
+    add(label.product_name);
+  });
+  params.diaries.forEach((diary) => {
+    foodNames(diary.risky_items, 6).forEach(add);
+  });
+
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([item, count]) => ({ item, count }));
+}
+
+function foodHistorySummary(params: {
+  receipts: ScoredActivityRow[];
+  labels: ScoredActivityRow[];
+  diaries: ScoredActivityRow[];
+}) {
+  const latestReceipt = params.receipts[0];
+  const latestLabel = params.labels[0];
+  const latestDiary = params.diaries[0];
+
+  return {
+    latestReceipt: latestReceipt
+      ? {
+          date: latestReceipt.created_at,
+          score: latestReceipt.health_score ?? null,
+          items: foodNames(latestReceipt.detected_items),
+          watch: riskLabels(latestReceipt.risk_flags)
+        }
+      : null,
+    latestLabel: latestLabel
+      ? {
+          date: latestLabel.created_at,
+          score: latestLabel.label_truth_score ?? null,
+          product: latestLabel.product_name || "Packaged food",
+          warnings: riskLabels(latestLabel.warnings)
+        }
+      : null,
+    latestDiary: latestDiary
+      ? {
+          date: latestDiary.created_at,
+          score: latestDiary.daily_score ?? null,
+          summary: shortText(latestDiary.diary_text, 100),
+          goodItems: foodNames(latestDiary.good_items),
+          watchItems: foodNames(latestDiary.risky_items)
+        }
+      : null,
+    repeatedWatch: repeatedWatchItems(params)
+  };
 }
 
 async function getCurrentUserAndServer() {
@@ -442,19 +545,19 @@ export async function getFamilyMemberSummary(connectionId: string) {
       .limit(30),
     supabase
       .from("receipt_analyses")
-      .select("created_at, health_score, risk_flags", { count: "exact" })
+      .select("created_at, health_score, detected_items, risk_flags", { count: "exact" })
       .eq("user_id", memberId)
       .order("created_at", { ascending: false })
       .limit(30),
     supabase
       .from("label_analyses")
-      .select("created_at, label_truth_score, warnings", { count: "exact" })
+      .select("created_at, product_name, label_truth_score, warnings", { count: "exact" })
       .eq("user_id", memberId)
       .order("created_at", { ascending: false })
       .limit(30),
     supabase
       .from("food_diaries")
-      .select("created_at, daily_score, risky_items", { count: "exact" })
+      .select("created_at, diary_text, daily_score, good_items, risky_items", { count: "exact" })
       .eq("user_id", memberId)
       .order("created_at", { ascending: false })
       .limit(30),
@@ -551,6 +654,7 @@ export async function getFamilyMemberSummary(connectionId: string) {
       scansCount: scanCount,
       scoreSource: latestScore?.source ?? null
     },
+    foodHistory: foodHistorySummary({ receipts, labels, diaries }),
     metrics: {
       weight: latestWeight ? `${formatNumber(latestWeight)} kg` : "Not shared",
       bmi: bmi ? `${formatNumber(bmi)}` : "Not shared",
