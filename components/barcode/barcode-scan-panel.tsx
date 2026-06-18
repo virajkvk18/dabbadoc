@@ -29,8 +29,8 @@ type WindowWithBarcodeDetector = Window & {
   BarcodeDetector?: BarcodeDetectorConstructor;
 };
 
-async function decodeBarcodeWithZxing(file: File) {
-  const hints = new Map();
+function getBarcodeReader() {
+  const hints = new Map<DecodeHintType, unknown>();
   hints.set(DecodeHintType.POSSIBLE_FORMATS, [
     BarcodeFormat.EAN_13,
     BarcodeFormat.EAN_8,
@@ -40,12 +40,89 @@ async function decodeBarcodeWithZxing(file: File) {
   ]);
   hints.set(DecodeHintType.TRY_HARDER, true);
 
-  const reader = new BrowserMultiFormatReader(hints);
+  return new BrowserMultiFormatReader(hints);
+}
+
+function cleanDetectedBarcode(value: string) {
+  const cleanValue = value.replace(/\D/g, "");
+  return cleanValue.length >= 8 && cleanValue.length <= 14 ? cleanValue : "";
+}
+
+function loadImage(url: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Image could not load"));
+    image.src = url;
+  });
+}
+
+function createScanCanvas(image: HTMLImageElement, rotation: number, highContrast: boolean) {
+  const maxSide = Math.max(image.naturalWidth, image.naturalHeight);
+  const scale = maxSide > 2200 ? 2200 / maxSide : maxSide < 900 ? 900 / maxSide : 1;
+  const width = Math.round(image.naturalWidth * scale);
+  const height = Math.round(image.naturalHeight * scale);
+  const quarterTurn = rotation === 90 || rotation === 270;
+  const canvas = document.createElement("canvas");
+  canvas.width = quarterTurn ? height : width;
+  canvas.height = quarterTurn ? width : height;
+
+  const context = canvas.getContext("2d", { willReadFrequently: highContrast });
+  if (!context) {
+    throw new Error("Could not prepare barcode image");
+  }
+
+  context.translate(canvas.width / 2, canvas.height / 2);
+  context.rotate((rotation * Math.PI) / 180);
+  context.drawImage(image, -width / 2, -height / 2, width, height);
+
+  if (highContrast) {
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    for (let index = 0; index < data.length; index += 4) {
+      const gray = data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114;
+      const value = gray < 145 ? 0 : 255;
+      data[index] = value;
+      data[index + 1] = value;
+      data[index + 2] = value;
+    }
+    context.putImageData(imageData, 0, 0);
+  }
+
+  return canvas;
+}
+
+async function decodeBarcodeWithZxing(file: File) {
+  const reader = getBarcodeReader();
   const url = URL.createObjectURL(file);
 
   try {
-    const result = await reader.decodeFromImageUrl(url);
-    return result.getText().replace(/\D/g, "");
+    try {
+      const result = await reader.decodeFromImageUrl(url);
+      const detected = cleanDetectedBarcode(result.getText());
+      if (detected) return detected;
+    } catch {
+      // Continue with canvas-based attempts below.
+    }
+
+    const image = await loadImage(url);
+    const rotations = [0, 90, 180, 270];
+    const highContrastModes = [false, true];
+
+    for (const highContrast of highContrastModes) {
+      for (const rotation of rotations) {
+        try {
+          const canvas = createScanCanvas(image, rotation, highContrast);
+          const result = reader.decodeFromCanvas(canvas);
+          const detected = cleanDetectedBarcode(result.getText());
+          if (detected) return detected;
+        } catch {
+          // Try the next image variant.
+        }
+      }
+    }
+
+    return "";
   } finally {
     URL.revokeObjectURL(url);
   }
@@ -134,7 +211,7 @@ export function BarcodeScanPanel() {
       }
 
       if (!detected) {
-        setError("No barcode detected. Try a clearer barcode photo or enter the number manually.");
+        setError("No barcode detected. Crop closer to the barcode, keep it straight, or enter the number manually.");
         return;
       }
 
