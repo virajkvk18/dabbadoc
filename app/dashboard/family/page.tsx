@@ -17,7 +17,34 @@ const statusTone = {
 };
 
 export default async function FamilyPage() {
-  const family = await getFamilyOverview();
+  const family = await getFamilyOverview().catch(() => null);
+  if (!family) {
+    return (
+      <div className="space-y-6">
+        <AppPageHeader
+          eyebrow="Read-only family view"
+          title="Family Members"
+          description="Connect independent DabbaDoc accounts and view concise health summaries without editing their private records."
+          icon={UsersRound}
+          accent="primary"
+          stats={[
+            { label: "Connected", value: "--" },
+            { label: "Pending", value: "--" },
+            { label: "Access", value: "Read-only" }
+          ]}
+        />
+        <Card className="glass-panel">
+          <CardContent className="p-6">
+            <p className="font-semibold text-white">Family setup is pending</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              The Family feature needs the latest Supabase database migration before it can load members.
+              Apply the updated schema and policies, then refresh this page.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   const acceptedCount = family.members.filter((member) => member.status === "accepted").length;
 
   return (
