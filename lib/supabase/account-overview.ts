@@ -7,6 +7,7 @@ import type {
   RiskFlag,
   SwapRecommendation
 } from "@/types";
+import { getPlanDisplayName } from "@/lib/plans";
 import { ApiError } from "@/lib/security/api-errors";
 import { getScoreCategory } from "@/lib/scoring/healthIndex";
 import { createSupabaseServer } from "./server";
@@ -108,6 +109,7 @@ export type AccountOverview = {
     email: string;
     initials: string;
     plan: string;
+    planLabel: string;
     isPremium: boolean;
     createdAt?: string;
     trialEnd?: string;
@@ -464,7 +466,7 @@ function paymentActivity(row: PaymentRow): AccountActivity {
     id: `payment-${row.id}`,
     type: "payment",
     title: "Plan/payment update",
-    detail: `${row.plan ?? "premium"} plan: ${row.status}`,
+    detail: `${getPlanDisplayName(row.plan)} plan: ${row.status}`,
     description: "Razorpay payment status was updated for this account.",
     createdAt: row.created_at,
     metrics: compact([
@@ -477,7 +479,7 @@ function paymentActivity(row: PaymentRow): AccountActivity {
         "Payment result",
         [
           `Status: ${row.status}`,
-          row.plan ? `Plan: ${row.plan}` : null,
+          row.plan ? `Plan: ${getPlanDisplayName(row.plan)}` : null,
           typeof row.amount === "number" ? `Amount: INR ${Math.round(row.amount / 100)}` : null
         ],
         "info"
@@ -493,6 +495,7 @@ function deriveBadges(params: {
   labelCount: number;
   diaryCount: number;
   isPremium: boolean;
+  plan: string;
   savedBadges: string[];
 }) {
   const badges = new Set(params.savedBadges);
@@ -503,6 +506,7 @@ function deriveBadges(params: {
   if (params.streakDays >= 3) badges.add("3-day tracker badge");
   if (params.streakDays >= 7) badges.add("7-day healthy streak badge");
   if (params.isPremium) badges.add("Premium member");
+  if (params.plan === "premium_plus") badges.add("Premium Plus member");
   return Array.from(badges);
 }
 
@@ -624,6 +628,7 @@ export async function getAccountOverview(): Promise<AccountOverview> {
   const streakDays = Math.max(latestHealth?.streak_count ?? 0, activityStreak);
   const savedBadges = asArray<string>(latestHealth?.badges);
   const isPremium = Boolean(profile?.is_premium);
+  const plan = profile?.plan || (isPremium ? "premium" : "free");
   const badges = deriveBadges({
     activityCount: activities.length,
     streakDays,
@@ -631,6 +636,7 @@ export async function getAccountOverview(): Promise<AccountOverview> {
     labelCount: labels.length,
     diaryCount: diaries.length,
     isPremium,
+    plan,
     savedBadges
   });
 
@@ -664,7 +670,8 @@ export async function getAccountOverview(): Promise<AccountOverview> {
       fullName,
       email,
       initials: initialsForName(fullName),
-      plan: profile?.plan || (isPremium ? "premium" : "free"),
+      plan,
+      planLabel: getPlanDisplayName(plan),
       isPremium,
       createdAt: profile?.created_at || user.created_at,
       trialEnd: profile?.trial_end ?? undefined

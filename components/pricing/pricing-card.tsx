@@ -7,11 +7,14 @@ import { Check, Crown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getPaidPlan } from "@/lib/plans";
+import type { PaidPlanType } from "@/types";
 
 type PaymentOrder = {
   id: string;
   amount: number;
   currency: string;
+  plan: PaidPlanType;
   mock: boolean;
 };
 
@@ -76,21 +79,27 @@ export function PricingCard({
   plan,
   price,
   features,
-  premium,
+  checkoutPlan,
+  featured,
+  badgeLabel,
   authenticated
 }: {
   plan: string;
   price: string;
   features: string[];
-  premium?: boolean;
+  checkoutPlan?: PaidPlanType;
+  featured?: boolean;
+  badgeLabel?: string;
   authenticated?: boolean;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const selectedPlan = checkoutPlan ? getPaidPlan(checkoutPlan) : null;
+  const isPaidPlan = Boolean(checkoutPlan);
 
   async function startCheckout() {
-    if (!premium) return;
+    if (!checkoutPlan || !selectedPlan) return;
     setLoading(true);
     setMessage(null);
 
@@ -98,7 +107,7 @@ export function PricingCard({
       const response = await fetch("/api/razorpay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: "premium" })
+        body: JSON.stringify({ plan: checkoutPlan })
       });
       const payload = (await response.json().catch(() => ({}))) as {
         order?: PaymentOrder;
@@ -119,7 +128,7 @@ export function PricingCard({
 
       if (payload.order.mock) {
         setLoading(false);
-        setMessage("Secure checkout preview created. Add Razorpay test keys for live test mode.");
+        setMessage(`${selectedPlan.name} checkout preview created. Add Razorpay test keys for live test mode.`);
         return;
       }
 
@@ -140,7 +149,7 @@ export function PricingCard({
       const checkout = new window.Razorpay({
         key,
         name: "DabbaDoc",
-        description: "Premium monthly plan",
+        description: selectedPlan.checkoutDescription,
         order_id: payload.order.id,
         amount: payload.order.amount,
         currency: payload.order.currency,
@@ -183,14 +192,22 @@ export function PricingCard({
   }
 
   return (
-    <Card className={premium ? "glass-panel neon-bloom-primary border-primary/40" : "glass-panel"}>
+    <Card
+      className={
+        featured
+          ? "glass-panel neon-bloom-primary border-secondary/45"
+          : isPaidPlan
+            ? "glass-panel neon-bloom-primary border-primary/40"
+            : "glass-panel"
+      }
+    >
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
           <CardTitle>{plan}</CardTitle>
-          {premium ? (
+          {isPaidPlan ? (
             <Badge>
               <Crown className="mr-1 h-3 w-3" />
-              Premium
+              {badgeLabel ?? "Premium"}
             </Badge>
           ) : null}
         </div>
@@ -205,26 +222,26 @@ export function PricingCard({
             </div>
           ))}
         </div>
-        {premium && !authenticated ? (
+        {isPaidPlan && !authenticated ? (
           <Button asChild className="w-full">
             <Link href="/auth?next=/pricing">
               <Crown className="h-4 w-4" />
-              Log in to start premium
+              Log in to start {plan}
             </Link>
           </Button>
         ) : (
           <Button
             className="w-full"
-            variant={premium ? "default" : "outline"}
+            variant={isPaidPlan ? "default" : "outline"}
             onClick={startCheckout}
-            disabled={loading || !premium}
+            disabled={loading || !isPaidPlan}
           >
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
-            ) : premium ? (
+            ) : isPaidPlan ? (
               <Crown className="h-4 w-4" />
             ) : null}
-            {premium ? "Start premium" : "Current free plan"}
+            {isPaidPlan ? `Start ${plan}` : "Current free plan"}
           </Button>
         )}
         {message ? <p className="text-sm text-orange-100">{message}</p> : null}

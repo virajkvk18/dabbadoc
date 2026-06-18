@@ -4,7 +4,18 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "DabbaDoc - Scan Before You Eat",
-  description: "AI Food Health Intelligence for Indian Families"
+  description: "AI Food Health Intelligence for Indian Families",
+  icons: {
+    icon: [
+      {
+        url: "/favicon.png",
+        type: "image/png",
+        sizes: "512x512"
+      }
+    ],
+    shortcut: "/favicon.png",
+    apple: "/dabbadoc-logo.png"
+  }
 };
 
 export default function RootLayout({
