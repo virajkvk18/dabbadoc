@@ -7,6 +7,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   BadgeCheck,
   Barcode,
+  BookOpenText,
   FileText,
   History,
   Home,
@@ -33,6 +34,7 @@ type MobileNavLinkItem = NavLinkItem & {
 
 const links: NavLinkItem[] = [
   { href: "/dashboard", label: "Overview", icon: Home },
+  { href: "/my-diary", label: "My Diary", icon: BookOpenText },
   { href: "/dashboard/upload-receipt", label: "Receipt scan", icon: Upload },
   { href: "/dashboard/label-scan", label: "LabelScan", icon: ScanLine },
   { href: "/dashboard/barcode-scan", label: "Barcode scan", icon: Barcode },
@@ -50,9 +52,9 @@ const bottomLinks: NavLinkItem[] = [
 
 const mobileLinks: MobileNavLinkItem[] = [
   { href: "/dashboard", label: "Home", icon: Home },
-  { href: "/dashboard/history", label: "History", icon: History },
+  { href: "/my-diary", label: "Diary", icon: BookOpenText },
   { href: "/dashboard/label-scan", label: "Scan", icon: ScanLine, fab: true },
-  { href: "/dashboard/family", label: "Family", icon: UsersRound },
+  { href: "/dashboard/history", label: "History", icon: History },
   { href: "/dashboard/profile", label: "You", icon: UserRound }
 ];
 

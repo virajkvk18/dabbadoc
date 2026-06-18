@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  AlertTriangle,
   BadgeCheck,
   CalendarDays,
   CreditCard,
@@ -42,6 +43,7 @@ import {
   getAccountOverview,
   type ActivityType
 } from "@/lib/supabase/account-overview";
+import { getMyDiaryOverview } from "@/lib/supabase/my-diary";
 
 const quickActions = [
   {
@@ -157,9 +159,11 @@ function buildDabbaChallenges(params: {
 }
 
 export default async function DashboardPage() {
-  const account = await getAccountOverview();
+  const [account, diary] = await Promise.all([
+    getAccountOverview(),
+    getMyDiaryOverview()
+  ]);
   const now = new Date();
-  const riskCount = account.riskSummary.length;
   const activityWeek = buildActivityWeek(
     account.allActivities.map((activity) => activity.createdAt),
     now
@@ -324,32 +328,34 @@ export default async function DashboardPage() {
 
       <div className="grid items-stretch gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
         <HealthScoreGauge
-          score={account.score.current}
-          category={account.score.category}
+          score={diary.today?.score ?? account.score.current}
+          category={diary.today?.status ?? "Add today's first meal"}
           className="h-full"
           fillHeight
         />
         <div className="grid gap-4 sm:grid-cols-3">
           <StatCard
-            label="Risk signals"
-            value={`${riskCount}`}
-            detail={riskCount > 0 ? "From your saved analyses" : "No strong risks yet"}
+            label="Weekly average"
+            value={`${diary.weeklyAverage}`}
+            suffix="/100"
+            detail="Average across active diary days"
             icon={Sparkles}
             variant="secondary"
             className="h-full items-center"
           />
           <StatCard
-            label="Badges earned"
-            value={`${account.badges.length}`}
-            detail="Based on your account activity"
+            label="Predictive alerts"
+            value={`${diary.weeklyAlerts.length}`}
+            detail={diary.weeklyAlerts.length ? "Explainable early-warning patterns" : "No repeated pattern yet"}
             icon={BadgeCheck}
             variant="primary"
             className="h-full items-center"
           />
           <StatCard
-            label="Total scans"
-            value={`${account.counts.scans}`}
-            detail={`${account.counts.receipts} receipts, ${account.counts.labels} labels, ${account.counts.diaries} diaries`}
+            label="Diary streak"
+            value={`${diary.currentStreak}`}
+            suffix="days"
+            detail={`${diary.totalLoggedDays} total logged days`}
             icon={ScanLine}
             className="h-full items-center"
           />
@@ -425,20 +431,20 @@ export default async function DashboardPage() {
           <Card className="glass-panel">
             <CardHeader className="flex-row items-start justify-between space-y-0">
               <div>
-                <CardTitle>Index trend</CardTitle>
+                <CardTitle>Weekly Food Index</CardTitle>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Latest saved scores from scans, labels, and diary entries
+                  Daily scores from meals, receipts, labels, and barcode scans
                 </p>
               </div>
-              <Badge>{account.score.trendLabel}</Badge>
+              <Badge>{diary.weeklyAverage}/100 avg</Badge>
             </CardHeader>
             <CardContent>
-              <HealthIndexChart data={account.score.chart} />
+              <HealthIndexChart data={diary.chart} />
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {[
-                  ["Current", `${account.score.current}/100`],
-                  ["Data points", `${account.score.chart.length}`],
-                  ["Risk signals", `${riskCount}`]
+                  ["Today", `${diary.today?.score ?? 0}/100`],
+                  ["Logged days", `${diary.totalLoggedDays}`],
+                  ["Alerts", `${diary.weeklyAlerts.length}`]
                 ].map(([label, value]) => (
                   <div key={label} className="rounded-xl border border-white/10 bg-white/5 p-3">
                     <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
@@ -448,30 +454,62 @@ export default async function DashboardPage() {
                   </div>
                 ))}
               </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-primary/20 bg-primary/[0.06] p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-primary">Most improved habit</p>
+                  <p className="mt-1 text-sm font-semibold text-white">{diary.mostImprovedHabit}</p>
+                </div>
+                <div className="rounded-xl border border-secondary/20 bg-secondary/[0.06] p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-secondary">Needs attention</p>
+                  <p className="mt-1 text-sm font-semibold text-white">{diary.needsAttention}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           <Card className="glass-panel">
             <CardHeader>
-              <CardTitle>Food risk summary</CardTitle>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle>Predictive health alerts</CardTitle>
+                <Badge variant="outline">{diary.topPattern}</Badge>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {account.riskSummary.length === 0 ? (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {[
+                  ["Sugar", diary.weeklyRiskCounts.sugar],
+                  ["Sodium", diary.weeklyRiskCounts.sodium],
+                  ["Fried", diary.weeklyRiskCounts.fried],
+                  ["Packaged", diary.weeklyRiskCounts.packaged],
+                  ["Outside", diary.weeklyRiskCounts.outside],
+                  ["Low protein", diary.weeklyRiskCounts.lowProtein]
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                    <p className="text-xs text-muted-foreground">{label}</p>
+                    <p className="mt-1 text-lg font-black text-white">{value}</p>
+                  </div>
+                ))}
+              </div>
+              {diary.weeklyAlerts.length === 0 ? (
                 <div className="flex min-h-44 flex-col justify-center rounded-xl border border-dashed border-primary/20 bg-primary/5 p-5">
                   <ShieldCheck className="h-7 w-7 text-primary" />
-                  <p className="mt-3 font-semibold text-white">No saved risk signals yet</p>
+                  <p className="mt-3 font-semibold text-white">No repeated weekly pattern yet</p>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    A label check is the quickest way to start your personalized summary.
+                    Add meals and scans across a few days to build a clearer early-warning summary.
                   </p>
                   <Button asChild variant="outline" size="sm" className="mt-4 w-fit">
-                    <Link href="/dashboard/label-scan">Check a food label</Link>
+                    <Link href="/my-diary">Open My Diary</Link>
                   </Button>
                 </div>
               ) : null}
-              {account.riskSummary.map((risk) => (
-                <div key={`${risk.label}-${risk.detail}`} className="rounded-xl border border-white/10 bg-white/5 p-3 transition-transform duration-200 hover:translate-x-1">
-                  <p className="font-semibold text-white">{risk.label}</p>
-                  <p className="text-sm text-muted-foreground">{risk.detail}</p>
+              {diary.weeklyAlerts.map((risk) => (
+                <div key={risk.key} className="rounded-xl border border-white/10 bg-white/5 p-3 transition-transform duration-200 hover:translate-x-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-secondary" />
+                    <p className="font-semibold text-white">{risk.title}</p>
+                    <Badge variant="secondary">{risk.level} possible risk</Badge>
+                  </div>
+                  <p className="mt-1 text-sm text-muted-foreground">{risk.reason}</p>
                 </div>
               ))}
             </CardContent>
@@ -570,6 +608,12 @@ export default async function DashboardPage() {
       </div>
 
       <div className="flex flex-wrap gap-3">
+        <Button asChild>
+          <Link href="/my-diary">
+            <CalendarDays className="h-4 w-4" />
+            Open My Diary
+          </Link>
+        </Button>
         <Button asChild variant="secondary">
           <Link href="/dashboard/reports">
             <FileText className="h-4 w-4" />

@@ -9,7 +9,7 @@ import {
 } from "@/lib/auth/session";
 import { getSupabaseAnonKey, getSupabaseUrl, isSupabaseConfigured } from "./config";
 
-const protectedPrefixes = ["/dashboard", "/settings"];
+const protectedPrefixes = ["/dashboard", "/my-diary", "/settings"];
 
 function isProtectedPath(pathname: string) {
   return protectedPrefixes.some(

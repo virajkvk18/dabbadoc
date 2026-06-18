@@ -9,6 +9,7 @@ import {
 } from "@/lib/security/abuse-protection";
 import { generateHealthReportPdf } from "@/lib/reports/pdf";
 import { getAccountOverview } from "@/lib/supabase/account-overview";
+import { getMyDiaryOverview } from "@/lib/supabase/my-diary";
 import { saveReportRecord } from "@/lib/supabase/mutations";
 import { reportSchema } from "@/lib/validators/api";
 
@@ -21,14 +22,25 @@ export async function POST(request: NextRequest) {
     enforceRequestSizeLimit(request, MAX_JSON_BYTES);
 
     const payload = reportSchema.parse(await request.json());
-    const account = await getAccountOverview();
+    const [account, diary] = await Promise.all([
+      getAccountOverview(),
+      getMyDiaryOverview()
+    ]);
     const generatedAt = new Date().toISOString();
     const reportData = {
       generatedAt,
-      healthScore: account.score.current,
-      scoreCategory: account.score.category,
+      healthScore: diary.today?.score ?? account.score.current,
+      scoreCategory: diary.today?.status ?? account.score.category,
       scoreTrend: account.score.trendLabel,
-      streakDays: account.streak.days,
+      streakDays: diary.currentStreak,
+      weeklyAverage: diary.weeklyAverage,
+      topHealthPattern: diary.topPattern,
+      predictiveHealthAlerts: diary.weeklyAlerts.map((alert) => ({
+        title: alert.title,
+        level: alert.level,
+        reason: alert.reason,
+        recommendation: alert.recommendation
+      })),
       badges: account.badges,
       counts: account.counts,
       weeklyRiskSummary: account.riskSummary,

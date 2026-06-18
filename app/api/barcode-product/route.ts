@@ -3,6 +3,8 @@ import type { NextRequest } from "next/server";
 import { requireVerifiedUser } from "@/lib/auth/require-user";
 import { apiErrorResponse, ApiError } from "@/lib/security/api-errors";
 import { enforceAiGenerationRateLimit } from "@/lib/security/abuse-protection";
+import { saveLabelAnalysis, saveUploadRecord } from "@/lib/supabase/mutations";
+import type { LabelAnalysis, RiskFlag } from "@/types";
 
 type OpenFoodFactsResponse = {
   status?: number;
@@ -33,6 +35,75 @@ function nutritionLine(nutriments: Record<string, string | number | undefined> =
     .filter(([, value]) => value !== undefined && value !== "")
     .map(([label, value, unit]) => `${label}: ${value} ${unit}`)
     .join("\n");
+}
+
+function nutritionNumber(value: string | number | undefined) {
+  const parsed = typeof value === "number" ? value : Number.parseFloat(value ?? "");
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function barcodeAnalysis(
+  barcode: string,
+  product: NonNullable<OpenFoodFactsResponse["product"]>,
+  labelText: string
+): LabelAnalysis {
+  const sugar = nutritionNumber(product.nutriments?.sugars_100g);
+  const sodiumGrams = nutritionNumber(product.nutriments?.sodium_100g);
+  const warnings: RiskFlag[] = [];
+  if (typeof sugar === "number" && sugar >= 15) {
+    warnings.push({
+      label: "High sugar barcode signal",
+      severity: sugar >= 25 ? "high" : "medium",
+      reason: `${sugar}g sugar per 100g was listed in the barcode data.`,
+      possibleConcern: "Frequent high-sugar intake may increase the possibility of energy crashes and weight gain."
+    });
+  }
+  if (typeof sodiumGrams === "number" && sodiumGrams >= 0.6) {
+    warnings.push({
+      label: "High sodium barcode signal",
+      severity: sodiumGrams >= 1 ? "high" : "medium",
+      reason: `${sodiumGrams}g sodium per 100g was listed in the barcode data.`,
+      possibleConcern: "Frequent high-sodium packaged food may increase blood-pressure risk over time."
+    });
+  }
+  if ((product.nova_group ?? 0) >= 4) {
+    warnings.push({
+      label: "Ultra-processed food pattern",
+      severity: "medium",
+      reason: "The product is listed as NOVA group 4.",
+      possibleConcern: "Frequent ultra-processed foods may increase sugar, sodium, and unhealthy-fat exposure."
+    });
+  }
+  const gradeScore: Record<string, number> = { a: 85, b: 75, c: 60, d: 45, e: 30 };
+  const score = gradeScore[product.nutrition_grades?.toLowerCase() ?? ""] ?? 55;
+
+  return {
+    extractedText: labelText,
+    productName: product.product_name ?? "Packaged food",
+    ingredients: product.ingredients_text
+      ? product.ingredients_text.split(",").map((ingredient) => ingredient.trim()).filter(Boolean)
+      : [],
+    nutrition: {
+      calories: nutritionNumber(product.nutriments?.["energy-kcal_100g"]),
+      protein: nutritionNumber(product.nutriments?.proteins_100g),
+      sugar,
+      sodium: typeof sodiumGrams === "number" ? sodiumGrams * 1000 : undefined,
+      fats: nutritionNumber(product.nutriments?.fat_100g),
+      saturatedFat: nutritionNumber(product.nutriments?.["saturated-fat_100g"]),
+      fiber: nutritionNumber(product.nutriments?.fiber_100g),
+      servingSize: "per 100g"
+    },
+    labelTruthScore: score,
+    safetyLevel: score >= 75 ? "daily-safe" : score >= 50 ? "sometimes-safe" : "avoid-frequent-use",
+    whatYouThought: "Barcode product reference",
+    whatLabelSays: labelText,
+    warnings,
+    betterAlternatives: [],
+    aiSummary: warnings.length
+      ? "Barcode lookup saved with possible food-risk signals for day-wise tracking."
+      : "Barcode lookup saved for day-wise packaged-food tracking.",
+    disclaimer: "This is an early-warning pattern, not a diagnosis. Consult a doctor or dietitian for medical advice."
+  };
 }
 
 export async function GET(request: NextRequest) {
@@ -90,10 +161,35 @@ export async function GET(request: NextRequest) {
       .filter(Boolean)
       .join("\n");
 
+    let saved = false;
+    try {
+      const uploadId = await saveUploadRecord({
+        userId: user.id,
+        fileType: "application/barcode",
+        sourceType: "packaged_label"
+      });
+      await saveLabelAnalysis({
+        userId: user.id,
+        uploadId,
+        analysis: barcodeAnalysis(barcode, product, labelText),
+        metadata: {
+          scanSource: "barcode_scan",
+          barcode,
+          novaGroup: product.nova_group ?? null,
+          nutritionGrade: product.nutrition_grades ?? null
+        }
+      });
+      saved = true;
+    } catch {
+      saved = false;
+    }
+
     return NextResponse.json({
       barcode,
       productName: product.product_name ?? "Packaged food",
-      labelText
+      labelText,
+      saved,
+      warning: saved ? undefined : "Product found, but this barcode could not be attached to My Diary yet."
     });
   } catch (error) {
     return apiErrorResponse(error, "Barcode lookup failed", 400, {

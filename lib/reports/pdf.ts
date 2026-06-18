@@ -10,6 +10,12 @@ export function generateHealthReportPdf(params: {
 }) {
   const doc = new jsPDF();
   const score = Number(params.reportData?.healthScore ?? 72);
+  const weeklyAverage = Number(params.reportData?.weeklyAverage ?? score);
+  const streakDays = Number(params.reportData?.streakDays ?? 0);
+  const topPattern = String(params.reportData?.topHealthPattern ?? "No repeated warning pattern yet");
+  const alerts = Array.isArray(params.reportData?.predictiveHealthAlerts)
+    ? (params.reportData.predictiveHealthAlerts as Array<Record<string, unknown>>).slice(0, 3)
+    : [];
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
@@ -23,37 +29,30 @@ export function generateHealthReportPdf(params: {
   doc.text(`Dabba Health Index: ${score}/100`, 18, 57);
 
   doc.setFont("helvetica", "bold");
-  doc.text("Receipt analysis summary", 18, 73);
+  doc.text("Recent diary summary", 18, 73);
   doc.setFont("helvetica", "normal");
-  doc.text(
-    "Packaged snacks, sugary drinks, and fried foods may be pulling the score down.",
-    18,
-    81,
-    { maxWidth: 172 }
-  );
+  doc.text(`Weekly Food Index average: ${weeklyAverage}/100`, 18, 81);
+  doc.text(`Current diary streak: ${streakDays} days`, 18, 88);
+  doc.text(`Top pattern: ${topPattern}`, 18, 95, { maxWidth: 172 });
 
   doc.setFont("helvetica", "bold");
-  doc.text("Healthy swaps", 18, 99);
+  doc.text("Predictive early-warning patterns", 18, 112);
   doc.setFont("helvetica", "normal");
-  [
-    "Maggi to oats upma or poha with peanuts",
-    "Cola to chaas or nimbu pani",
-    "Chips to roasted chana or makhana",
-    "Biscuits to fruit and nuts or homemade chilla"
-  ].forEach((line, index) => doc.text(`- ${line}`, 22, 108 + index * 7));
+  const alertLines = alerts.length
+    ? alerts.map((alert) => `${String(alert.title ?? "Pattern detected")}: ${String(alert.reason ?? "Review recent food entries.")}`)
+    : ["No strong repeated pattern was detected from the available diary entries."];
+  alertLines.forEach((line, index) => doc.text(`- ${line}`, 22, 121 + index * 14, { maxWidth: 166 }));
 
   doc.setFont("helvetica", "bold");
-  doc.text("7-day action plan", 18, 145);
+  doc.text("Practical next steps", 18, 170);
   doc.setFont("helvetica", "normal");
-  [
-    "Replace one sugary drink.",
-    "Add one protein-rich snack.",
-    "Avoid fried snacks for one evening.",
-    "Read one packaged label.",
-    "Add sabzi or salad to dinner.",
-    "Repeat the easiest swap.",
-    "Scan again and compare score."
-  ].forEach((line, index) => doc.text(`${index + 1}. ${line}`, 22, 154 + index * 7));
+  const recommendations = alerts
+    .map((alert) => String(alert.recommendation ?? "").trim())
+    .filter(Boolean);
+  const actionLines = recommendations.length
+    ? recommendations
+    : ["Keep logging meals and scans to build a clearer weekly pattern."];
+  actionLines.forEach((line, index) => doc.text(`${index + 1}. ${line}`, 22, 179 + index * 14, { maxWidth: 166 }));
 
   doc.setFontSize(9);
   doc.text(DABBADOC_DISCLAIMER, 18, 280, { maxWidth: 172 });

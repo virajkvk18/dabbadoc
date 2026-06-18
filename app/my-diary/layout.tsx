@@ -1,9 +1,5 @@
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 
-export default function DashboardLayout({
-  children
-}: {
-  children: React.ReactNode;
-}) {
+export default function MyDiaryLayout({ children }: { children: React.ReactNode }) {
   return <DashboardShell>{children}</DashboardShell>;
 }
