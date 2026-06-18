@@ -113,6 +113,7 @@ export async function saveLabelAnalysis(params: {
   userId: string;
   uploadId?: string | null;
   analysis: LabelAnalysis;
+  metadata?: Record<string, unknown>;
 }) {
   const supabase = createSupabaseAdmin();
   const userId = requireUserId(params.userId);
@@ -129,7 +130,8 @@ export async function saveLabelAnalysis(params: {
       ...params.analysis.nutrition,
       ingredientInsights: params.analysis.ingredientInsights ?? [],
       regularUseRisks: params.analysis.regularUseRisks ?? [],
-      labelCoverage: params.analysis.labelCoverage ?? null
+      labelCoverage: params.analysis.labelCoverage ?? null,
+      ...params.metadata
     },
     label_truth_score: params.analysis.labelTruthScore,
     warnings: params.analysis.warnings,

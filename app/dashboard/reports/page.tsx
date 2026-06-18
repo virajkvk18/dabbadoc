@@ -5,9 +5,13 @@ import { Disclaimer } from "@/components/common/disclaimer";
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAccountOverview } from "@/lib/supabase/account-overview";
+import { getMyDiaryOverview } from "@/lib/supabase/my-diary";
 
 export default async function ReportsPage() {
-  const account = await getAccountOverview();
+  const [account, diary] = await Promise.all([
+    getAccountOverview(),
+    getMyDiaryOverview()
+  ]);
 
   return (
     <div className="space-y-6">
@@ -19,13 +23,13 @@ export default async function ReportsPage() {
         accent="tertiary"
         stats={[
           { label: "Format", value: "PDF" },
-          { label: "Sections", value: "8 blocks" },
+          { label: "Weekly index", value: `${diary.weeklyAverage}/100` },
           { label: "Use", value: "Track / share" }
         ]}
       />
       <ReportGenerator
         userName={account.profile.fullName}
-        healthScore={account.score.current}
+        healthScore={diary.today?.score ?? account.score.current}
       />
       <MonthlyHealthInsights
         activities={account.allActivities}
@@ -43,6 +47,7 @@ export default async function ReportsPage() {
             "Receipt analysis summary",
             "Label scan summary",
             "Risky foods and healthy swaps",
+            "Diary patterns and predictive alerts",
             "Cost comparison",
             "7-day action plan",
             "Disclaimer"

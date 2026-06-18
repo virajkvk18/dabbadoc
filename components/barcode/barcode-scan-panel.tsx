@@ -16,6 +16,8 @@ type BarcodeResponse = {
   barcode?: string;
   productName?: string;
   labelText?: string;
+  saved?: boolean;
+  warning?: string;
   error?: string;
 };
 
@@ -173,7 +175,11 @@ export function BarcodeScanPanel() {
       setBarcode(payload.barcode ?? cleanBarcode);
       setProductName(payload.productName ?? "Packaged food");
       setLabelText(payload.labelText);
-      setMessage("Product details fetched. You can review this before using LabelScan.");
+      setMessage(
+        payload.saved
+          ? "Product details fetched and attached to today's My Diary."
+          : payload.warning ?? "Product details fetched. You can review this before using LabelScan."
+      );
     } catch {
       setError("Could not fetch barcode details. Please check your connection and try again.");
     } finally {

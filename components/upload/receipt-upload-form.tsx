@@ -29,7 +29,7 @@ import type { DirectUploadResult } from "@/lib/client/direct-upload";
 import { compressImageForUpload, formatFileSize } from "@/lib/client/image-compression";
 import { HealthGoalSelector } from "@/components/upload/health-goal-selector";
 import { ScanGuide } from "@/components/upload/scan-guide";
-import type { ReceiptAnalysis } from "@/types";
+import type { ReceiptAnalysis, SourceType } from "@/types";
 
 type ReceiptResponse = {
   analysis: ReceiptAnalysis;
@@ -58,6 +58,7 @@ export function ReceiptUploadForm() {
   const [processingFile, setProcessingFile] = useState(false);
   const [directUpload, setDirectUpload] = useState<DirectUploadResult | null>(null);
   const [healthGoals, setHealthGoals] = useState<string[]>([]);
+  const [sourceType, setSourceType] = useState<Extract<SourceType, "grocery_receipt" | "food_delivery" | "quick_commerce">>("grocery_receipt");
 
   useEffect(() => {
     if (!file || !file.type.startsWith("image/")) {
@@ -116,7 +117,7 @@ export function ReceiptUploadForm() {
 
     try {
       const formData = new FormData();
-      formData.set("sourceType", "grocery_receipt");
+      formData.set("sourceType", sourceType);
       formData.set("demoMode", "false");
       if (file.size > DIRECT_UPLOAD_THRESHOLD_BYTES) {
         const upload = await uploadImageDirectly(file);
@@ -177,7 +178,7 @@ export function ReceiptUploadForm() {
 
     try {
       const formData = new FormData();
-      formData.set("sourceType", "grocery_receipt");
+      formData.set("sourceType", sourceType);
       formData.set("demoMode", String(demoMode));
       healthGoals.forEach((goal) => formData.append("healthGoals", goal));
       if (ocrText.trim() && !demoMode) {
@@ -232,6 +233,20 @@ export function ReceiptUploadForm() {
           <CardTitle>Upload receipt or order screenshot</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="receipt-source">Receipt source</Label>
+            <select
+              id="receipt-source"
+              value={sourceType}
+              onChange={(event) => setSourceType(event.target.value as typeof sourceType)}
+              className="h-11 w-full rounded-xl border border-white/10 bg-[#0a0e16]/80 px-3 text-sm text-white focus:border-primary/70 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              <option value="grocery_receipt">Grocery receipt</option>
+              <option value="food_delivery">Restaurant / food delivery</option>
+              <option value="quick_commerce">Quick-commerce order</option>
+            </select>
+            <p className="text-xs text-muted-foreground">This source is used to attach the scan correctly inside My Diary.</p>
+          </div>
           <div className="scan-frame rounded-2xl border border-dashed border-primary/30 bg-white/5 p-4 sm:p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>

@@ -1,11 +1,9 @@
+import type { ReactNode } from "react";
 import { DabbaDocLogo } from "@/components/brand/dabbadoc-logo";
 import { FloatingFoodChatbot } from "@/components/chat/food-history-chat";
-import {
-  DashboardMobileNav,
-  DashboardNav
-} from "@/components/dashboard/dashboard-nav";
+import { DashboardMobileNav, DashboardNav } from "@/components/dashboard/dashboard-nav";
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+export function DashboardShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen px-3 py-3 pb-28 sm:px-5 lg:px-4 xl:px-5 2xl:px-6 lg:pb-6">
       <header className="glass-panel sticky top-3 z-40 mb-4 flex items-center justify-between rounded-2xl px-4 py-3 lg:hidden">

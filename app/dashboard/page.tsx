@@ -1,7 +1,10 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
+  AlertTriangle,
   BadgeCheck,
+  BookOpenText,
   CalendarDays,
   CreditCard,
   FileText,
@@ -12,12 +15,12 @@ import {
   ShieldCheck,
   Sparkles,
   Target,
-  Trophy,
   Upload,
   Utensils
 } from "lucide-react";
 import { BadgeGrid } from "@/components/badges/badge-grid";
 import { HealthIndexChart } from "@/components/charts/health-index-chart";
+import { ControlledLoopVideo } from "@/components/common/controlled-loop-video";
 import { Disclaimer } from "@/components/common/disclaimer";
 import { LiveGreeting } from "@/components/common/live-date-time";
 import { HealthScoreGauge } from "@/components/dashboard/health-score-gauge";
@@ -41,23 +44,27 @@ import {
   getAccountOverview,
   type ActivityType
 } from "@/lib/supabase/account-overview";
+import { getMyDiaryOverview } from "@/lib/supabase/my-diary";
 
 const quickActions = [
   {
     href: "/dashboard/upload-receipt",
     label: "Upload receipt",
+    description: "Analyze a grocery or restaurant bill",
     icon: Upload,
     featured: false
   },
   {
     href: "/dashboard/label-scan",
     label: "Scan food label",
+    description: "Check ingredients before you eat",
     icon: ScanLine,
     featured: true
   },
   {
     href: "/dashboard/food-diary",
     label: "Add food diary",
+    description: "Log a meal in under a minute",
     icon: Utensils,
     featured: false
   }
@@ -85,6 +92,29 @@ function buildActivityWeek(activityDates: string[], now: Date): StreakDay[] {
       today: dateKey === todayKey
     };
   });
+}
+
+function OverviewSectionHeading({
+  eyebrow,
+  title,
+  description,
+  action
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="max-w-2xl">
+        <p className="mono-label text-[10px] text-primary">{eyebrow}</p>
+        <h2 className="mt-1.5 text-2xl font-black tracking-tight text-white">{title}</h2>
+        <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{description}</p>
+      </div>
+      {action ? <div className="shrink-0">{action}</div> : null}
+    </div>
+  );
 }
 
 type Challenge = {
@@ -156,9 +186,11 @@ function buildDabbaChallenges(params: {
 }
 
 export default async function DashboardPage() {
-  const account = await getAccountOverview();
+  const [account, diary] = await Promise.all([
+    getAccountOverview(),
+    getMyDiaryOverview()
+  ]);
   const now = new Date();
-  const riskCount = account.riskSummary.length;
   const activityWeek = buildActivityWeek(
     account.allActivities.map((activity) => activity.createdAt),
     now
@@ -171,281 +203,266 @@ export default async function DashboardPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <Badge variant="secondary">
-            {account.counts.activities > 0 ? "Monitoring active" : "Ready to begin"}
-          </Badge>
-          <LiveGreeting name={account.profile.fullName} initialNow={now.toISOString()} />
-          <p className="mt-2 text-muted-foreground">
-            Your food health overview is built from your saved scans, label checks,
-            diary entries, reports, and streaks.
-          </p>
-        </div>
-        <div className="glass-panel flex items-center gap-3 rounded-2xl px-4 py-3">
-          <span className="relative flex h-3 w-3">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
-          </span>
-          <div>
-            <p className="mono-label text-[10px] text-muted-foreground">Status</p>
-            <p className="text-sm font-bold text-primary">
-              {account.profile.isPremium ? `${account.profile.planLabel} active` : "Ready to scan"}
+    <div className="space-y-8 pb-4 sm:space-y-10">
+      <section className="glass-panel scan-frame relative overflow-hidden rounded-3xl border-primary/20 p-5 sm:p-7">
+        <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
+        <div className="relative z-10 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-3xl">
+            <Badge variant="secondary">Daily health overview</Badge>
+            <LiveGreeting name={account.profile.fullName} initialNow={now.toISOString()} />
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+              See today&apos;s food-health position, understand the pattern behind it,
+              and take the next useful action without digging through reports.
             </p>
           </div>
+
+          <div className="grid w-full gap-3 sm:grid-cols-2 xl:w-[430px]">
+            <div className="rounded-2xl border border-primary/20 bg-primary/[0.07] p-4">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
+                </span>
+                <p className="mono-label text-[10px] text-primary">Account status</p>
+              </div>
+              <p className="mt-2 text-sm font-bold text-white">
+                {account.counts.activities > 0 ? "Monitoring active" : "Ready for your first scan"}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div className="flex items-center gap-2">
+                <BadgeCheck className="h-4 w-4 text-secondary" />
+                <p className="mono-label text-[10px] text-muted-foreground">Current plan</p>
+              </div>
+              <p className="mt-2 text-sm font-bold text-white">{account.profile.planLabel}</p>
+            </div>
+            <Button asChild className="sm:col-span-1">
+              <Link href="/my-diary">
+                <BookOpenText className="h-4 w-4" />
+                Open My Diary
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="sm:col-span-1">
+              <Link href={account.profile.isPremium ? "/dashboard/profile" : "/pricing"}>
+                {account.profile.isPremium ? "Manage profile" : "Explore plans"}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <Card className="glass-panel overflow-hidden border-l-4 border-l-secondary">
-        <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-full border border-secondary/25 bg-secondary/15 text-secondary orange-glow">
-              <BadgeCheck className="h-5 w-5" />
-            </span>
-            <div>
-              <p className="font-bold text-white">
-                {account.profile.isPremium
-                  ? `${account.profile.planLabel} intelligence active`
-                  : "Premium intelligence preview"}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {account.profile.isPremium
-                  ? "Your account has paid access for deeper history, reports, and plan-specific insights."
-                  : "Upgrade when you need unlimited scans, full history, and family tracking."}
-              </p>
+      <section className="space-y-4">
+        <OverviewSectionHeading
+          eyebrow="Today"
+          title="Your health at a glance"
+          description="The essentials first: today&apos;s index, your weekly direction, and the consistency behind it."
+        />
+        <div className="grid items-stretch gap-5 xl:grid-cols-[300px_minmax(0,1fr)]">
+          <HealthScoreGauge
+            score={diary.today?.score ?? account.score.current}
+            category={diary.today?.status ?? "Add today's first meal"}
+            className="h-full"
+            fillHeight
+          />
+          <div className="grid gap-4">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <StatCard
+                label="Weekly average"
+                value={`${diary.weeklyAverage}`}
+                suffix="/100"
+                detail="Across active diary days"
+                icon={Sparkles}
+                variant="secondary"
+              />
+              <StatCard
+                label="Predictive alerts"
+                value={`${diary.weeklyAlerts.length}`}
+                detail={diary.weeklyAlerts.length ? "Patterns worth reviewing" : "No repeated pattern yet"}
+                icon={AlertTriangle}
+                variant="primary"
+              />
+              <StatCard
+                label="Diary streak"
+                value={`${diary.currentStreak}`}
+                suffix="days"
+                detail={`${diary.totalLoggedDays} total logged days`}
+                icon={CalendarDays}
+              />
             </div>
-          </div>
-          <Button asChild variant="outline">
-            <Link href={account.profile.isPremium ? "/dashboard/profile" : "/pricing"}>
-              {account.profile.isPremium ? "View profile" : "View plans"}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
-        <div className="space-y-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="mono-label text-[10px] text-primary">Quick capture</p>
-              <h2 className="mt-1 text-xl font-black text-white">What are you logging?</h2>
-            </div>
-            <p className="text-sm text-muted-foreground">Choose a capture flow</p>
+            <Card className="glass-panel overflow-hidden border-white/10">
+              <CardContent className="p-4 sm:p-5">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-bold text-white">Quick capture</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Choose the fastest way to add food evidence</p>
+                  </div>
+                  <Badge variant="outline">3 actions</Badge>
+                </div>
+                <div className="grid gap-3 md:grid-cols-3">
+                  {quickActions.map((action) => {
+                    const Icon = action.icon;
+                    return (
+                      <Link
+                        key={action.href}
+                        href={action.href}
+                        className={
+                          action.featured
+                            ? "group flex min-h-24 items-center gap-3 rounded-xl border border-primary/35 bg-primary/[0.09] p-3.5 transition hover:border-primary/60 hover:bg-primary/[0.13]"
+                            : "group flex min-h-24 items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3.5 transition hover:border-primary/30 hover:bg-white/[0.07]"
+                        }
+                      >
+                        <span className={action.featured ? "grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-[0_0_18px_rgba(129,247,89,0.25)]" : "grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.06] text-white transition group-hover:text-primary"}>
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-black text-white">{action.label}</span>
+                          <span className="mt-1 block text-xs leading-5 text-muted-foreground">{action.description}</span>
+                        </span>
+                        <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
           </div>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            {quickActions.map((action) => {
-              const Icon = action.icon;
-              return (
-                <Link
-                  key={action.href}
-                  href={action.href}
-                  className={
-                    action.featured
-                      ? "glass-panel neon-bloom-primary group flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border-primary/40 p-3 text-center transition duration-300 hover:-translate-y-1 sm:min-h-20 sm:flex-row sm:justify-start sm:text-left"
-                      : "glass-panel group flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl p-3 text-center transition duration-300 hover:-translate-y-1 sm:min-h-20 sm:flex-row sm:justify-start sm:text-left"
-                  }
-                >
-                  <span
-                    className={
-                      action.featured
-                        ? "grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground shadow-[0_0_18px_rgba(129,247,89,0.32)] transition duration-300 group-hover:scale-105"
-                        : "grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/5 text-white transition duration-300 group-hover:scale-105 group-hover:border-primary/35 group-hover:text-primary"
-                    }
-                  >
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span
-                    className={
-                      action.featured
-                        ? "text-xs font-black leading-4 text-primary sm:text-sm"
-                        : "text-xs font-black leading-4 text-white sm:text-sm"
-                    }
-                  >
-                    {action.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-
+      <section className="space-y-4">
+        <OverviewSectionHeading
+          eyebrow="Consistency"
+          title="Build momentum, one entry at a time"
+          description="Your streak and weekly rhythm turn isolated scans into a useful health pattern."
+        />
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-stretch">
           <StreakMomentumCard days={account.streak.days} week={activityWeek} />
-        </div>
 
-        <Card className="glass-panel overflow-hidden border-primary/20 xl:sticky xl:top-5">
-          <CardHeader className="flex-row items-start justify-between space-y-0 p-4">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <PlayCircle className="h-5 w-5 text-primary" />
-                DabbaDoc in action
-              </CardTitle>
-              <p className="mt-1 text-xs text-muted-foreground">A quick product walkthrough</p>
-            </div>
-            <Badge variant="outline">Guide</Badge>
-          </CardHeader>
-          <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0">
-            <div className="overflow-hidden rounded-xl border border-white/10 bg-black/50">
-              <video
-                className="aspect-video w-full bg-black object-contain"
-                src="/videos/dabbadoc-explainer.mp4"
-                aria-label="DabbaDoc product walkthrough"
-                controls
-                muted
-                autoPlay
-                loop
-                playsInline
-                preload="metadata"
+          <Card className="glass-panel overflow-hidden border-primary/20">
+            <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 p-4 sm:p-5">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <PlayCircle className="h-5 w-5 text-primary" />
+                  Product guide
+                </CardTitle>
+                <p className="mt-1 text-xs text-muted-foreground">A 60-second DabbaDoc walkthrough</p>
+              </div>
+              <Badge variant="outline">Guide</Badge>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
+              <div className="overflow-hidden rounded-xl border border-white/10 bg-black/50">
+                <ControlledLoopVideo
+                  src="/videos/dabbadoc-explainer.mp4"
+                  ariaLabel="DabbaDoc product walkthrough"
+                  videoClassName="aspect-video w-full bg-black object-contain"
+                />
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {["Capture", "Understand", "Improve"].map((step, index) => (
+                  <div key={step} className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-center">
+                    <p className="mono-label text-[9px] text-primary">0{index + 1}</p>
+                    <p className="mt-1 text-[11px] font-bold text-white">{step}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <OverviewSectionHeading
+          eyebrow="Goals"
+          title="Focused challenges, measurable progress"
+          description="Short food missions turn recommendations into actions you can repeat and track."
+          action={<Badge variant="secondary">{challenges.length} available</Badge>}
+        />
+        <Card className="glass-panel border-primary/20">
+          <CardContent className="grid gap-3 p-4 sm:grid-cols-2 sm:p-5">
+            {challenges.map((challenge) => (
+              <div
+                key={challenge.title}
+                className="flex h-full flex-col rounded-xl border border-white/10 bg-white/[0.04] p-4 transition hover:border-primary/30 hover:bg-primary/[0.05]"
               >
-                Your browser does not support the video tag.
-              </video>
-            </div>
-            <div className="mt-3 flex items-center justify-between gap-3 text-xs">
-              <span className="font-bold text-white">Scan Before You Eat</span>
-              <span className="text-muted-foreground">Product tour</span>
-            </div>
-            <div className="mt-4 grid gap-2 border-t border-white/10 pt-4">
-              {[
-                ["01", "Capture", "Add a receipt, food label, or meal"],
-                ["02", "Understand", "See health signals in plain language"],
-                ["03", "Improve", "Use practical swaps and habit guidance"]
-              ].map(([step, title, detail]) => (
-                <div
-                  key={step}
-                  className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5"
-                >
-                  <span className="mono-label grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-[10px] text-primary">
-                    {step}
+                <div className="flex items-start justify-between gap-3">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+                    <Target className="h-4 w-4" />
                   </span>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-white">{title}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">{detail}</p>
+                  <Badge
+                    variant={
+                      challenge.status === "earned"
+                        ? "default"
+                        : challenge.status === "active"
+                          ? "secondary"
+                          : "outline"
+                    }
+                  >
+                    {challenge.status}
+                  </Badge>
+                </div>
+                <p className="mt-3 font-bold text-white">{challenge.title}</p>
+                <p className="mt-1.5 flex-1 text-sm leading-6 text-muted-foreground">
+                  {challenge.detail}
+                </p>
+                <div className="mt-4">
+                  <div className="flex items-center justify-between gap-3 text-xs">
+                    <span className="truncate font-semibold text-muted-foreground">{challenge.badge}</span>
+                    <span className="font-black text-white">{challenge.progress}%</span>
+                  </div>
+                  <div className="mt-2 h-2 overflow-hidden rounded-full border border-white/10 bg-black/20">
+                    <div
+                      className="h-full rounded-full bg-primary shadow-[0_0_12px_rgba(129,247,89,0.32)]"
+                      style={{ width: `${Math.max(8, challenge.progress)}%` }}
+                    />
                   </div>
                 </div>
-              ))}
-            </div>
+                <Button asChild variant="outline" size="sm" className="mt-4 w-full sm:w-fit">
+                  <Link href={challenge.href}>
+                    {challenge.action}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            ))}
           </CardContent>
         </Card>
-      </div>
+      </section>
 
-      <div className="grid items-stretch gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <HealthScoreGauge
-          score={account.score.current}
-          category={account.score.category}
-          className="h-full"
-          fillHeight
+      <section className="space-y-4">
+        <OverviewSectionHeading
+          eyebrow="Intelligence"
+          title="Trends, risks, and recent evidence"
+          description="Review the signal behind your score, then open the full history only when you need detail."
+          action={
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/dashboard/history">
+                View full history
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          }
         />
-        <div className="grid gap-4 sm:grid-cols-3">
-          <StatCard
-            label="Risk signals"
-            value={`${riskCount}`}
-            detail={riskCount > 0 ? "From your saved analyses" : "No strong risks yet"}
-            icon={Sparkles}
-            variant="secondary"
-            className="h-full items-center"
-          />
-          <StatCard
-            label="Badges earned"
-            value={`${account.badges.length}`}
-            detail="Based on your account activity"
-            icon={BadgeCheck}
-            variant="primary"
-            className="h-full items-center"
-          />
-          <StatCard
-            label="Total scans"
-            value={`${account.counts.scans}`}
-            detail={`${account.counts.receipts} receipts, ${account.counts.labels} labels, ${account.counts.diaries} diaries`}
-            icon={ScanLine}
-            className="h-full items-center"
-          />
-        </div>
-      </div>
-
-      <Card className="glass-panel border-primary/20">
-        <CardHeader className="flex-row items-start justify-between gap-4 space-y-0">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-primary" />
-              Dabba Challenges
-            </CardTitle>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Small food missions that unlock badges and build real streaks.
-            </p>
-          </div>
-          <Badge variant="secondary">Gamified</Badge>
-        </CardHeader>
-        <CardContent className="grid gap-3 lg:grid-cols-2">
-          {challenges.map((challenge) => (
-            <div
-              key={challenge.title}
-              className="rounded-xl border border-white/10 bg-white/5 p-4 transition hover:border-primary/30 hover:bg-primary/5"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Target className="h-4 w-4 text-primary" />
-                    <p className="font-semibold text-white">{challenge.title}</p>
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {challenge.detail}
-                  </p>
-                </div>
-                <Badge
-                  variant={
-                    challenge.status === "earned"
-                      ? "default"
-                      : challenge.status === "active"
-                        ? "secondary"
-                        : "outline"
-                  }
-                >
-                  {challenge.status}
-                </Badge>
-              </div>
-              <div className="mt-4">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-muted-foreground">{challenge.badge}</span>
-                  <span className="font-black text-white">{challenge.progress}%</span>
-                </div>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className="h-full rounded-full bg-primary"
-                    style={{ width: `${Math.max(8, challenge.progress)}%` }}
-                  />
-                </div>
-              </div>
-              <Button asChild variant="outline" size="sm" className="mt-4">
-                <Link href={challenge.href}>
-                  {challenge.action}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-6 xl:grid-cols-[1fr_1.05fr] xl:items-start">
+        <div className="grid gap-5 xl:grid-cols-[1fr_1.05fr] xl:items-start">
         <div className="grid gap-6">
           <Card className="glass-panel">
-            <CardHeader className="flex-row items-start justify-between space-y-0">
+            <CardHeader className="flex-col gap-3 space-y-0 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <CardTitle>Index trend</CardTitle>
+                <CardTitle>Weekly Food Index</CardTitle>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Latest saved scores from scans, labels, and diary entries
+                  Daily scores from meals, receipts, labels, and barcode scans
                 </p>
               </div>
-              <Badge>{account.score.trendLabel}</Badge>
+              <Badge>{diary.weeklyAverage}/100 avg</Badge>
             </CardHeader>
             <CardContent>
-              <HealthIndexChart data={account.score.chart} />
+              <HealthIndexChart data={diary.chart} />
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {[
-                  ["Current", `${account.score.current}/100`],
-                  ["Data points", `${account.score.chart.length}`],
-                  ["Risk signals", `${riskCount}`]
+                  ["Today", `${diary.today?.score ?? 0}/100`],
+                  ["Logged days", `${diary.totalLoggedDays}`],
+                  ["Alerts", `${diary.weeklyAlerts.length}`]
                 ].map(([label, value]) => (
                   <div key={label} className="rounded-xl border border-white/10 bg-white/5 p-3">
                     <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
@@ -455,30 +472,62 @@ export default async function DashboardPage() {
                   </div>
                 ))}
               </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-primary/20 bg-primary/[0.06] p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-primary">Most improved habit</p>
+                  <p className="mt-1 text-sm font-semibold text-white">{diary.mostImprovedHabit}</p>
+                </div>
+                <div className="rounded-xl border border-secondary/20 bg-secondary/[0.06] p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-secondary">Needs attention</p>
+                  <p className="mt-1 text-sm font-semibold text-white">{diary.needsAttention}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           <Card className="glass-panel">
             <CardHeader>
-              <CardTitle>Food risk summary</CardTitle>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle>Predictive health alerts</CardTitle>
+                <Badge variant="outline">{diary.topPattern}</Badge>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {account.riskSummary.length === 0 ? (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {[
+                  ["Sugar", diary.weeklyRiskCounts.sugar],
+                  ["Sodium", diary.weeklyRiskCounts.sodium],
+                  ["Fried", diary.weeklyRiskCounts.fried],
+                  ["Packaged", diary.weeklyRiskCounts.packaged],
+                  ["Outside", diary.weeklyRiskCounts.outside],
+                  ["Low protein", diary.weeklyRiskCounts.lowProtein]
+                ].map(([label, value]) => (
+                  <div key={label} className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                    <p className="text-xs font-semibold text-muted-foreground">{label}</p>
+                    <p className="text-lg font-black text-white">{value}</p>
+                  </div>
+                ))}
+              </div>
+              {diary.weeklyAlerts.length === 0 ? (
                 <div className="flex min-h-44 flex-col justify-center rounded-xl border border-dashed border-primary/20 bg-primary/5 p-5">
                   <ShieldCheck className="h-7 w-7 text-primary" />
-                  <p className="mt-3 font-semibold text-white">No saved risk signals yet</p>
+                  <p className="mt-3 font-semibold text-white">No repeated weekly pattern yet</p>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    A label check is the quickest way to start your personalized summary.
+                    Add meals and scans across a few days to build a clearer early-warning summary.
                   </p>
                   <Button asChild variant="outline" size="sm" className="mt-4 w-fit">
-                    <Link href="/dashboard/label-scan">Check a food label</Link>
+                    <Link href="/my-diary">Open My Diary</Link>
                   </Button>
                 </div>
               ) : null}
-              {account.riskSummary.map((risk) => (
-                <div key={`${risk.label}-${risk.detail}`} className="rounded-xl border border-white/10 bg-white/5 p-3 transition-transform duration-200 hover:translate-x-1">
-                  <p className="font-semibold text-white">{risk.label}</p>
-                  <p className="text-sm text-muted-foreground">{risk.detail}</p>
+              {diary.weeklyAlerts.map((risk) => (
+                <div key={risk.key} className="rounded-xl border border-secondary/15 bg-secondary/[0.04] p-3.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-secondary" />
+                    <p className="font-semibold text-white">{risk.title}</p>
+                    <Badge variant="secondary">{risk.level} possible risk</Badge>
+                  </div>
+                  <p className="mt-1 text-sm text-muted-foreground">{risk.reason}</p>
                 </div>
               ))}
             </CardContent>
@@ -514,17 +563,17 @@ export default async function DashboardPage() {
                   </Button>
                 </div>
               ) : null}
-              {account.recentActivities.map((activity) => {
+              {account.recentActivities.slice(0, 3).map((activity) => {
                 const Icon = activityIcons[activity.type];
                 return (
-                  <div key={activity.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <div key={activity.id} className="rounded-xl border border-white/10 bg-white/[0.04] p-4 transition-colors hover:border-primary/20">
                     <div className="flex items-start gap-3">
                       <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
                         <Icon className="h-5 w-5" />
                       </span>
                       <div className="min-w-0">
                         <p className="font-semibold text-white">{activity.title}</p>
-                        <p className="mt-1 text-sm text-muted-foreground">{activity.description}</p>
+                        <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted-foreground">{activity.description}</p>
                         <time
                           className="mt-2 block text-xs font-semibold text-primary"
                           dateTime={activity.createdAt}
@@ -574,19 +623,28 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
+        </div>
+      </section>
 
-      <div className="flex flex-wrap gap-3">
-        <Button asChild variant="secondary">
-          <Link href="/dashboard/reports">
-            <FileText className="h-4 w-4" />
-            Generate PDF report
-          </Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link href="/dashboard/history">Open activity history</Link>
-        </Button>
-      </div>
+      <Card className="glass-panel border-white/10">
+        <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div>
+            <p className="font-bold text-white">Need a deeper view?</p>
+            <p className="mt-1 text-sm text-muted-foreground">Open the diary, generate a report, or review every saved activity.</p>
+          </div>
+          <div className="grid gap-2 sm:flex sm:flex-wrap sm:justify-end">
+            <Button asChild size="sm">
+              <Link href="/my-diary"><BookOpenText className="h-4 w-4" />My Diary</Link>
+            </Button>
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/dashboard/reports"><FileText className="h-4 w-4" />Generate report</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/dashboard/history"><History className="h-4 w-4" />Activity history</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
       <Disclaimer />
     </div>
   );
