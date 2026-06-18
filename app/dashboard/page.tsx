@@ -11,7 +11,6 @@ import {
   ScanLine,
   ShieldCheck,
   Sparkles,
-  Target,
   Upload,
   Utensils
 } from "lucide-react";
@@ -112,34 +111,6 @@ export default async function DashboardPage() {
   const activityWeek = buildActivityWeek(
     account.allActivities.map((activity) => activity.createdAt)
   );
-  const nextStep =
-    account.counts.diaries === 0
-      ? {
-          title: "Log your first meal",
-          detail: "Start today's food timeline and begin building a consistent daily rhythm.",
-          href: "/dashboard/food-diary",
-          action: "Add a meal"
-        }
-      : account.counts.labels === 0
-        ? {
-            title: "Check one food label",
-            detail: "Review the ingredients and nutrition signals before your next packaged snack.",
-            href: "/dashboard/label-scan",
-            action: "Scan a label"
-          }
-        : account.counts.receipts === 0
-          ? {
-              title: "Add a recent food bill",
-              detail: "Upload a receipt or order screenshot to complete your purchase history.",
-              href: "/dashboard/upload-receipt",
-              action: "Upload receipt"
-            }
-          : {
-              title: "Review your latest pattern",
-              detail: `You have ${account.counts.activities} saved activities ready to compare.`,
-              href: "/dashboard/history",
-              action: "Open history"
-            };
 
   return (
     <div className="space-y-6">
@@ -247,60 +218,39 @@ export default async function DashboardPage() {
           <StreakMomentumCard days={account.streak.days} week={activityWeek} />
         </div>
 
-        <div className="space-y-4 xl:sticky xl:top-5">
-          <Card className="glass-panel overflow-hidden border-primary/20">
-            <CardHeader className="flex-row items-start justify-between space-y-0 p-4">
-              <div>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <PlayCircle className="h-5 w-5 text-primary" />
-                  DabbaDoc in action
-                </CardTitle>
-                <p className="mt-1 text-xs text-muted-foreground">A quick product walkthrough</p>
-              </div>
-              <Badge variant="outline">Guide</Badge>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0">
-              <div className="overflow-hidden rounded-xl border border-white/10 bg-black/50">
-                <video
-                  className="aspect-video w-full bg-black object-contain"
-                  src="/videos/dabbadoc-explainer.mp4"
-                  aria-label="DabbaDoc product walkthrough"
-                  controls
-                  muted
-                  autoPlay
-                  loop
-                  playsInline
-                  preload="metadata"
-                >
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-              <div className="mt-3 flex items-center justify-between gap-3 text-xs">
-                <span className="font-bold text-white">Scan Before You Eat</span>
-                <span className="text-muted-foreground">Product tour</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-panel overflow-hidden border-secondary/25">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-secondary/25 bg-secondary/15 text-secondary">
-                  <Target className="h-5 w-5" />
-                </span>
-                <Badge variant="secondary">Recommended</Badge>
-              </div>
-              <p className="mt-4 font-black text-white">{nextStep.title}</p>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">{nextStep.detail}</p>
-              <Button asChild variant="secondary" size="sm" className="mt-4 w-full">
-                <Link href={nextStep.href}>
-                  {nextStep.action}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        <Card className="glass-panel overflow-hidden border-primary/20 xl:sticky xl:top-5">
+          <CardHeader className="flex-row items-start justify-between space-y-0 p-4">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <PlayCircle className="h-5 w-5 text-primary" />
+                DabbaDoc in action
+              </CardTitle>
+              <p className="mt-1 text-xs text-muted-foreground">A quick product walkthrough</p>
+            </div>
+            <Badge variant="outline">Guide</Badge>
+          </CardHeader>
+          <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0">
+            <div className="overflow-hidden rounded-xl border border-white/10 bg-black/50">
+              <video
+                className="aspect-video w-full bg-black object-contain"
+                src="/videos/dabbadoc-explainer.mp4"
+                aria-label="DabbaDoc product walkthrough"
+                controls
+                muted
+                autoPlay
+                loop
+                playsInline
+                preload="metadata"
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3 text-xs">
+              <span className="font-bold text-white">Scan Before You Eat</span>
+              <span className="text-muted-foreground">Product tour</span>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid items-stretch gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
