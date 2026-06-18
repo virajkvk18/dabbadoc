@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
     const storagePath = formData.get("storagePath");
     const parsed = labelAnalyzeSchema.parse({
       demoMode: formData.get("demoMode") === "true",
+      productName: formData.get("productName"),
       rawText: formData.get("rawText"),
       healthGoals: formData.getAll("healthGoals")
     });
@@ -86,6 +87,7 @@ export async function POST(request: NextRequest) {
       dataUri,
       demoMode: parsed.demoMode,
       rawText: parsed.rawText,
+      productName: parsed.productName,
       healthGoals,
       healthContext: healthContext.context
     } as const;
@@ -93,7 +95,9 @@ export async function POST(request: NextRequest) {
     const analysis =
       (await analyzeLabelWithDabbaAgent({
         rawText: extractedText,
-        productName: extractedText.split("\n").find(Boolean)?.trim(),
+        productName:
+          parsed.productName ||
+          extractedText.split("\n").find(Boolean)?.trim(),
         healthGoals,
         healthContext: healthContext.context
       })) ??

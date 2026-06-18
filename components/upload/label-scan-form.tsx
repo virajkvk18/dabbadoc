@@ -57,6 +57,7 @@ export function LabelScanForm() {
   const [processingFile, setProcessingFile] = useState(false);
   const [directUpload, setDirectUpload] = useState<DirectUploadResult | null>(null);
   const [healthGoals, setHealthGoals] = useState<string[]>([]);
+  const [productName, setProductName] = useState("");
 
   useEffect(() => {
     if (!file || !file.type.startsWith("image/")) {
@@ -176,6 +177,9 @@ export function LabelScanForm() {
     try {
       const formData = new FormData();
       formData.set("demoMode", String(demoMode));
+      if (productName.trim()) {
+        formData.set("productName", productName.trim());
+      }
       healthGoals.forEach((goal) => formData.append("healthGoals", goal));
       if (ocrText.trim() && !demoMode) {
         formData.set("rawText", ocrText);
@@ -291,6 +295,20 @@ export function LabelScanForm() {
                 </div>
               </div>
             ) : null}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="label-product-name">Product name</Label>
+            <Input
+              id="label-product-name"
+              value={productName}
+              onChange={(event) => {
+                setProductName(event.target.value);
+                setError(null);
+                setWarning(null);
+              }}
+              placeholder="Example: Maggi Masala Noodles, Lay's Classic Salted, Amul Butter"
+              maxLength={120}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="label-ocr">Paste or review label text</Label>

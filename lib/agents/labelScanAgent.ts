@@ -189,7 +189,10 @@ export async function analyzeLabel(input: AgentInput): Promise<LabelAnalysis> {
 
   return {
     extractedText,
-    productName: extractedText.split("\n").find(Boolean)?.trim() ?? "Packaged food",
+    productName:
+      input.productName?.trim() ||
+      extractedText.split("\n").find(Boolean)?.trim() ||
+      "Packaged food",
     ingredients,
     nutrition: {
       calories: nutritionByKey.calories,
