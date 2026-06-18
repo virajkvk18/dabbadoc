@@ -1,5 +1,14 @@
 import { notFound } from "next/navigation";
-import { Activity, AlertTriangle, HeartPulse, ShieldCheck, UserRound } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  ClipboardList,
+  HeartPulse,
+  ReceiptText,
+  ShieldCheck,
+  Utensils,
+  UserRound
+} from "lucide-react";
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +31,16 @@ const scoreSourceLabels = {
   label: "Label scan",
   diary: "Food diary"
 };
+
+function ScoreBadge({ score }: { score: number | null }) {
+  return score === null ? (
+    <Badge variant="outline">No score</Badge>
+  ) : (
+    <Badge variant={score >= 70 ? "default" : score >= 50 ? "secondary" : "danger"}>
+      {score}/100
+    </Badge>
+  );
+}
 
 export default async function FamilyMemberSummaryPage({
   params
@@ -126,6 +145,111 @@ export default async function FamilyMemberSummaryPage({
               </p>
             </div>
           ))}
+        </CardContent>
+      </Card>
+
+      <Card className="glass-panel">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Utensils className="h-5 w-5 text-primary" />
+            Food history summary
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            High-level food patterns only. Full scans, OCR text, uploads, and private notes stay hidden.
+          </p>
+        </CardHeader>
+        <CardContent className="grid gap-3 lg:grid-cols-3">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="flex items-center gap-2 font-semibold text-white">
+                <ReceiptText className="h-4 w-4 text-primary" />
+                Latest receipt
+              </p>
+              <ScoreBadge score={summary.foodHistory.latestReceipt?.score ?? null} />
+            </div>
+            {summary.foodHistory.latestReceipt ? (
+              <div className="mt-3 space-y-3">
+                <p className="text-xs font-semibold text-primary">
+                  {formatDisplayDate(summary.foodHistory.latestReceipt.date)}
+                </p>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Items: {summary.foodHistory.latestReceipt.items.length ? summary.foodHistory.latestReceipt.items.join(", ") : "No clear items"}
+                </p>
+                <p className="rounded-xl border border-secondary/25 bg-secondary/10 p-3 text-sm text-orange-100">
+                  Watch: {summary.foodHistory.latestReceipt.watch.length ? summary.foodHistory.latestReceipt.watch.join(", ") : "No major watch signal"}
+                </p>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted-foreground">No receipt scans shared in summary yet.</p>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="flex items-center gap-2 font-semibold text-white">
+                <ClipboardList className="h-4 w-4 text-primary" />
+                Latest label
+              </p>
+              <ScoreBadge score={summary.foodHistory.latestLabel?.score ?? null} />
+            </div>
+            {summary.foodHistory.latestLabel ? (
+              <div className="mt-3 space-y-3">
+                <p className="text-xs font-semibold text-primary">
+                  {formatDisplayDate(summary.foodHistory.latestLabel.date)}
+                </p>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Product: {summary.foodHistory.latestLabel.product}
+                </p>
+                <p className="rounded-xl border border-secondary/25 bg-secondary/10 p-3 text-sm text-orange-100">
+                  Warnings: {summary.foodHistory.latestLabel.warnings.length ? summary.foodHistory.latestLabel.warnings.join(", ") : "No major warning"}
+                </p>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted-foreground">No label scans shared in summary yet.</p>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="flex items-center gap-2 font-semibold text-white">
+                <Utensils className="h-4 w-4 text-primary" />
+                Latest diary
+              </p>
+              <ScoreBadge score={summary.foodHistory.latestDiary?.score ?? null} />
+            </div>
+            {summary.foodHistory.latestDiary ? (
+              <div className="mt-3 space-y-3">
+                <p className="text-xs font-semibold text-primary">
+                  {formatDisplayDate(summary.foodHistory.latestDiary.date)}
+                </p>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  {summary.foodHistory.latestDiary.summary ?? "Diary summary available"}
+                </p>
+                <p className="rounded-xl border border-secondary/25 bg-secondary/10 p-3 text-sm text-orange-100">
+                  Watch: {summary.foodHistory.latestDiary.watchItems.length ? summary.foodHistory.latestDiary.watchItems.join(", ") : "No major watch item"}
+                </p>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted-foreground">No diary entries shared in summary yet.</p>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-primary/20 bg-primary/10 p-4 lg:col-span-3">
+            <p className="font-semibold text-white">Repeated watch items</p>
+            {summary.foodHistory.repeatedWatch.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {summary.foodHistory.repeatedWatch.map((item) => (
+                  <Badge key={item.item} variant="outline">
+                    {item.item} x{item.count}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-2 text-sm text-muted-foreground">
+                More scans or diary entries are needed to find repeated food patterns.
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
 
