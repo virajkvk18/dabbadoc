@@ -7,6 +7,7 @@ import type {
   RiskFlag,
   SwapRecommendation
 } from "@/types";
+import { getEffectivePlan } from "@/lib/access";
 import { getPlanDisplayName } from "@/lib/plans";
 import { ApiError } from "@/lib/security/api-errors";
 import { getScoreCategory } from "@/lib/scoring/healthIndex";
@@ -627,8 +628,12 @@ export async function getAccountOverview(): Promise<AccountOverview> {
   );
   const streakDays = Math.max(latestHealth?.streak_count ?? 0, activityStreak);
   const savedBadges = asArray<string>(latestHealth?.badges);
-  const isPremium = Boolean(profile?.is_premium);
-  const plan = profile?.plan || (isPremium ? "premium" : "free");
+  const plan = getEffectivePlan({
+    email,
+    plan: profile?.plan,
+    isPremium: profile?.is_premium
+  });
+  const isPremium = plan === "premium" || plan === "premium_plus";
   const badges = deriveBadges({
     activityCount: activities.length,
     streakDays,
