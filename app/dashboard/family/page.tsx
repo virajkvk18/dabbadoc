@@ -1,5 +1,14 @@
 import Link from "next/link";
-import { ArrowRight, HeartPulse, LockKeyhole, UsersRound } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  ArrowRight,
+  HeartPulse,
+  LockKeyhole,
+  ShieldCheck,
+  UserPlus,
+  UsersRound
+} from "lucide-react";
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +26,39 @@ const statusTone = {
   rejected: "border-red-400/25 bg-red-500/10 text-red-100",
   revoked: "border-white/10 bg-white/5 text-muted-foreground"
 };
+
+const premiumPlusFamilyFeatures = [
+  {
+    icon: UserPlus,
+    title: "Invite family by email",
+    description: "Connect Mom, Dad, spouse, child, or any family member who has their own DabbaDoc account."
+  },
+  {
+    icon: ShieldCheck,
+    title: "Separate private accounts",
+    description: "Each member keeps separate login, reports, settings, scans, and food history."
+  },
+  {
+    icon: HeartPulse,
+    title: "Read-only health summaries",
+    description: "View concise health score, trend, last update, streak, and high-level report count."
+  },
+  {
+    icon: Activity,
+    title: "Family tracking overview",
+    description: "Quickly compare who is improving, stable, or needs attention without opening private records."
+  },
+  {
+    icon: AlertTriangle,
+    title: "Important alerts",
+    description: "See summary alerts like score drop, missed checkup, new report, or overdue reminder."
+  },
+  {
+    icon: LockKeyhole,
+    title: "No edit access",
+    description: "You cannot edit their profile, upload reports, delete records, or change settings."
+  }
+];
 
 export default async function FamilyPage() {
   const account = await getAccountOverview();
@@ -53,6 +95,32 @@ export default async function FamilyPage() {
             <Button asChild variant="secondary" className="shrink-0">
               <Link href="/pricing">Unlock Premium Plus</Link>
             </Button>
+          </CardContent>
+        </Card>
+        <Card className="glass-panel">
+          <CardHeader>
+            <CardTitle>What Premium Plus Family gives you</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {premiumPlusFamilyFeatures.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <div key={feature.title} className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <p className="mt-3 font-semibold text-white">{feature.title}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {feature.description}
+                  </p>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+        <Card className="glass-panel border-primary/20">
+          <CardContent className="p-5 text-sm leading-6 text-muted-foreground">
+            Family mode is made for quick household awareness, not control. Members accept invites themselves, and shared access stays summary-only unless they choose to share more in future features.
           </CardContent>
         </Card>
       </div>
