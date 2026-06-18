@@ -121,19 +121,45 @@ export default async function ProfilePage() {
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <History className="h-5 w-5 text-primary" />
+                {account.profile.isPremium ? (
+                  <History className="h-5 w-5 text-primary" />
+                ) : (
+                  <LockKeyhole className="h-5 w-5 text-secondary" />
+                )}
                 Recent profile activity
               </CardTitle>
               <p className="mt-2 text-sm text-muted-foreground">
-                Your latest saved scans, diary entries, reports, and plan updates
+                {account.profile.isPremium
+                  ? "Your latest saved scans, diary entries, reports, and plan updates"
+                  : "Recent activity timeline unlocks in Premium mode"}
               </p>
             </div>
-            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-              <Link href="/dashboard/history">View all</Link>
-            </Button>
+            {account.profile.isPremium ? (
+              <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+                <Link href="/dashboard/history">View all</Link>
+              </Button>
+            ) : (
+              <Badge variant="secondary">Premium</Badge>
+            )}
           </CardHeader>
           <CardContent className="space-y-3">
-            {account.recentActivities.length === 0 ? (
+            {!account.profile.isPremium ? (
+              <div className="flex min-h-56 flex-col items-center justify-center rounded-xl border border-dashed border-secondary/30 bg-secondary/10 p-6 text-center">
+                <span className="grid h-12 w-12 place-items-center rounded-xl border border-secondary/25 bg-secondary/15 text-secondary">
+                  <LockKeyhole className="h-6 w-6" />
+                </span>
+                <p className="mt-4 font-semibold text-white">Recent activity is locked</p>
+                <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
+                  Upgrade to Premium to see your latest scans, diary entries, reports, and plan updates in one timeline.
+                </p>
+                <Button asChild size="sm" variant="secondary" className="mt-5">
+                  <Link href="/pricing">
+                    Unlock Premium
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            ) : account.recentActivities.length === 0 ? (
               <div className="flex min-h-56 flex-col items-center justify-center rounded-xl border border-dashed border-primary/25 bg-primary/5 p-6 text-center">
                 <span className="grid h-12 w-12 place-items-center rounded-xl border border-primary/25 bg-primary/10 text-primary motion-safe:animate-pulse">
                   <History className="h-6 w-6" />
@@ -151,7 +177,7 @@ export default async function ProfilePage() {
               </div>
             ) : null}
 
-            {account.recentActivities.map((activity) => {
+            {account.profile.isPremium ? account.recentActivities.map((activity) => {
               const Icon = activityIcons[activity.type];
               return (
                 <div
@@ -186,11 +212,13 @@ export default async function ProfilePage() {
                   </div>
                 </div>
               );
-            })}
+            }) : null}
 
-            <Button asChild variant="outline" size="sm" className="w-full sm:hidden">
-              <Link href="/dashboard/history">Open complete history</Link>
-            </Button>
+            {account.profile.isPremium ? (
+              <Button asChild variant="outline" size="sm" className="w-full sm:hidden">
+                <Link href="/dashboard/history">Open complete history</Link>
+              </Button>
+            ) : null}
           </CardContent>
         </Card>
 

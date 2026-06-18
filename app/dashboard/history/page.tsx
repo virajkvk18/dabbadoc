@@ -1,8 +1,10 @@
+import Link from "next/link";
 import {
   CalendarDays,
   CreditCard,
   FileText,
   History,
+  LockKeyhole,
   ScanLine,
   Upload,
   Utensils
@@ -10,6 +12,7 @@ import {
 import { HealthIndexChart } from "@/components/charts/health-index-chart";
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   formatDisplayDate,
@@ -44,6 +47,43 @@ const sectionTone: Record<NonNullable<AccountActivitySection["tone"]>, string> =
 
 export default async function HistoryPage() {
   const account = await getAccountOverview();
+
+  if (!account.profile.isPremium) {
+    return (
+      <div className="space-y-6">
+        <AppPageHeader
+          eyebrow="Premium"
+          title="Health history"
+          description="Recent activity and full health history unlock in Premium mode."
+          icon={CalendarDays}
+          accent="secondary"
+          stats={[
+            { label: "Required", value: "Premium" },
+            { label: "Your plan", value: account.profile.planLabel },
+            { label: "Saved entries", value: `${account.counts.activities}` }
+          ]}
+        />
+        <Card className="glass-panel border-secondary/25">
+          <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-4">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-secondary/30 bg-secondary/15 text-secondary">
+                <LockKeyhole className="h-6 w-6" />
+              </span>
+              <div>
+                <p className="font-semibold text-white">Recent history is locked</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Upgrade to Premium to view your saved scans, diary entries, reports, trends, and concise activity timeline.
+                </p>
+              </div>
+            </div>
+            <Button asChild variant="secondary" className="shrink-0">
+              <Link href="/pricing">Unlock Premium</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

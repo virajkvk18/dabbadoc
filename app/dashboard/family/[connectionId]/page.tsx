@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RemoveFamilyConnectionButton } from "@/components/family/family-actions";
 import { getFamilyMemberSummary } from "@/lib/supabase/family";
-import { formatDisplayDate } from "@/lib/supabase/account-overview";
+import { formatDisplayDate, getAccountOverview } from "@/lib/supabase/account-overview";
 
 const metricLabels = {
   weight: "Weight",
@@ -22,6 +22,11 @@ export default async function FamilyMemberSummaryPage({
   params: Promise<{ connectionId: string }>;
 }) {
   const { connectionId } = await params;
+  const account = await getAccountOverview();
+  if (account.profile.plan !== "premium_plus") {
+    notFound();
+  }
+
   let summary: Awaited<ReturnType<typeof getFamilyMemberSummary>>;
 
   try {
