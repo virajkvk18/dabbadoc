@@ -2,9 +2,12 @@
 
 import { useMemo, useState } from "react";
 import {
+  CalendarDays,
   Clock3,
   Home,
   Loader2,
+  Mic,
+  MicOff,
   Plus,
   Store,
   Trash2,
@@ -17,7 +20,7 @@ import { ProcessingSteps } from "@/components/common/processing-steps";
 import { BadgeGrid } from "@/components/badges/badge-grid";
 import { HealthScoreGauge } from "@/components/dashboard/health-score-gauge";
 import { HealthGoalSelector } from "@/components/upload/health-goal-selector";
-import { RiskFlags, SwapList } from "@/components/upload/analysis-list";
+import { RiskFlags, SmartGroceryList, SwapList } from "@/components/upload/analysis-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -56,6 +59,37 @@ const defaultEntry: Omit<ManualMealEntry, "id"> = {
   notes: ""
 };
 
+type SpeechRecognitionResultItem = {
+  transcript: string;
+};
+
+type SpeechRecognitionResultListItem = {
+  0: SpeechRecognitionResultItem;
+};
+
+type SpeechRecognitionEventLike = {
+  results: {
+    length: number;
+    [index: number]: SpeechRecognitionResultListItem;
+  };
+};
+
+type SpeechRecognitionLike = {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  start: () => void;
+  stop: () => void;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+};
+
+type SpeechWindow = Window & {
+  SpeechRecognition?: new () => SpeechRecognitionLike;
+  webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+};
+
 function entrySummary(entry: ManualMealEntry) {
   const source = entry.source === "home" ? "Home" : "Outside";
   const meal = mealTimes.find((time) => time.value === entry.mealTime)?.label;
@@ -66,6 +100,54 @@ function entrySummary(entry: ManualMealEntry) {
   return `${source} • ${meal} • ${entry.quantity} • ${entry.spiceLevel} spice`;
 }
 
+function cleanVoiceText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/\b(aaj|maine|meine|khaya|khayi|khaya hai|piya|pi|liya|li|tha|thi|hai|aur|and)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function voiceItems(value: string) {
+  const normalized = value
+    .replace(/\b(aur|and|with|plus)\b/gi, ",")
+    .split(/[,\n]+/)
+    .map(cleanVoiceText)
+    .filter((item) => item.length > 1);
+  return Array.from(new Set(normalized)).slice(0, 6);
+}
+
+function mealPlanFromAnalysis(analysis: FoodDiaryAnalysis) {
+  const riskyText = analysis.riskyFoods.map((item) => item.name.toLowerCase()).join(" ");
+  const missing = analysis.missingNutrients.map((item) => item.toLowerCase());
+  const needsProtein = missing.includes("protein") || analysis.proteinEstimate < 45;
+  const hasSugar = /sweet|sugar|chai|cold drink|juice|chocolate|dessert/.test(riskyText);
+  const hasFried = /fried|chips|momos|samosa|pakora|bhujia|namkeen/.test(riskyText);
+
+  return [
+    {
+      meal: "Breakfast",
+      idea: needsProtein ? "Poha/upma + sprouts or curd" : "Poha/upma with peanuts and fruit",
+      reason: "Keeps breakfast familiar but adds protein/fiber."
+    },
+    {
+      meal: "Lunch",
+      idea: "Dal chawal or roti sabzi + salad + curd",
+      reason: "Balanced Indian plate with protein, carbs, and cooling sides."
+    },
+    {
+      meal: "Evening",
+      idea: hasFried ? "Makhana, roasted chana, peanuts, or sprouts chaat" : "Fruit + curd or roasted chana",
+      reason: hasFried ? "Replaces fried/packaged snack habit." : "Keeps snack light and filling."
+    },
+    {
+      meal: "Dinner",
+      idea: hasSugar ? "Paneer/tofu/egg/dal + roti + sabzi, skip sweet drink" : "Khichdi/dal + sabzi + curd",
+      reason: hasSugar ? "Reduces late sugar load." : "Simple dinner that supports recovery."
+    }
+  ];
+}
+
 export function FoodDiaryForm({ initialNow }: { initialNow: string }) {
   const [currentEntry, setCurrentEntry] =
     useState<Omit<ManualMealEntry, "id">>(defaultEntry);
@@ -74,6 +156,9 @@ export function FoodDiaryForm({ initialNow }: { initialNow: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [healthGoals, setHealthGoals] = useState<string[]>([]);
+  const [voiceText, setVoiceText] = useState("");
+  const [listening, setListening] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(true);
 
   const canAdd =
     currentEntry.itemName.trim().length > 1 && currentEntry.quantity.trim().length > 0;
@@ -119,6 +204,63 @@ export function FoodDiaryForm({ initialNow }: { initialNow: string }) {
 
   function removeEntry(id?: string) {
     setEntries((items) => items.filter((entry) => entry.id !== id));
+  }
+
+  function addVoiceEntries(text: string) {
+    const spokenItems = voiceItems(text);
+    if (spokenItems.length === 0) {
+      setError("Could not understand food items. Try saying: aaj poha aur chai pi.");
+      return;
+    }
+
+    setEntries((items) => [
+      ...items,
+      ...spokenItems.map((item) => ({
+        ...defaultEntry,
+        source: currentEntry.source,
+        mealTime: currentEntry.mealTime,
+        itemName: item,
+        quantity: "spoken entry",
+        notes: text,
+        id: crypto.randomUUID(),
+        loggedAt: new Date().toISOString()
+      }))
+    ]);
+    setVoiceText(text);
+    setError(null);
+  }
+
+  function startVoiceEntry() {
+    const SpeechRecognition =
+      (window as SpeechWindow).SpeechRecognition ||
+      (window as SpeechWindow).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setVoiceSupported(false);
+      setError("Voice diary is not supported in this browser. Please type the entry.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-IN";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      const transcript = Array.from({ length: event.results.length })
+        .map((_, index) => event.results[index]?.[0]?.transcript ?? "")
+        .join(" ")
+        .trim();
+      if (transcript) addVoiceEntries(transcript);
+    };
+    recognition.onerror = () => {
+      setError("Could not hear clearly. Try again closer to the mic.");
+      setListening(false);
+    };
+    recognition.onend = () => setListening(false);
+
+    setListening(true);
+    setError(null);
+    recognition.start();
   }
 
   async function submit() {
@@ -243,6 +385,37 @@ export function FoodDiaryForm({ initialNow }: { initialNow: string }) {
                 onChange={(event) => updateEntry("notes", event.target.value)}
               />
             </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-semibold text-white">Voice food diary</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Speak Hinglish food entries like: aaj poha aur chai pi.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant={listening ? "secondary" : "outline"}
+                onClick={startVoiceEntry}
+                disabled={listening}
+                className="w-full sm:w-auto"
+              >
+                {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                {listening ? "Listening..." : "Speak entry"}
+              </Button>
+            </div>
+            {!voiceSupported ? (
+              <p className="mt-3 text-sm text-orange-100">
+                Your browser does not support speech recognition yet. Manual entry still works.
+              </p>
+            ) : null}
+            {voiceText ? (
+              <p className="mt-3 rounded-xl border border-primary/20 bg-primary/10 p-3 text-sm text-primary">
+                Heard: {voiceText}
+              </p>
+            ) : null}
           </div>
 
           <div>
@@ -429,6 +602,33 @@ export function FoodDiaryForm({ initialNow }: { initialNow: string }) {
             }))}
           />
           <SwapList swaps={analysis.healthierSwaps} />
+          <Card className="glass-panel border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarDays className="h-5 w-5 text-primary" />
+                Tomorrow meal plan suggestion
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-3 md:grid-cols-2">
+              {mealPlanFromAnalysis(analysis).map((plan) => (
+                <div key={plan.meal} className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <p className="mono-label text-[10px] text-muted-foreground">{plan.meal}</p>
+                  <p className="mt-1 font-semibold text-white">{plan.idea}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{plan.reason}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+          <SmartGroceryList
+            swaps={analysis.healthierSwaps}
+            risks={analysis.riskyFoods.map((item) => ({
+              label: `${item.name} watch`,
+              severity: item.flags?.includes("high_sodium") ? "high" : "medium",
+              reason: `${item.name} appeared in today's diary.`,
+              possibleConcern: "Useful to replace if it becomes a frequent pattern."
+            }))}
+            title="Buy for tomorrow"
+          />
           <Card className="glass-panel">
             <CardHeader>
               <CardTitle>Missing nutrients and tips</CardTitle>
