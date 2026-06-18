@@ -1,104 +1,109 @@
-import swaps from "@/data/healthy-swaps.json";
+import "server-only";
+
+import { generateGeminiJson } from "@/lib/gemini/client";
+import { generateGroqText } from "@/lib/groq/client";
+import { safeJsonParse } from "@/lib/utils";
 import type { FoodItem, SwapRecommendation } from "@/types";
+import {
+  filterContextualSwaps,
+  isSwapEligibleItem,
+  normalizeFoodName
+} from "./swapPolicy";
 
-type SwapRow = SwapRecommendation;
+type AiSwap = {
+  original?: string;
+  swap?: string;
+  reason?: string;
+  costDelta?: number;
+  scoreImpact?: number;
+};
 
-const swapRows = swaps as SwapRow[];
+type AiSwapResponse = {
+  swaps?: AiSwap[];
+};
 
-function normalize(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+function finiteNumber(value: unknown, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
-function genericSwapForItem(item: FoodItem): SwapRecommendation | null {
-  const flags = new Set(item.flags ?? []);
+function clampScoreImpact(value: unknown) {
+  return Math.min(Math.max(Math.round(finiteNumber(value, 8)), 1), 12);
+}
 
-  if (flags.has("high_sugar") || flags.has("added_sugar")) {
-    return {
-      original: item.name,
-      swap: "chaas, coconut water, or unsweetened nimbu pani",
-      reason: "Helps lower added sugar load while keeping a familiar drink/snack slot.",
-      costDelta: -150,
-      scoreImpact: 9
-    };
-  }
+function buildSwapPrompt(items: FoodItem[]) {
+  const candidates = items.map((item) => ({
+    name: item.name,
+    category: item.category,
+    quantity: item.quantity,
+    flags: item.flags ?? [],
+    price: item.price
+  }));
 
-  if (flags.has("fried") || flags.has("high_fat")) {
-    return {
-      original: item.name,
-      swap: "roasted chana, makhana, or sprouts chaat",
-      reason: "Keeps the snack format but reduces oil load and improves protein/fiber.",
-      costDelta: -120,
-      scoreImpact: 9
-    };
-  }
+  return `Generate contextual healthy Indian food swaps for DabbaDoc.
 
-  if (flags.has("high_sodium") || flags.has("processed")) {
-    return {
-      original: item.name,
-      swap: "poha with peanuts, oats upma, or homemade chilla",
-      reason: "A less processed Indian option with better satiety and lower sodium.",
-      costDelta: -100,
-      scoreImpact: 8
-    };
-  }
+Very important rules:
+- Recommend swaps ONLY for the candidate foods listed below.
+- The "original" field must exactly match one candidate food name.
+- Do not swap normal healthy homemade Indian staples like roti, chapati, dal, poha, upma, idli, dosa, sabzi, curd, khichdi, sprouts, salad, or home food unless that exact item has a risky flag such as high_sugar, fried, high_sodium, processed, maida, palm_oil, or low_protein.
+- If an item is already balanced or only has positive flags like whole_food, fiber, protein, vegetable, return no swap for it.
+- Keep swaps practical for Indian households and explain the reason in one short Hinglish-friendly sentence.
+- Do not give medical advice or disease diagnosis.
 
-  if (flags.has("refined_flour") || flags.has("maida")) {
-    return {
-      original: item.name,
-      swap: "atta-based or millet-based version with curd/salad",
-      reason: "Improves whole-grain balance and makes the meal more filling.",
-      costDelta: 50,
-      scoreImpact: 7
-    };
-  }
+Candidate foods:
+${JSON.stringify(candidates, null, 2)}
 
-  if (flags.has("low_protein")) {
-    return {
-      original: item.name,
-      swap: "add curd, dal, paneer, egg, or sprouts on the side",
-      reason: "Adds protein so the meal is less carb-heavy.",
-      costDelta: 120,
-      scoreImpact: 8
-    };
-  }
+Return this JSON shape:
+{
+  "swaps": [
+    {
+      "original": "exact candidate food name",
+      "swap": "specific better option",
+      "reason": "short reason",
+      "costDelta": -50,
+      "scoreImpact": 8
+    }
+  ]
+}`;
+}
 
-  if (flags.has("palm_oil")) {
-    return {
-      original: item.name,
-      swap: "homemade snack, fruit and nuts, or roasted makhana",
-      reason: "Reduces hidden refined-oil load from packaged foods.",
-      costDelta: -80,
-      scoreImpact: 7
-    };
-  }
+function sanitizeAiSwaps(response: AiSwapResponse, candidates: FoodItem[]) {
+  const candidateByName = new Map(
+    candidates.map((item) => [normalizeFoodName(item.name), item])
+  );
 
-  return null;
+  const swaps = (response.swaps ?? [])
+    .filter((swap) => swap.original?.trim() && swap.swap?.trim())
+    .map((swap): SwapRecommendation | null => {
+      const original = swap.original?.trim() ?? "";
+      const candidate = candidateByName.get(normalizeFoodName(original));
+      if (!candidate) return null;
+
+      return {
+        original: candidate.name,
+        swap: swap.swap?.trim() ?? "",
+        reason:
+          swap.reason?.trim() ||
+          "Better fit for everyday food habits with lower risk load.",
+        costDelta: Math.round(finiteNumber(swap.costDelta, 0)),
+        scoreImpact: clampScoreImpact(swap.scoreImpact)
+      };
+    })
+    .filter(Boolean) as SwapRecommendation[];
+
+  return filterContextualSwaps(swaps, candidates);
 }
 
 export async function recommendSwaps(items: FoodItem[]) {
-  const seen = new Set<string>();
-  const recommendations: SwapRecommendation[] = [];
+  const candidates = items.filter(isSwapEligibleItem).slice(0, 8);
+  if (candidates.length === 0) return [];
 
-  for (const item of items) {
-    if ((item.flags ?? []).length === 0) continue;
+  const prompt = buildSwapPrompt(candidates);
+  const geminiResponse = await generateGeminiJson<AiSwapResponse>(prompt, { swaps: [] });
+  const geminiSwaps = sanitizeAiSwaps(geminiResponse, candidates);
+  if (geminiSwaps.length > 0) return geminiSwaps;
 
-    const exact =
-      swapRows.find((swap) => normalize(swap.original) === normalize(item.name)) ??
-      swapRows.find((swap) => normalize(item.name).includes(normalize(swap.original)));
-    const swap = exact
-      ? {
-          ...exact,
-          original: item.name
-        }
-      : genericSwapForItem(item);
+  const groqText = await generateGroqText(`${prompt}\n\nReturn only valid JSON. Do not include markdown.`);
+  if (!groqText) return [];
 
-    if (!swap) continue;
-
-    const key = `${normalize(swap.original)}-${normalize(swap.swap)}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    recommendations.push(swap);
-  }
-
-  return recommendations;
+  return sanitizeAiSwaps(safeJsonParse<AiSwapResponse>(groqText, { swaps: [] }), candidates);
 }

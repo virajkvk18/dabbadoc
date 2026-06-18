@@ -30,6 +30,7 @@ import {
   extractIngredientsFromLabel,
   extractNutritionFacts
 } from "./labelNarrative";
+import { filterContextualSwaps } from "./swapPolicy";
 import {
   awardBadges,
   buildBlameMap,
@@ -276,8 +277,12 @@ function relationCostDelta(relation?: string) {
   return 0;
 }
 
-function mapSwaps(swaps?: AgentSwap[], costs?: AgentCost[]): SwapRecommendation[] {
-  return (swaps ?? [])
+function mapSwaps(
+  swaps?: AgentSwap[],
+  costs?: AgentCost[],
+  items?: FoodItem[]
+): SwapRecommendation[] {
+  const mapped = (swaps ?? [])
     .filter((swap) => swap.replace?.trim() && swap.with_item?.trim())
     .map((swap, index) => ({
       original: swap.replace?.trim() ?? "Current item",
@@ -286,6 +291,8 @@ function mapSwaps(swaps?: AgentSwap[], costs?: AgentCost[]): SwapRecommendation[
       costDelta: relationCostDelta(costs?.[index]?.estimated_cost_relation),
       scoreImpact: 8
     }));
+
+  return items ? filterContextualSwaps(mapped, items) : mapped;
 }
 
 function mapCostSummary(costs?: AgentCost[]): CostComparison {
@@ -360,7 +367,7 @@ export async function analyzeReceiptWithDabbaAgent(params: {
 
   const detectedItems = mapFoodItems(agent.detected_items);
   const riskFlags = mapRiskFlags(agent.risk_flags, agent.future_health_risks);
-  const swaps = mapSwaps(agent.healthier_swaps, agent.cost_comparison);
+  const swaps = mapSwaps(agent.healthier_swaps, agent.cost_comparison, detectedItems);
   const futureHealthRisks = mapFutureHealthRisks(
     agent.future_health_risks,
     agent.risk_flags,
@@ -593,7 +600,7 @@ export async function analyzeFoodDiaryWithDabbaAgent(
 
   const items = mapFoodItems(agent.detected_items);
   const risks = mapRiskFlags(agent.risk_flags, agent.future_health_risks);
-  const swaps = mapSwaps(agent.healthier_swaps, agent.cost_comparison);
+  const swaps = mapSwaps(agent.healthier_swaps, agent.cost_comparison, items);
   const dailyScore = clamp(agent.dabba_health_index?.score ?? 50);
   const riskyFoods = items.filter((item) => (item.flags ?? []).length > 0);
   const goodFoods = items.filter((item) =>
