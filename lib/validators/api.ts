@@ -91,6 +91,7 @@ export const receiptAnalyzeSchema = z.object({
 
 export const labelAnalyzeSchema = z.object({
   demoMode: z.boolean().default(false),
+  productName: optionalTrimmedString(120),
   rawText: optionalTrimmedString(8000),
   healthGoals: z.array(healthGoalSchema).max(6).default([])
 });

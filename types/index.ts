@@ -267,6 +267,7 @@ export interface AgentInput {
   sourceType?: SourceType;
   fileName?: string;
   mimeType?: string;
+  productName?: string;
   dataUri?: string;
   rawText?: string;
   healthGoals?: HealthGoal[];
