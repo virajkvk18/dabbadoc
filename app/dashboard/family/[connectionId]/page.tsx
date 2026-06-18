@@ -16,6 +16,13 @@ const metricLabels = {
   sleepScore: "Sleep Score"
 };
 
+const scoreSourceLabels = {
+  health_index: "Health index",
+  receipt: "Receipt scan",
+  label: "Label scan",
+  diary: "Food diary"
+};
+
 export default async function FamilyMemberSummaryPage({
   params
 }: {
@@ -87,6 +94,7 @@ export default async function FamilyMemberSummaryPage({
           <CardContent className="grid gap-3 sm:grid-cols-2">
             {[
               ["Overall Health Score", summary.summary.healthScore === null ? "--" : `${summary.summary.healthScore}/100`],
+              ["Latest Score Source", summary.summary.scoreSource ? scoreSourceLabels[summary.summary.scoreSource] : "No score yet"],
               ["Score Trend", summary.summary.scoreTrend],
               ["Last Checkup Date", summary.summary.lastCheckupDate ? formatDisplayDate(summary.summary.lastCheckupDate) : "Not available"],
               ["Number of Reports", String(summary.summary.reportsCount)],
