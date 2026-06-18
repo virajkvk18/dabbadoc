@@ -18,6 +18,7 @@ import {
   Upload,
   Utensils
 } from "lucide-react";
+import { ControlledLoopVideo } from "@/components/common/controlled-loop-video";
 import { SectionHeading } from "@/components/common/section-heading";
 import { DabbaDocLogo } from "@/components/brand/dabbadoc-logo";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -342,20 +343,12 @@ function ExplainerVideoSection() {
             Scan Before You Eat
           </div>
           <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_28px_70px_rgba(0,0,0,0.38)]">
-            <video
-              className="aspect-video w-full bg-black object-contain"
+            <ControlledLoopVideo
               src="/videos/dabbadoc-explainer.mp4"
-              style={{ display: "block", height: "auto", maxWidth: "100%", width: "100%" }}
-              controls
-              muted
-              autoPlay
-              loop
-              playsInline
-              preload="metadata"
-            >
-              Your browser does not support the video tag.
-            </video>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(0deg,rgba(3,7,13,0.75),transparent)]" />
+              ariaLabel="DabbaDoc product walkthrough"
+              videoClassName="aspect-video w-full bg-black object-contain"
+            />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-20 bg-[linear-gradient(0deg,rgba(3,7,13,0.75),transparent)]" />
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
             {["Receipt intelligence", "Label truth", "Family history"].map((item) => (

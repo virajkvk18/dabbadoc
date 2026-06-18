@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { BadgeGrid } from "@/components/badges/badge-grid";
 import { HealthIndexChart } from "@/components/charts/health-index-chart";
+import { ControlledLoopVideo } from "@/components/common/controlled-loop-video";
 import { Disclaimer } from "@/components/common/disclaimer";
 import { LiveGreeting } from "@/components/common/live-date-time";
 import { HealthScoreGauge } from "@/components/dashboard/health-score-gauge";
@@ -211,19 +212,11 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0">
             <div className="overflow-hidden rounded-xl border border-white/10 bg-black/50">
-              <video
-                className="aspect-video w-full bg-black object-contain"
+              <ControlledLoopVideo
                 src="/videos/dabbadoc-explainer.mp4"
-                aria-label="DabbaDoc product walkthrough"
-                controls
-                muted
-                autoPlay
-                loop
-                playsInline
-                preload="metadata"
-              >
-                Your browser does not support the video tag.
-              </video>
+                ariaLabel="DabbaDoc product walkthrough"
+                videoClassName="aspect-video w-full bg-black object-contain"
+              />
             </div>
             <div className="mt-3 flex items-center justify-between gap-3 text-xs">
               <span className="font-bold text-white">Scan Before You Eat</span>
