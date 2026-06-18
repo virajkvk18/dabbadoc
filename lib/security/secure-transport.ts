@@ -148,7 +148,7 @@ export function addSecureDeploymentHeaders(
   response.headers.set("X-DNS-Prefetch-Control", "off");
   response.headers.set(
     "Permissions-Policy",
-    "camera=(self), microphone=(), geolocation=(), payment=(self)"
+    "camera=(self), microphone=(self), geolocation=(), payment=(self)"
   );
   response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
   response.headers.set("Cross-Origin-Resource-Policy", "same-origin");
