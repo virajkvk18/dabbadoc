@@ -7,6 +7,7 @@ import {
   FileText,
   History,
   LockKeyhole,
+  PlayCircle,
   ScanLine,
   ShieldCheck,
   Sparkles,
@@ -35,21 +36,18 @@ const quickActions = [
   {
     href: "/dashboard/upload-receipt",
     label: "Upload receipt",
-    detail: "Bill, order screenshot, or grocery scan",
     icon: Upload,
     featured: false
   },
   {
     href: "/dashboard/label-scan",
     label: "Scan food label",
-    detail: "Nutrition label and ingredients check",
     icon: ScanLine,
     featured: true
   },
   {
     href: "/dashboard/food-diary",
     label: "Add food diary",
-    detail: "Home and outside meals with quantity",
     icon: Utensils,
     featured: false
   }
@@ -171,47 +169,88 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="mono-label text-[10px] text-primary">Quick capture</p>
-          <h2 className="mt-1 text-xl font-black text-white">What are you logging?</h2>
-        </div>
-        <p className="text-sm text-muted-foreground">Each saved entry updates your overview.</p>
-      </div>
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
+        <div className="space-y-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="mono-label text-[10px] text-primary">Quick capture</p>
+              <h2 className="mt-1 text-xl font-black text-white">What are you logging?</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">Choose a capture flow</p>
+          </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {quickActions.map((action) => {
-          const Icon = action.icon;
-          return (
-            <Link key={action.href} href={action.href}>
-              <Card
-                className={
-                  action.featured
-                    ? "glass-panel neon-bloom-primary h-full border-primary/40 transition-transform duration-300 hover:-translate-y-1"
-                    : "glass-panel h-full transition-transform duration-300 hover:-translate-y-1"
-                }
-              >
-                <CardContent className="group flex min-h-40 flex-col items-center justify-center gap-4 p-6 text-center">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <Link
+                  key={action.href}
+                  href={action.href}
+                  className={
+                    action.featured
+                      ? "glass-panel neon-bloom-primary group flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl border-primary/40 p-3 text-center transition duration-300 hover:-translate-y-1 sm:min-h-20 sm:flex-row sm:justify-start sm:text-left"
+                      : "glass-panel group flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl p-3 text-center transition duration-300 hover:-translate-y-1 sm:min-h-20 sm:flex-row sm:justify-start sm:text-left"
+                  }
+                >
                   <span
                     className={
                       action.featured
-                        ? "grid h-14 w-14 place-items-center rounded-xl bg-primary text-primary-foreground shadow-[0_0_22px_rgba(129,247,89,0.42)] transition duration-300 group-hover:scale-110 group-hover:rotate-3"
-                        : "grid h-14 w-14 place-items-center rounded-xl border border-white/10 bg-white/5 text-white transition duration-300 group-hover:scale-110 group-hover:-rotate-3 group-hover:border-primary/35 group-hover:text-primary"
+                        ? "grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground shadow-[0_0_18px_rgba(129,247,89,0.32)] transition duration-300 group-hover:scale-105"
+                        : "grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/5 text-white transition duration-300 group-hover:scale-105 group-hover:border-primary/35 group-hover:text-primary"
                     }
                   >
-                    <Icon className="h-6 w-6" />
+                    <Icon className="h-5 w-5" />
                   </span>
-                  <div>
-                    <p className={action.featured ? "font-black text-primary" : "font-black text-white"}>
-                      {action.label}
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">{action.detail}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          );
-        })}
+                  <span
+                    className={
+                      action.featured
+                        ? "text-xs font-black leading-4 text-primary sm:text-sm"
+                        : "text-xs font-black leading-4 text-white sm:text-sm"
+                    }
+                  >
+                    {action.label}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+
+          <StreakMomentumCard days={account.streak.days} week={activityWeek} />
+        </div>
+
+        <Card className="glass-panel overflow-hidden border-primary/20 xl:sticky xl:top-5">
+          <CardHeader className="flex-row items-start justify-between space-y-0 p-4">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <PlayCircle className="h-5 w-5 text-primary" />
+                DabbaDoc in action
+              </CardTitle>
+              <p className="mt-1 text-xs text-muted-foreground">A quick product walkthrough</p>
+            </div>
+            <Badge variant="outline">Guide</Badge>
+          </CardHeader>
+          <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0">
+            <div className="overflow-hidden rounded-xl border border-white/10 bg-black/50">
+              <video
+                className="aspect-video w-full bg-black object-contain"
+                src="/videos/dabbadoc-explainer.mp4"
+                aria-label="DabbaDoc product walkthrough"
+                controls
+                muted
+                autoPlay
+                loop
+                playsInline
+                preload="metadata"
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3 text-xs">
+              <span className="font-bold text-white">Scan Before You Eat</span>
+              <span className="text-muted-foreground">Product tour</span>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid items-stretch gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
@@ -221,30 +260,31 @@ export default async function DashboardPage() {
           className="h-full"
           fillHeight
         />
-        <StreakMomentumCard days={account.streak.days} week={activityWeek} />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard
-          label="Risk signals"
-          value={`${riskCount}`}
-          detail={riskCount > 0 ? "From your saved analyses" : "No strong risks yet"}
-          icon={Sparkles}
-          variant="secondary"
-        />
-        <StatCard
-          label="Badges earned"
-          value={`${account.badges.length}`}
-          detail="Based on your account activity"
-          icon={BadgeCheck}
-          variant="primary"
-        />
-        <StatCard
-          label="Total scans"
-          value={`${account.counts.scans}`}
-          detail={`${account.counts.receipts} receipts, ${account.counts.labels} labels, ${account.counts.diaries} diaries`}
-          icon={ScanLine}
-        />
+        <div className="grid gap-4 sm:grid-cols-3">
+          <StatCard
+            label="Risk signals"
+            value={`${riskCount}`}
+            detail={riskCount > 0 ? "From your saved analyses" : "No strong risks yet"}
+            icon={Sparkles}
+            variant="secondary"
+            className="h-full items-center"
+          />
+          <StatCard
+            label="Badges earned"
+            value={`${account.badges.length}`}
+            detail="Based on your account activity"
+            icon={BadgeCheck}
+            variant="primary"
+            className="h-full items-center"
+          />
+          <StatCard
+            label="Total scans"
+            value={`${account.counts.scans}`}
+            detail={`${account.counts.receipts} receipts, ${account.counts.labels} labels, ${account.counts.diaries} diaries`}
+            icon={ScanLine}
+            className="h-full items-center"
+          />
+        </div>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1.05fr]">
