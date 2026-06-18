@@ -11,6 +11,8 @@ import {
   ScanLine,
   ShieldCheck,
   Sparkles,
+  Target,
+  Trophy,
   Upload,
   Utensils
 } from "lucide-react";
@@ -86,6 +88,74 @@ function buildActivityWeek(activityDates: string[], now: Date): StreakDay[] {
   });
 }
 
+type Challenge = {
+  title: string;
+  detail: string;
+  progress: number;
+  badge: string;
+  href: string;
+  action: string;
+  status: "active" | "earned" | "suggested";
+};
+
+function buildDabbaChallenges(params: {
+  riskSummary: Array<{ label: string; detail: string; severity: string }>;
+  streakDays: number;
+  badges: string[];
+  scans: number;
+}): Challenge[] {
+  const riskText = params.riskSummary
+    .map((risk) => `${risk.label} ${risk.detail}`)
+    .join(" ")
+    .toLowerCase();
+  const hasSugar = /sugar|sweet|cold drink|soft drink|juice|dessert/.test(riskText);
+  const hasProteinGap = /protein/.test(riskText) || params.scans < 3;
+  const hasPackaged = /sodium|chips|namkeen|processed|maida|fried|instant/.test(riskText);
+
+  return [
+    {
+      title: "7-Day No Soft Drink Challenge",
+      detail: hasSugar
+        ? "Your history has sugar signals. Avoid soft drinks and sweet packaged drinks for 7 days."
+        : "Keep sugar signals low by avoiding soft drinks this week.",
+      progress: Math.min(100, Math.round((params.streakDays / 7) * 100)),
+      badge: "Sugar control badge",
+      href: "/dashboard/food-diary",
+      action: "Log drink-free day",
+      status: params.badges.includes("Sugar control badge") ? "earned" : hasSugar ? "active" : "suggested"
+    },
+    {
+      title: "10-Day Protein Boost",
+      detail: "Add one protein anchor daily: dal, curd, paneer, tofu, eggs, chana, sprouts, or soy.",
+      progress: Math.min(100, Math.round((params.streakDays / 10) * 100)),
+      badge: "Protein improvement badge",
+      href: "/dashboard/food-diary",
+      action: "Add protein entry",
+      status: params.badges.includes("Protein improvement badge") ? "earned" : hasProteinGap ? "active" : "suggested"
+    },
+    {
+      title: "Healthy Breakfast Streak",
+      detail: "Track breakfast for 5 days and keep it home-style with protein or fiber.",
+      progress: Math.min(100, Math.round((params.streakDays / 5) * 100)),
+      badge: "Healthy breakfast badge",
+      href: "/dashboard/food-diary",
+      action: "Log breakfast",
+      status: params.streakDays >= 5 ? "earned" : "active"
+    },
+    {
+      title: "Packaged Snack Swap",
+      detail: hasPackaged
+        ? "Swap chips, namkeen, instant noodles, or cookies with roasted chana, makhana, sprouts, or curd."
+        : "Build a smarter snack shelf before packaged cravings hit.",
+      progress: Math.min(100, params.scans * 20),
+      badge: "Smart swap badge",
+      href: "/dashboard/label-scan",
+      action: "Scan snack label",
+      status: params.badges.includes("Smart swap badge") ? "earned" : hasPackaged ? "active" : "suggested"
+    }
+  ];
+}
+
 export default async function DashboardPage() {
   const account = await getAccountOverview();
   const now = new Date();
@@ -94,6 +164,12 @@ export default async function DashboardPage() {
     account.allActivities.map((activity) => activity.createdAt),
     now
   );
+  const challenges = buildDabbaChallenges({
+    riskSummary: account.riskSummary,
+    streakDays: account.streak.days,
+    badges: account.badges,
+    scans: account.counts.scans
+  });
 
   return (
     <div className="space-y-6">
@@ -279,6 +355,70 @@ export default async function DashboardPage() {
           />
         </div>
       </div>
+
+      <Card className="glass-panel border-primary/20">
+        <CardHeader className="flex-row items-start justify-between gap-4 space-y-0">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-primary" />
+              Dabba Challenges
+            </CardTitle>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Small food missions that unlock badges and build real streaks.
+            </p>
+          </div>
+          <Badge variant="secondary">Gamified</Badge>
+        </CardHeader>
+        <CardContent className="grid gap-3 lg:grid-cols-2">
+          {challenges.map((challenge) => (
+            <div
+              key={challenge.title}
+              className="rounded-xl border border-white/10 bg-white/5 p-4 transition hover:border-primary/30 hover:bg-primary/5"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Target className="h-4 w-4 text-primary" />
+                    <p className="font-semibold text-white">{challenge.title}</p>
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {challenge.detail}
+                  </p>
+                </div>
+                <Badge
+                  variant={
+                    challenge.status === "earned"
+                      ? "default"
+                      : challenge.status === "active"
+                        ? "secondary"
+                        : "outline"
+                  }
+                >
+                  {challenge.status}
+                </Badge>
+              </div>
+              <div className="mt-4">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-muted-foreground">{challenge.badge}</span>
+                  <span className="font-black text-white">{challenge.progress}%</span>
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-primary"
+                    style={{ width: `${Math.max(8, challenge.progress)}%` }}
+                  />
+                </div>
+              </div>
+              <Button asChild variant="outline" size="sm" className="mt-4">
+                <Link href={challenge.href}>
+                  {challenge.action}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1.05fr] xl:items-start">
         <div className="grid gap-6">
