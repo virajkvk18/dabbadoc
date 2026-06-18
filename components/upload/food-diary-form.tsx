@@ -134,7 +134,7 @@ function voiceItems(value: string) {
 
 function voiceErrorMessage(error: SpeechRecognitionErrorEventLike["error"]) {
   if (error === "not-allowed" || error === "service-not-allowed") {
-    return "Microphone permission is blocked. Allow mic access for this site, then tap Speak entry again.";
+    return "Voice recognition was not allowed by the browser. If mic permission is already on, try Chrome and make sure the page is opened on HTTPS.";
   }
   if (error === "audio-capture") {
     return "No microphone was detected. Check your mic/camera permission or use manual entry.";
@@ -267,21 +267,6 @@ export function FoodDiaryForm({ initialNow }: { initialNow: string }) {
     setError(null);
   }
 
-  async function ensureMicAccess() {
-    if (!navigator.mediaDevices?.getUserMedia) return true;
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach((track) => track.stop());
-      return true;
-    } catch {
-      setError("Microphone permission is blocked. Allow mic access for DabbaDoc, then try again.");
-      setVoiceStatus("Mic permission needed.");
-      setListening(false);
-      return false;
-    }
-  }
-
   async function startVoiceEntry() {
     const SpeechRecognition =
       (window as SpeechWindow).SpeechRecognition ||
@@ -298,9 +283,6 @@ export function FoodDiaryForm({ initialNow }: { initialNow: string }) {
       setListening(false);
       return;
     }
-
-    const hasMicAccess = await ensureMicAccess();
-    if (!hasMicAccess) return;
 
     recognitionRef.current?.abort();
     const recognition = new SpeechRecognition();
