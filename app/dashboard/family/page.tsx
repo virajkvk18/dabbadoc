@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { ArrowRight, HeartPulse, UsersRound } from "lucide-react";
+import { ArrowRight, HeartPulse, LockKeyhole, UsersRound } from "lucide-react";
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   FamilyInviteForm,
   InviteResponseButtons
 } from "@/components/family/family-actions";
+import { getAccountOverview } from "@/lib/supabase/account-overview";
 import { getFamilyOverview } from "@/lib/supabase/family";
 
 const statusTone = {
@@ -17,6 +19,46 @@ const statusTone = {
 };
 
 export default async function FamilyPage() {
+  const account = await getAccountOverview();
+  const hasPremiumPlus = account.profile.plan === "premium_plus";
+
+  if (!hasPremiumPlus) {
+    return (
+      <div className="space-y-6">
+        <AppPageHeader
+          eyebrow="Premium Plus"
+          title="Family Members"
+          description="Family account linking is available in Premium Plus so household summaries stay protected and read-only."
+          icon={UsersRound}
+          accent="secondary"
+          stats={[
+            { label: "Required", value: "Premium Plus" },
+            { label: "Access", value: "Read-only" },
+            { label: "Your plan", value: account.profile.planLabel }
+          ]}
+        />
+        <Card className="glass-panel border-secondary/25">
+          <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-4">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-secondary/30 bg-secondary/15 text-secondary">
+                <LockKeyhole className="h-6 w-6" />
+              </span>
+              <div>
+                <p className="font-semibold text-white">Family is locked for your current plan</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Upgrade to Premium Plus to invite family members and view high-level health summaries.
+                </p>
+              </div>
+            </div>
+            <Button asChild variant="secondary" className="shrink-0">
+              <Link href="/pricing">Unlock Premium Plus</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const family = await getFamilyOverview().catch(() => null);
   if (!family) {
     return (
