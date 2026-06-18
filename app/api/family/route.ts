@@ -4,6 +4,11 @@ import {
   getFamilyOverview,
   inviteFamilyMember
 } from "@/lib/supabase/family";
+import {
+  enforceFamilyRateLimit,
+  enforceRequestSizeLimit,
+  MAX_JSON_BYTES
+} from "@/lib/security/abuse-protection";
 import { ApiError, apiErrorResponse } from "@/lib/security/api-errors";
 import { getAccountOverview } from "@/lib/supabase/account-overview";
 import { familyInviteSchema } from "@/lib/validators/api";
@@ -28,6 +33,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const account = await getAccountOverview();
+    enforceFamilyRateLimit(request, account.user.id, "invite");
+    enforceRequestSizeLimit(request, MAX_JSON_BYTES);
     if (account.profile.plan !== "premium_plus") {
       throw new ApiError("Premium Plus is required to invite family members.", 403);
     }

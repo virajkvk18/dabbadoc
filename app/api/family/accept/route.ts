@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import {
+  enforceFamilyRateLimit,
+  enforceRequestSizeLimit,
+  MAX_JSON_BYTES
+} from "@/lib/security/abuse-protection";
 import { ApiError, apiErrorResponse } from "@/lib/security/api-errors";
 import { getAccountOverview } from "@/lib/supabase/account-overview";
 import { respondToFamilyInvite } from "@/lib/supabase/family";
@@ -10,6 +15,8 @@ export const runtime = "nodejs";
 export async function POST(request: NextRequest) {
   try {
     const account = await getAccountOverview();
+    enforceFamilyRateLimit(request, account.user.id, "respond");
+    enforceRequestSizeLimit(request, MAX_JSON_BYTES);
     if (account.profile.plan !== "premium_plus") {
       throw new ApiError("Premium Plus is required for family access.", 403);
     }

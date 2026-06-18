@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "security:secrets": "node scripts/security-secret-scan.mjs",
     "check": "npm run lint && npm run typecheck"
   },
   "dependencies": {
