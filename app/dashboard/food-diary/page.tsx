@@ -3,6 +3,8 @@ import { AppPageHeader } from "@/components/layout/app-page-header";
 import { FoodDiaryForm } from "@/components/upload/food-diary-form";
 
 export default function FoodDiaryPage() {
+  const initialNow = new Date().toISOString();
+
   return (
     <div className="space-y-6">
       <AppPageHeader
@@ -17,7 +19,7 @@ export default function FoodDiaryPage() {
           { label: "Flow", value: "Add one by one" }
         ]}
       />
-      <FoodDiaryForm />
+      <FoodDiaryForm initialNow={initialNow} />
     </div>
   );
 }

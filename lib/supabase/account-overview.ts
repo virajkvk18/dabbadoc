@@ -8,6 +8,12 @@ import type {
   SwapRecommendation
 } from "@/types";
 import { getEffectivePlan } from "@/lib/access";
+import {
+  formatAppDateTime,
+  formatAppShortDate,
+  getAppDateKey,
+  shiftAppDateKey
+} from "@/lib/date-time";
 import { getPlanDisplayName } from "@/lib/plans";
 import { ApiError } from "@/lib/security/api-errors";
 import { getScoreCategory } from "@/lib/scoring/healthIndex";
@@ -153,19 +159,12 @@ function compact<T>(values: Array<T | null | undefined | false>) {
 }
 
 function formatShortDate(value: string) {
-  return new Intl.DateTimeFormat("en-IN", {
-    month: "short",
-    day: "2-digit"
-  }).format(new Date(value));
+  return formatAppShortDate(value);
 }
 
 export function formatDisplayDate(value?: string | null) {
   if (!value) return "Not available";
-
-  return new Intl.DateTimeFormat("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value));
+  return formatAppDateTime(value);
 }
 
 function fallbackNameFromEmail(email: string) {
@@ -189,13 +188,6 @@ function getUserDisplayName(user: User, profile?: ProfileRow | null) {
   );
 }
 
-export function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
-}
-
 function buildTrendLabel(scores: Array<{ createdAt: string; score: number }>) {
   if (scores.length < 2) return "Start";
 
@@ -208,19 +200,18 @@ function buildTrendLabel(scores: Array<{ createdAt: string; score: number }>) {
 
 function calculateActivityStreak(dates: string[]) {
   const uniqueDays = Array.from(
-    new Set(dates.map((date) => new Date(date).toISOString().slice(0, 10)))
+    new Set(dates.map((date) => getAppDateKey(date)))
   ).sort();
   if (uniqueDays.length === 0) return 0;
 
   let streak = 1;
-  let cursor = new Date(uniqueDays[uniqueDays.length - 1]);
+  let cursor = uniqueDays[uniqueDays.length - 1];
 
   for (let index = uniqueDays.length - 2; index >= 0; index -= 1) {
-    const previous = new Date(uniqueDays[index]);
-    const expected = new Date(cursor);
-    expected.setDate(expected.getDate() - 1);
+    const previous = uniqueDays[index];
+    const expected = shiftAppDateKey(cursor, -1);
 
-    if (previous.toISOString().slice(0, 10) !== expected.toISOString().slice(0, 10)) {
+    if (previous !== expected) {
       break;
     }
 
@@ -398,6 +389,16 @@ function diaryActivity(row: DiaryRow): AccountActivity {
   const suggestionDetails = diarySuggestionDetails(row.suggestions);
   const topTips = suggestionDetails.improvementTips.slice(0, 2);
   const topWatchItems = itemNames(riskyItems, 3).join(", ");
+  const loggedMeals = suggestionDetails.entries.slice(0, 6).map((entry) => {
+    const mealTime = entry.mealTime.replace(/_/g, " ");
+    return [
+      `${mealTime}: ${entry.itemName}`,
+      entry.quantity,
+      entry.loggedAt ? formatDisplayDate(entry.loggedAt) : null
+    ]
+      .filter(Boolean)
+      .join(" | ");
+  });
 
   return {
     id: `diary-${row.id}`,
@@ -414,6 +415,7 @@ function diaryActivity(row: DiaryRow): AccountActivity {
     ]),
     tags: riskyItems.slice(0, 4).map((item) => item.name),
     resultSections: compact([
+      makeSection("Logged meals", loggedMeals, "info"),
       makeSection(
         "Quick summary",
         [
@@ -450,6 +452,9 @@ function reportActivity(row: ReportRow): AccountActivity {
       makeSection(
         "Report data saved",
         Object.entries(reportData).map(([key, value]) => {
+          if (key === "generatedAt" && typeof value === "string") {
+            return `Generated: ${formatDisplayDate(value)}`;
+          }
           if (typeof value === "string" || typeof value === "number") {
             return `${formatFlag(key)}: ${value}`;
           }

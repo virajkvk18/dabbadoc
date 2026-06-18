@@ -97,6 +97,7 @@ export const labelAnalyzeSchema = z.object({
 
 export const manualMealEntrySchema = z.object({
   id: z.string().trim().max(80).optional(),
+  loggedAt: z.string().datetime({ offset: true }).optional(),
   source: z.enum(["home", "outside"]),
   mealTime: z.enum([
     "breakfast",

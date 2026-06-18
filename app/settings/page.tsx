@@ -70,9 +70,12 @@ export default async function SettingsPage() {
               </div>
               <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                 <p className="mono-label text-[11px] text-muted-foreground">Member since</p>
-                <p className="mt-2 font-semibold text-white">
+                <time
+                  className="mt-2 block font-semibold text-white"
+                  dateTime={account.profile.createdAt}
+                >
                   {formatDisplayDate(account.profile.createdAt)}
-                </p>
+                </time>
               </div>
               <div className="rounded-xl border border-white/10 bg-white/5 p-4">
                 <p className="mono-label text-[11px] text-muted-foreground">Streak</p>

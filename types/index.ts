@@ -25,6 +25,7 @@ export type SpiceLevel = "none" | "low" | "medium" | "high";
 
 export interface ManualMealEntry {
   id?: string;
+  loggedAt?: string;
   source: MealSource;
   mealTime: MealTime;
   itemName: string;
