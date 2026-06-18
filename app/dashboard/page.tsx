@@ -171,39 +171,6 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid items-stretch gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <HealthScoreGauge
-          score={account.score.current}
-          category={account.score.category}
-          className="h-full"
-          fillHeight
-        />
-        <StreakMomentumCard days={account.streak.days} week={activityWeek} />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard
-          label="Risk signals"
-          value={`${riskCount}`}
-          detail={riskCount > 0 ? "From your saved analyses" : "No strong risks yet"}
-          icon={Sparkles}
-          variant="secondary"
-        />
-        <StatCard
-          label="Badges earned"
-          value={`${account.badges.length}`}
-          detail="Based on your account activity"
-          icon={BadgeCheck}
-          variant="primary"
-        />
-        <StatCard
-          label="Total scans"
-          value={`${account.counts.scans}`}
-          detail={`${account.counts.receipts} receipts, ${account.counts.labels} labels, ${account.counts.diaries} diaries`}
-          icon={ScanLine}
-        />
-      </div>
-
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="mono-label text-[10px] text-primary">Quick capture</p>
@@ -245,6 +212,39 @@ export default async function DashboardPage() {
             </Link>
           );
         })}
+      </div>
+
+      <div className="grid items-stretch gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
+        <HealthScoreGauge
+          score={account.score.current}
+          category={account.score.category}
+          className="h-full"
+          fillHeight
+        />
+        <StreakMomentumCard days={account.streak.days} week={activityWeek} />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard
+          label="Risk signals"
+          value={`${riskCount}`}
+          detail={riskCount > 0 ? "From your saved analyses" : "No strong risks yet"}
+          icon={Sparkles}
+          variant="secondary"
+        />
+        <StatCard
+          label="Badges earned"
+          value={`${account.badges.length}`}
+          detail="Based on your account activity"
+          icon={BadgeCheck}
+          variant="primary"
+        />
+        <StatCard
+          label="Total scans"
+          value={`${account.counts.scans}`}
+          detail={`${account.counts.receipts} receipts, ${account.counts.labels} labels, ${account.counts.diaries} diaries`}
+          icon={ScanLine}
+        />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1.05fr]">
