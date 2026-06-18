@@ -38,8 +38,47 @@ type ActivityRow = {
   created_at: string;
 };
 
+type ScoredActivityRow = ActivityRow & {
+  health_score?: number | null;
+  label_truth_score?: number | null;
+  daily_score?: number | null;
+  risk_flags?: unknown;
+  warnings?: unknown;
+  risky_items?: unknown;
+};
+
 type ReportRow = {
   created_at: string;
+};
+
+type HealthProfileRow = {
+  age: number | null;
+  gender: string | null;
+  height_cm: number | null;
+  weight_kg: number | null;
+  activity_level: string | null;
+  sleep_hours: number | null;
+  sleep_quality: string | null;
+  medical_conditions: unknown;
+  health_goals: unknown;
+  custom_goals: unknown;
+  updated_at: string | null;
+};
+
+type WellnessLogRow = {
+  log_date: string;
+  weight_kg: number | null;
+  mood: string | null;
+  energy_level: string | null;
+  sleep_hours: number | null;
+  created_at: string;
+};
+
+type ScoreEvent = {
+  score: number;
+  created_at: string;
+  source: "health_index" | "receipt" | "label" | "diary";
+  streak_count?: number | null;
 };
 
 function adminClient() {
@@ -69,13 +108,90 @@ function relativeDate(value?: string | null) {
   return `${diffDays} days ago`;
 }
 
-function trendFromScores(scores: ScoreRow[]) {
-  if (scores.length < 2) return "Stable";
-  const latest = scores[0].score;
-  const previous = scores[1].score;
+function asArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? (value as T[]) : [];
+}
+
+function asStringArray(value: unknown) {
+  return asArray<unknown>(value)
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter(Boolean);
+}
+
+function validScore(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100;
+}
+
+function latestScoreEvents(params: {
+  scores?: ScoreRow[];
+  receipts?: ScoredActivityRow[];
+  labels?: ScoredActivityRow[];
+  diaries?: ScoredActivityRow[];
+}): ScoreEvent[] {
+  const events: ScoreEvent[] = [
+    ...(params.scores ?? [])
+      .filter((row) => validScore(row.score))
+      .map((row) => ({
+        score: row.score,
+        created_at: row.created_at,
+        source: "health_index" as const,
+        streak_count: row.streak_count
+      })),
+    ...(params.receipts ?? [])
+      .filter((row) => validScore(row.health_score))
+      .map((row) => ({
+        score: row.health_score as number,
+        created_at: row.created_at,
+        source: "receipt" as const
+      })),
+    ...(params.labels ?? [])
+      .filter((row) => validScore(row.label_truth_score))
+      .map((row) => ({
+        score: row.label_truth_score as number,
+        created_at: row.created_at,
+        source: "label" as const
+      })),
+    ...(params.diaries ?? [])
+      .filter((row) => validScore(row.daily_score))
+      .map((row) => ({
+        score: row.daily_score as number,
+        created_at: row.created_at,
+        source: "diary" as const
+      }))
+  ];
+
+  return events.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
+function trendFromEvents(events: ScoreEvent[]) {
+  if (events.length < 2) return "Stable";
+  const latest = events[0].score;
+  const previous = events[1].score;
   if (latest >= previous + 4) return "Improving";
   if (latest <= previous - 4) return "Declining";
   return "Stable";
+}
+
+function latestDate(values: Array<string | null | undefined>) {
+  return values
+    .filter(Boolean)
+    .sort((a, b) => new Date(b as string).getTime() - new Date(a as string).getTime())[0] ?? null;
+}
+
+function formatNumber(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
+function calculateBmi(weightKg?: number | null, heightCm?: number | null) {
+  if (!weightKg || !heightCm) return null;
+  const heightM = heightCm / 100;
+  return Math.round((weightKg / (heightM * heightM)) * 10) / 10;
+}
+
+function titleCase(value: string) {
+  return value
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 async function getCurrentUserAndServer() {
@@ -202,17 +318,58 @@ async function memberCard(row: FamilyConnectionRow) {
     : null;
   const memberId = row.family_member_user_id;
   const supabase = adminClient();
-  const latestScore = memberId
-    ? await supabase
-        .from("health_index")
-        .select("score, streak_count, created_at")
-        .eq("user_id", memberId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-    : { data: [], error: null };
+  const [scoresResponse, receiptsResponse, labelsResponse, diariesResponse] = memberId
+    ? await Promise.all([
+        supabase
+          .from("health_index")
+          .select("score, streak_count, created_at")
+          .eq("user_id", memberId)
+          .order("created_at", { ascending: false })
+          .limit(10),
+        supabase
+          .from("receipt_analyses")
+          .select("created_at, health_score")
+          .eq("user_id", memberId)
+          .order("created_at", { ascending: false })
+          .limit(10),
+        supabase
+          .from("label_analyses")
+          .select("created_at, label_truth_score")
+          .eq("user_id", memberId)
+          .order("created_at", { ascending: false })
+          .limit(10),
+        supabase
+          .from("food_diaries")
+          .select("created_at, daily_score")
+          .eq("user_id", memberId)
+          .order("created_at", { ascending: false })
+          .limit(10)
+      ])
+    : [
+        { data: [], error: null },
+        { data: [], error: null },
+        { data: [], error: null },
+        { data: [], error: null }
+      ];
 
-  const score = (latestScore.data?.[0] as ScoreRow | undefined)?.score;
-  const lastUpdated = (latestScore.data?.[0] as ScoreRow | undefined)?.created_at ?? row.created_at;
+  if (
+    scoresResponse.error ||
+    receiptsResponse.error ||
+    labelsResponse.error ||
+    diariesResponse.error
+  ) {
+    throw new ApiError("Could not load family member score.", 500);
+  }
+
+  const scoreEvents = latestScoreEvents({
+    scores: (scoresResponse.data ?? []) as ScoreRow[],
+    receipts: (receiptsResponse.data ?? []) as ScoredActivityRow[],
+    labels: (labelsResponse.data ?? []) as ScoredActivityRow[],
+    diaries: (diariesResponse.data ?? []) as ScoredActivityRow[]
+  });
+  const latestScore = scoreEvents[0];
+  const score = latestScore?.score;
+  const lastUpdated = latestScore?.created_at ?? row.accepted_at ?? row.created_at;
   const displayName = profile?.full_name || profile?.email || row.invited_email;
 
   return {
@@ -273,38 +430,51 @@ export async function getFamilyMemberSummary(connectionId: string) {
     receiptsResponse,
     labelsResponse,
     diariesResponse,
-    reportsResponse
+    reportsResponse,
+    healthProfileResponse,
+    wellnessResponse
   ] = await Promise.all([
     supabase
       .from("health_index")
       .select("score, streak_count, created_at")
       .eq("user_id", memberId)
       .order("created_at", { ascending: false })
-      .limit(6),
+      .limit(30),
     supabase
       .from("receipt_analyses")
-      .select("created_at, health_score, risk_flags")
+      .select("created_at, health_score, risk_flags", { count: "exact" })
       .eq("user_id", memberId)
       .order("created_at", { ascending: false })
-      .limit(5),
+      .limit(30),
     supabase
       .from("label_analyses")
-      .select("created_at, label_truth_score, warnings")
+      .select("created_at, label_truth_score, warnings", { count: "exact" })
       .eq("user_id", memberId)
       .order("created_at", { ascending: false })
-      .limit(5),
+      .limit(30),
     supabase
       .from("food_diaries")
-      .select("created_at, daily_score, risky_items")
+      .select("created_at, daily_score, risky_items", { count: "exact" })
       .eq("user_id", memberId)
       .order("created_at", { ascending: false })
-      .limit(5),
+      .limit(30),
     supabase
       .from("reports")
-      .select("created_at")
+      .select("created_at", { count: "exact" })
       .eq("user_id", memberId)
       .order("created_at", { ascending: false })
-      .limit(5)
+      .limit(30),
+    supabase
+      .from("health_profiles")
+      .select("age, gender, height_cm, weight_kg, activity_level, sleep_hours, sleep_quality, medical_conditions, health_goals, custom_goals, updated_at")
+      .eq("user_id", memberId)
+      .maybeSingle(),
+    supabase
+      .from("wellness_logs")
+      .select("log_date, weight_kg, mood, energy_level, sleep_hours, created_at")
+      .eq("user_id", memberId)
+      .order("log_date", { ascending: false })
+      .limit(7)
   ]);
 
   if (
@@ -312,32 +482,54 @@ export async function getFamilyMemberSummary(connectionId: string) {
     receiptsResponse.error ||
     labelsResponse.error ||
     diariesResponse.error ||
-    reportsResponse.error
+    reportsResponse.error ||
+    healthProfileResponse.error ||
+    wellnessResponse.error
   ) {
     throw new ApiError("Could not load family member summary.", 500);
   }
 
   const scores = (scoresResponse.data ?? []) as ScoreRow[];
-  const receipts = (receiptsResponse.data ?? []) as Array<ActivityRow & { health_score?: number; risk_flags?: unknown }>;
-  const labels = (labelsResponse.data ?? []) as Array<ActivityRow & { label_truth_score?: number; warnings?: unknown }>;
-  const diaries = (diariesResponse.data ?? []) as Array<ActivityRow & { daily_score?: number; risky_items?: unknown }>;
+  const receipts = (receiptsResponse.data ?? []) as ScoredActivityRow[];
+  const labels = (labelsResponse.data ?? []) as ScoredActivityRow[];
+  const diaries = (diariesResponse.data ?? []) as ScoredActivityRow[];
   const reports = (reportsResponse.data ?? []) as ReportRow[];
-  const latestDates = [
-    scores[0]?.created_at,
-    receipts[0]?.created_at,
-    labels[0]?.created_at,
-    diaries[0]?.created_at,
-    reports[0]?.created_at
-  ].filter(Boolean) as string[];
-  const latestActivity = latestDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
-  const currentScore =
-    scores[0]?.score ??
-    receipts[0]?.health_score ??
-    labels[0]?.label_truth_score ??
-    diaries[0]?.daily_score ??
-    null;
-  const dropped = scores.length >= 2 && scores[0].score <= scores[1].score - 10;
+  const healthProfile = (healthProfileResponse.data ?? null) as HealthProfileRow | null;
+  const wellnessLogs = (wellnessResponse.data ?? []) as WellnessLogRow[];
+  const scoreEvents = latestScoreEvents({ scores, receipts, labels, diaries });
+  const latestScore = scoreEvents[0];
+  const currentScore = latestScore?.score ?? null;
+  const latestWellness = wellnessLogs[0];
+  const latestActivity = latestDate([
+    latestScore?.created_at,
+    reports[0]?.created_at,
+    healthProfile?.updated_at,
+    latestWellness?.created_at
+  ]);
+  const dropped =
+    scoreEvents.length >= 2 && scoreEvents[0].score <= scoreEvents[1].score - 10;
   const stale = !latestActivity || Date.now() - new Date(latestActivity).getTime() > 14 * 86_400_000;
+  const latestWeight = latestWellness?.weight_kg ?? healthProfile?.weight_kg ?? null;
+  const latestSleep = latestWellness?.sleep_hours ?? healthProfile?.sleep_hours ?? null;
+  const bmi = calculateBmi(latestWeight, healthProfile?.height_cm);
+  const healthGoals = [
+    ...asStringArray(healthProfile?.health_goals),
+    ...asStringArray(healthProfile?.custom_goals)
+  ];
+  const medicalConditions = asStringArray(healthProfile?.medical_conditions);
+  const bpContext = [...medicalConditions, ...healthGoals].find((item) =>
+    /bp|blood pressure|hypertension|heart|low sodium/i.test(item)
+  );
+  const sugarContext = [...medicalConditions, ...healthGoals].find((item) =>
+    /diabetes|blood sugar|sugar/i.test(item)
+  );
+  const latestStreak =
+    scoreEvents.find((event) => typeof event.streak_count === "number")?.streak_count ?? 0;
+  const scanCount =
+    (receiptsResponse.count ?? receipts.length) +
+    (labelsResponse.count ?? labels.length) +
+    (diariesResponse.count ?? diaries.length);
+  const reportsCount = reportsResponse.count ?? reports.length;
 
   return {
     connectionId: connection.id,
@@ -346,32 +538,40 @@ export async function getFamilyMemberSummary(connectionId: string) {
       initials: initials(profile?.full_name || profile?.email || connection.invited_email),
       email: connection.invited_email,
       relationship: connection.relationship,
-      age: "Not shared",
-      gender: "Not shared"
+      age: typeof healthProfile?.age === "number" ? `${healthProfile.age}` : "Not shared",
+      gender: healthProfile?.gender ? titleCase(healthProfile.gender) : "Not shared"
     },
     summary: {
       healthScore: currentScore,
-      scoreTrend: trendFromScores(scores),
+      scoreTrend: trendFromEvents(scoreEvents),
       lastCheckupDate: latestActivity ?? null,
       lastUpdatedLabel: relativeDate(latestActivity),
-      reportsCount: reports.length,
-      streakDays: scores[0]?.streak_count ?? 0,
-      scansCount: receipts.length + labels.length + diaries.length
+      reportsCount,
+      streakDays: latestStreak,
+      scansCount: scanCount,
+      scoreSource: latestScore?.source ?? null
     },
     metrics: {
-      weight: "Not tracked",
-      bmi: "Not tracked",
-      bloodPressureStatus: "Not tracked",
-      bloodSugarStatus: "Not tracked",
-      activityScore: diaries.length > 0 ? "Active food tracking" : "Not tracked",
-      sleepScore: "Not tracked"
+      weight: latestWeight ? `${formatNumber(latestWeight)} kg` : "Not shared",
+      bmi: bmi ? `${formatNumber(bmi)}` : "Not shared",
+      bloodPressureStatus: bpContext ? `${titleCase(bpContext)} context saved` : "Not shared",
+      bloodSugarStatus: sugarContext ? `${titleCase(sugarContext)} context saved` : "Not shared",
+      activityScore:
+        healthProfile?.activity_level
+          ? titleCase(healthProfile.activity_level)
+          : diaries.length > 0
+            ? "Active food tracking"
+            : "Not shared",
+      sleepScore: latestSleep
+        ? `${formatNumber(latestSleep)}h${healthProfile?.sleep_quality ? `, ${titleCase(healthProfile.sleep_quality)}` : ""}`
+        : "Not shared"
     },
     alerts: [
       dropped ? "Health score dropped significantly" : null,
       stale ? "No recent health check-in or scan" : null,
-      reports.length > 0 ? "Latest report summary is available" : null,
-      scores[0]?.streak_count && scores[0].streak_count >= 3
-        ? `${scores[0].streak_count}-day tracking streak active`
+      reportsCount > 0 ? "Latest report summary is available" : null,
+      latestStreak && latestStreak >= 3
+        ? `${latestStreak}-day tracking streak active`
         : null
     ].filter(Boolean) as string[]
   };
