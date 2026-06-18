@@ -18,6 +18,9 @@ const AI_IP_RULE: RateLimitRule = { limit: 12, windowMs: 10 * 60 * 1000 };
 const AI_USER_RULE: RateLimitRule = { limit: 30, windowMs: 60 * 60 * 1000 };
 const REPORT_USER_RULE: RateLimitRule = { limit: 20, windowMs: 60 * 60 * 1000 };
 const PAYMENT_USER_RULE: RateLimitRule = { limit: 10, windowMs: 10 * 60 * 1000 };
+const PROFILE_WRITE_USER_RULE: RateLimitRule = { limit: 30, windowMs: 60 * 60 * 1000 };
+const FAMILY_USER_RULE: RateLimitRule = { limit: 20, windowMs: 60 * 60 * 1000 };
+const AUTH_CALLBACK_RULE: RateLimitRule = { limit: 30, windowMs: 15 * 60 * 1000 };
 
 export const MAX_UPLOAD_BYTES = 12 * 1024 * 1024;
 export const MAX_JSON_BYTES = 128 * 1024;
@@ -278,5 +281,57 @@ export function enforcePaymentRateLimit(request: NextRequest, userId: string) {
     { limit: 20, windowMs: 10 * 60 * 1000 },
     "Checkout is temporarily rate limited. Please try again later.",
     { scope: "payment_ip" }
+  );
+}
+
+export function enforceProfileMutationRateLimit(
+  request: NextRequest,
+  userId: string,
+  action: string
+) {
+  checkOrThrow(
+    request,
+    ["profile", "write", action, userId],
+    PROFILE_WRITE_USER_RULE,
+    "Profile updates are temporarily rate limited. Please try again later.",
+    { scope: "profile_write_user", action }
+  );
+  checkOrThrow(
+    request,
+    ["profile", "write", action, getClientIp(request)],
+    { limit: 60, windowMs: 60 * 60 * 1000 },
+    "Profile updates are temporarily rate limited. Please try again later.",
+    { scope: "profile_write_ip", action }
+  );
+}
+
+export function enforceFamilyRateLimit(
+  request: NextRequest,
+  userId: string,
+  action: string
+) {
+  checkOrThrow(
+    request,
+    ["family", action, userId],
+    FAMILY_USER_RULE,
+    "Family actions are temporarily rate limited. Please try again later.",
+    { scope: "family_user", action }
+  );
+  checkOrThrow(
+    request,
+    ["family", action, getClientIp(request)],
+    { limit: 40, windowMs: 60 * 60 * 1000 },
+    "Family actions are temporarily rate limited. Please try again later.",
+    { scope: "family_ip", action }
+  );
+}
+
+export function enforceAuthCallbackRateLimit(request: NextRequest) {
+  checkOrThrow(
+    request,
+    ["auth", "callback", getClientIp(request)],
+    AUTH_CALLBACK_RULE,
+    "Too many auth callback attempts. Please wait before trying again.",
+    { scope: "auth_callback_ip" }
   );
 }

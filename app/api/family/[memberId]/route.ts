@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
+import { enforceFamilyRateLimit } from "@/lib/security/abuse-protection";
 import { ApiError, apiErrorResponse } from "@/lib/security/api-errors";
 import { getAccountOverview } from "@/lib/supabase/account-overview";
 import {
@@ -39,6 +40,7 @@ export async function DELETE(
 ) {
   try {
     const account = await getAccountOverview();
+    enforceFamilyRateLimit(request, account.user.id, "remove");
     if (account.profile.plan !== "premium_plus") {
       throw new ApiError("Premium Plus is required for family access.", 403);
     }

@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { requireVerifiedUser } from "@/lib/auth/require-user";
+import {
+  enforceProfileMutationRateLimit,
+  enforceRequestSizeLimit,
+  MAX_JSON_BYTES
+} from "@/lib/security/abuse-protection";
 import { ApiError, apiErrorResponse } from "@/lib/security/api-errors";
 import { getAccountOverview } from "@/lib/supabase/account-overview";
 import {
@@ -27,6 +32,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const user = await requireVerifiedUser();
+    enforceProfileMutationRateLimit(request, user.id, "wellness-log");
+    enforceRequestSizeLimit(request, MAX_JSON_BYTES);
     const account = await getAccountOverview();
     if (!account.profile.isPremium) {
       throw new ApiError("Premium is required to save wellness logs.", 403);

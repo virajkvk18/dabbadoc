@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { setSessionStartedCookie } from "@/lib/auth/session";
+import { enforceAuthCallbackRateLimit } from "@/lib/security/abuse-protection";
 import { logSecurityEvent } from "@/lib/security/audit-log";
 import { createSupabaseServer } from "@/lib/supabase/server";
 
@@ -14,6 +15,12 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get("code");
   const next = safeNext(requestUrl.searchParams.get("next"));
   const redirectUrl = new URL(next, requestUrl.origin);
+
+  try {
+    enforceAuthCallbackRateLimit(request);
+  } catch {
+    return NextResponse.redirect(new URL("/auth?error=rate_limited", requestUrl.origin));
+  }
 
   if (code) {
     const supabase = await createSupabaseServer();
