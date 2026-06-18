@@ -249,6 +249,26 @@ export default async function DashboardPage() {
               <span className="font-bold text-white">Scan Before You Eat</span>
               <span className="text-muted-foreground">Product tour</span>
             </div>
+            <div className="mt-4 grid gap-2 border-t border-white/10 pt-4">
+              {[
+                ["01", "Capture", "Add a receipt, food label, or meal"],
+                ["02", "Understand", "See health signals in plain language"],
+                ["03", "Improve", "Use practical swaps and habit guidance"]
+              ].map(([step, title, detail]) => (
+                <div
+                  key={step}
+                  className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5"
+                >
+                  <span className="mono-label grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-[10px] text-primary">
+                    {step}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-white">{title}</p>
+                    <p className="truncate text-[11px] text-muted-foreground">{detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -287,129 +307,147 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_1.05fr]">
-        <Card className="glass-panel min-h-[360px]">
-          <CardHeader className="flex-row items-start justify-between space-y-0">
-            <div>
-              <CardTitle>Index trend</CardTitle>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Latest saved scores from scans, labels, and diary entries
-              </p>
-            </div>
-            <Badge>{account.score.trendLabel}</Badge>
-          </CardHeader>
-          <CardContent>
-            <HealthIndexChart data={account.score.chart} />
-          </CardContent>
-        </Card>
-        <Card className="glass-panel min-h-[360px]">
-          <CardHeader className="flex-row items-center justify-between space-y-0">
-            <CardTitle>Recent activity</CardTitle>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/dashboard/history">
-                View all
-                <History className="h-4 w-4" />
-              </Link>
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {account.recentActivities.length === 0 ? (
-              <div className="flex min-h-[240px] flex-col items-center justify-center rounded-xl border border-dashed border-primary/25 bg-primary/5 p-6 text-center">
-                <span className="grid h-12 w-12 place-items-center rounded-xl border border-primary/25 bg-primary/10 text-primary motion-safe:animate-pulse">
-                  <CalendarDays className="h-6 w-6" />
-                </span>
-                <p className="mt-4 font-semibold text-white">Your timeline starts with one entry</p>
-                <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-                  Save today&apos;s meal to begin your streak and build a useful food-health history.
+      <div className="grid gap-6 xl:grid-cols-[1fr_1.05fr] xl:items-start">
+        <div className="grid gap-6">
+          <Card className="glass-panel">
+            <CardHeader className="flex-row items-start justify-between space-y-0">
+              <div>
+                <CardTitle>Index trend</CardTitle>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Latest saved scores from scans, labels, and diary entries
                 </p>
-                <Button asChild size="sm" className="mt-5">
-                  <Link href="/dashboard/food-diary">
-                    Add today&apos;s meal
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
               </div>
-            ) : null}
-            {account.recentActivities.map((activity) => {
-              const Icon = activityIcons[activity.type];
-              return (
-                <div key={activity.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
-                  <div className="flex items-start gap-3">
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-white">{activity.title}</p>
-                      <p className="mt-1 text-sm text-muted-foreground">{activity.description}</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {activity.metrics.slice(0, 3).map((metric) => (
-                          <Badge key={metric} variant="outline">{metric}</Badge>
-                        ))}
+              <Badge>{account.score.trendLabel}</Badge>
+            </CardHeader>
+            <CardContent>
+              <HealthIndexChart data={account.score.chart} />
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {[
+                  ["Current", `${account.score.current}/100`],
+                  ["Data points", `${account.score.chart.length}`],
+                  ["Risk signals", `${riskCount}`]
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                      {label}
+                    </p>
+                    <p className="mt-1 text-sm font-black text-white">{value}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-panel">
+            <CardHeader>
+              <CardTitle>Food risk summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {account.riskSummary.length === 0 ? (
+                <div className="flex min-h-44 flex-col justify-center rounded-xl border border-dashed border-primary/20 bg-primary/5 p-5">
+                  <ShieldCheck className="h-7 w-7 text-primary" />
+                  <p className="mt-3 font-semibold text-white">No saved risk signals yet</p>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    A label check is the quickest way to start your personalized summary.
+                  </p>
+                  <Button asChild variant="outline" size="sm" className="mt-4 w-fit">
+                    <Link href="/dashboard/label-scan">Check a food label</Link>
+                  </Button>
+                </div>
+              ) : null}
+              {account.riskSummary.map((risk) => (
+                <div key={`${risk.label}-${risk.detail}`} className="rounded-xl border border-white/10 bg-white/5 p-3 transition-transform duration-200 hover:translate-x-1">
+                  <p className="font-semibold text-white">{risk.label}</p>
+                  <p className="text-sm text-muted-foreground">{risk.detail}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid gap-6">
+          <Card className="glass-panel">
+            <CardHeader className="flex-row items-center justify-between space-y-0">
+              <CardTitle>Recent activity</CardTitle>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/dashboard/history">
+                  View all
+                  <History className="h-4 w-4" />
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {account.recentActivities.length === 0 ? (
+                <div className="flex min-h-[240px] flex-col items-center justify-center rounded-xl border border-dashed border-primary/25 bg-primary/5 p-6 text-center">
+                  <span className="grid h-12 w-12 place-items-center rounded-xl border border-primary/25 bg-primary/10 text-primary motion-safe:animate-pulse">
+                    <CalendarDays className="h-6 w-6" />
+                  </span>
+                  <p className="mt-4 font-semibold text-white">Your timeline starts with one entry</p>
+                  <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
+                    Save today&apos;s meal to begin your streak and build a useful food-health history.
+                  </p>
+                  <Button asChild size="sm" className="mt-5">
+                    <Link href="/dashboard/food-diary">
+                      Add today&apos;s meal
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              ) : null}
+              {account.recentActivities.map((activity) => {
+                const Icon = activityIcons[activity.type];
+                return (
+                  <div key={activity.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
+                    <div className="flex items-start gap-3">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-white">{activity.title}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{activity.description}</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {activity.metrics.slice(0, 3).map((metric) => (
+                            <Badge key={metric} variant="outline">{metric}</Badge>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      </div>
+                );
+              })}
+            </CardContent>
+          </Card>
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <Card className="glass-panel h-full">
-          <CardHeader>
-            <CardTitle>Food risk summary</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {account.riskSummary.length === 0 ? (
-              <div className="flex min-h-44 flex-col justify-center rounded-xl border border-dashed border-primary/20 bg-primary/5 p-5">
-                <ShieldCheck className="h-7 w-7 text-primary" />
-                <p className="mt-3 font-semibold text-white">No saved risk signals yet</p>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  A label check is the quickest way to start your personalized summary.
-                </p>
-                <Button asChild variant="outline" size="sm" className="mt-4 w-fit">
-                  <Link href="/dashboard/label-scan">Check a food label</Link>
-                </Button>
-              </div>
-            ) : null}
-            {account.riskSummary.map((risk) => (
-              <div key={`${risk.label}-${risk.detail}`} className="rounded-xl border border-white/10 bg-white/5 p-3 transition-transform duration-200 hover:translate-x-1">
-                <p className="font-semibold text-white">{risk.label}</p>
-                <p className="text-sm text-muted-foreground">{risk.detail}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-        <Card className="glass-panel h-full">
-          <CardHeader>
-            <CardTitle>Badges earned</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {account.badges.length > 0 ? (
-              <BadgeGrid badges={account.badges} />
-            ) : (
-              <div className="grid gap-2">
-                {["Complete first scan", "Reach a 3-day streak", "Review a food label"].map(
-                  (goal) => (
-                    <div
-                      key={goal}
-                      className="flex min-h-14 items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3"
-                    >
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/5 text-muted-foreground">
-                        <LockKeyhole className="h-4 w-4" />
-                      </span>
-                      <div>
-                        <p className="text-sm font-semibold text-white">{goal}</p>
-                        <p className="text-xs text-muted-foreground">Badge locked</p>
+          <Card className="glass-panel">
+            <CardHeader>
+              <CardTitle>Badges earned</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {account.badges.length > 0 ? (
+                <BadgeGrid badges={account.badges} />
+              ) : (
+                <div className="grid gap-2">
+                  {["Complete first scan", "Reach a 3-day streak", "Review a food label"].map(
+                    (goal) => (
+                      <div
+                        key={goal}
+                        className="flex min-h-14 items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3"
+                      >
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/5 text-muted-foreground">
+                          <LockKeyhole className="h-4 w-4" />
+                        </span>
+                        <div>
+                          <p className="text-sm font-semibold text-white">{goal}</p>
+                          <p className="text-xs text-muted-foreground">Badge locked</p>
+                        </div>
                       </div>
-                    </div>
-                  )
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    )
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-3">
