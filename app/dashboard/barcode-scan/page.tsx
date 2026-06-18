@@ -10,11 +10,6 @@ export default function BarcodeScanPage() {
         title="Barcode Scan"
         description="Scan or enter packaged-food barcodes to fetch product, ingredient, and nutrition details."
         icon={Barcode}
-        stats={[
-          { label: "Input", value: "Barcode" },
-          { label: "Source", value: "Open Food Facts" },
-          { label: "Use", value: "Product lookup" }
-        ]}
       />
       <BarcodeScanPanel />
     </div>

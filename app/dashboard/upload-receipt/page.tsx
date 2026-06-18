@@ -10,11 +10,6 @@ export default function UploadReceiptPage() {
         title="Receipt / order scanner"
         description="Analyze grocery receipts, food delivery bills, quick-commerce screenshots, or demo data."
         icon={ReceiptText}
-        stats={[
-          { label: "Input", value: "Photo / PDF" },
-          { label: "Output", value: "Score + swaps" },
-          { label: "Mobile", value: "Live capture" }
-        ]}
       />
       <ReceiptUploadForm />
     </div>

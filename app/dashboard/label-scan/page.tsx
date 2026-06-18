@@ -10,11 +10,6 @@ export default function LabelScanPage() {
         title="Packaged Food LabelScan"
         description="Scan nutrition and ingredient labels for hidden sugar, sodium, oils, maida, and additive signals."
         icon={ScanLine}
-        stats={[
-          { label: "Input", value: "Label image" },
-          { label: "Signals", value: "Sugar / sodium" },
-          { label: "Result", value: "Truth score" }
-        ]}
       />
       <LabelScanForm />
     </div>
