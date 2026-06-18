@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
-import { Barcode, FileImage, Loader2, ScanLine } from "lucide-react";
+import { Barcode, Camera, FileImage, Loader2, ScanLine } from "lucide-react";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 import { BarcodeFormat, DecodeHintType } from "@zxing/library";
 import { Button } from "@/components/ui/button";
@@ -181,6 +181,14 @@ export function BarcodeScanPanel() {
     }
   }
 
+  function chooseFile(nextFile?: File | null) {
+    setFile(nextFile ?? null);
+    setError(null);
+    setMessage(null);
+    setProductName(null);
+    setLabelText("");
+  }
+
   async function detectBarcodeFromImage() {
     if (!file) {
       setError("Capture or upload a barcode image first.");
@@ -231,32 +239,44 @@ export function BarcodeScanPanel() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="scan-frame rounded-2xl border border-dashed border-primary/30 bg-white/5 p-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <Label>Barcode image</Label>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Capture the barcode side of the packet or upload a saved photo.
                 </p>
               </div>
-              <label
-                htmlFor="barcode-image"
-                className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground shadow-[0_0_28px_rgba(129,247,89,0.28)] transition hover:bg-[#86fd5e]"
-              >
-                <FileImage className="h-4 w-4" />
-                Choose image
-              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label
+                  htmlFor="barcode-camera"
+                  className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground shadow-[0_0_28px_rgba(129,247,89,0.28)] transition hover:bg-[#86fd5e]"
+                >
+                  <Camera className="h-4 w-4" />
+                  Capture live
+                </label>
+                <label
+                  htmlFor="barcode-file"
+                  className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 text-sm font-bold text-white transition hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+                >
+                  <FileImage className="h-4 w-4" />
+                  Upload image
+                </label>
+              </div>
             </div>
             <Input
-              id="barcode-image"
+              id="barcode-camera"
               className="hidden"
               type="file"
               accept="image/*"
               capture="environment"
-              onChange={(event) => {
-                setFile(event.target.files?.[0] ?? null);
-                setError(null);
-                setMessage(null);
-              }}
+              onChange={(event) => chooseFile(event.target.files?.[0])}
+            />
+            <Input
+              id="barcode-file"
+              className="hidden"
+              type="file"
+              accept="image/*"
+              onChange={(event) => chooseFile(event.target.files?.[0])}
             />
             {file ? (
               <div className="mt-4 grid gap-4 rounded-2xl border border-white/10 bg-black/20 p-3 sm:grid-cols-[120px_1fr]">
