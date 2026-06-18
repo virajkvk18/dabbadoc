@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   Activity,
   Droplets,
   HeartPulse,
   Loader2,
+  LockKeyhole,
   Moon,
   Save,
   Scale,
@@ -23,6 +25,7 @@ type HealthProfileManagerProps = {
   initialProfile: UserHealthProfile;
   initialLogs: WellnessLog[];
   setupRequired: boolean;
+  isLocked: boolean;
 };
 
 const suggestedGoals = [
@@ -82,7 +85,8 @@ function numberValue(value: string) {
 export function HealthProfileManager({
   initialProfile,
   initialLogs,
-  setupRequired
+  setupRequired,
+  isLocked
 }: HealthProfileManagerProps) {
   const [profile, setProfile] = useState<UserHealthProfile>(initialProfile);
   const [logs, setLogs] = useState<WellnessLog[]>(initialLogs);
@@ -179,6 +183,46 @@ export function HealthProfileManager({
     } finally {
       setSavingLog(false);
     }
+  }
+
+  if (isLocked) {
+    return (
+      <Card className="glass-panel border-secondary/25">
+        <CardContent className="p-6">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex gap-4">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-secondary/30 bg-secondary/15 text-secondary">
+                <LockKeyhole className="h-6 w-6" />
+              </span>
+              <div>
+                <Badge variant="secondary">Premium</Badge>
+                <p className="mt-3 text-xl font-black text-white">Personalization is locked</p>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                  Upgrade to Premium to customize food advice with your health goals, diseases, weight, sleep, mood, women health mode, and wellness patterns.
+                </p>
+              </div>
+            </div>
+            <Button asChild variant="secondary" className="shrink-0">
+              <Link href="/pricing">Unlock Premium</Link>
+            </Button>
+          </div>
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            {[
+              "Personal health context",
+              "Women health mode",
+              "Profile readiness",
+              "Daily wellness log",
+              "Recent wellness pattern",
+              "Personalized scan guidance"
+            ].map((feature) => (
+              <div key={feature} className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm font-semibold text-muted-foreground">
+                {feature}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

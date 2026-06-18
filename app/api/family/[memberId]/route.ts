@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
-import { apiErrorResponse } from "@/lib/security/api-errors";
+import { ApiError, apiErrorResponse } from "@/lib/security/api-errors";
+import { getAccountOverview } from "@/lib/supabase/account-overview";
 import {
   getFamilyMemberSummary,
   removeFamilyConnection
@@ -18,6 +19,10 @@ export async function GET(
   context: { params: Promise<{ memberId: string }> }
 ) {
   try {
+    const account = await getAccountOverview();
+    if (account.profile.plan !== "premium_plus") {
+      throw new ApiError("Premium Plus is required for family access.", 403);
+    }
     const params = paramsSchema.parse(await context.params);
     return NextResponse.json(await getFamilyMemberSummary(params.memberId));
   } catch (error) {
@@ -33,6 +38,10 @@ export async function DELETE(
   context: { params: Promise<{ memberId: string }> }
 ) {
   try {
+    const account = await getAccountOverview();
+    if (account.profile.plan !== "premium_plus") {
+      throw new ApiError("Premium Plus is required for family access.", 403);
+    }
     const params = paramsSchema.parse(await context.params);
     return NextResponse.json(await removeFamilyConnection(params.memberId));
   } catch (error) {

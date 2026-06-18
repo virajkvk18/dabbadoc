@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { requireVerifiedUser } from "@/lib/auth/require-user";
-import { apiErrorResponse } from "@/lib/security/api-errors";
+import { ApiError, apiErrorResponse } from "@/lib/security/api-errors";
+import { getAccountOverview } from "@/lib/supabase/account-overview";
 import {
   getHealthProfileDashboard,
   saveWellnessLogForUser
@@ -26,6 +27,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const user = await requireVerifiedUser();
+    const account = await getAccountOverview();
+    if (!account.profile.isPremium) {
+      throw new ApiError("Premium is required to save wellness logs.", 403);
+    }
     const log = wellnessLogSchema.parse(await request.json());
     await saveWellnessLogForUser(user.id, log);
     const dashboard = await getHealthProfileDashboard(user.id);
