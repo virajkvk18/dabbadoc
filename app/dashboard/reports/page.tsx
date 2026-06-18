@@ -1,5 +1,6 @@
 import { FileText } from "lucide-react";
 import { ReportGenerator } from "@/components/reports/report-generator";
+import { MonthlyHealthInsights } from "@/components/reports/monthly-health-insights";
 import { Disclaimer } from "@/components/common/disclaimer";
 import { AppPageHeader } from "@/components/layout/app-page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +24,11 @@ export default async function ReportsPage() {
         ]}
       />
       <ReportGenerator
+        userName={account.profile.fullName}
+        healthScore={account.score.current}
+      />
+      <MonthlyHealthInsights
+        activities={account.allActivities}
         userName={account.profile.fullName}
         healthScore={account.score.current}
       />

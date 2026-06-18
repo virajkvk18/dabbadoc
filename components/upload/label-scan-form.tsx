@@ -12,7 +12,9 @@ import {
   IngredientInsightList,
   LabelCoverage,
   NutritionFacts,
+  RedFlagIngredientDetector,
   RiskFlags,
+  SmartGroceryList,
   SwapList
 } from "@/components/upload/analysis-list";
 import { HealthScoreGauge } from "@/components/dashboard/health-score-gauge";
@@ -379,9 +381,19 @@ export function LabelScanForm() {
             </CardContent>
           </Card>
           <IngredientInsightList insights={analysis.ingredientInsights} />
+          <RedFlagIngredientDetector
+            ingredients={analysis.ingredients}
+            insights={analysis.ingredientInsights}
+            warnings={analysis.warnings}
+          />
           <RiskFlags risks={analysis.warnings} />
           <FutureHealthRisks risks={analysis.regularUseRisks} />
           <SwapList swaps={analysis.betterAlternatives} />
+          <SmartGroceryList
+            swaps={analysis.betterAlternatives}
+            risks={analysis.warnings}
+            title="Next grocery swaps"
+          />
           <Card className="glass-panel">
             <CardHeader>
               <CardTitle>Label truth insight</CardTitle>

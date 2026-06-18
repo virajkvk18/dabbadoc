@@ -12,8 +12,10 @@ import {
   ExtractedReceiptText,
   FutureHealthRisks,
   ItemInsightList,
+  BudgetHealthCombo,
   ReceiptCoverage,
   RiskFlags,
+  SmartGroceryList,
   SwapList
 } from "@/components/upload/analysis-list";
 import { HealthScoreGauge } from "@/components/dashboard/health-score-gauge";
@@ -357,6 +359,8 @@ export function ReceiptUploadForm() {
           <RiskFlags risks={analysis.riskFlags} />
           <FutureHealthRisks risks={analysis.futureHealthRisks} />
           <SwapList swaps={analysis.swaps} />
+          <SmartGroceryList swaps={analysis.swaps} risks={analysis.riskFlags} />
+          <BudgetHealthCombo cost={analysis.costSummary} />
           <CostSummary cost={analysis.costSummary} />
           <Card className="glass-panel">
             <CardHeader>

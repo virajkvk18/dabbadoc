@@ -12,6 +12,8 @@ import {
   ReceiptText,
   ScanSearch,
   ShieldAlert,
+  ShoppingBasket,
+  Siren,
   TimerReset
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +31,58 @@ import type {
   SwapRecommendation
 } from "@/types";
 import { formatCurrency } from "@/lib/utils";
+
+function unique(values: Array<string | null | undefined | false>) {
+  return Array.from(
+    new Set(
+      values
+        .map((value) => (typeof value === "string" ? value.trim() : ""))
+        .filter(Boolean)
+    )
+  );
+}
+
+function redFlagForText(value: string) {
+  const text = value.toLowerCase();
+  if (/(palm oil|palmolein|vegetable oil|refined oil)/i.test(text)) {
+    return {
+      label: "Palm/refined oil",
+      reason: "Frequent packaged foods with refined oils can push fat quality down.",
+      swap: "Choose roasted snacks, makhana, peanuts, chana, or simpler ingredient lists."
+    };
+  }
+  if (/(maida|refined flour|wheat flour \(maida\))/i.test(text)) {
+    return {
+      label: "Maida/refined flour",
+      reason: "This can behave like a fast carb when eaten often.",
+      swap: "Prefer whole wheat, millet, oats, dal, sprouts, or higher-fiber options."
+    };
+  }
+  if (/(sugar|glucose|fructose|corn syrup|maltodextrin|dextrose)/i.test(text)) {
+    return {
+      label: "Added sugar signal",
+      reason: "Multiple sugar names can hide the real sweetness load.",
+      swap: "Pick unsweetened curd, fruit, nuts, or products with lower added sugar."
+    };
+  }
+  if (/(sodium|salt|monosodium glutamate|msg|raising agent|preservative)/i.test(text)) {
+    return {
+      label: "Sodium/preservative signal",
+      reason: "Packaged sodium can add up quickly across the day.",
+      swap: "Balance with home food, curd, salad, lemon, and less namkeen/sauces."
+    };
+  }
+  return null;
+}
+
+function groceryFallbackFromRisk(label: string) {
+  const text = label.toLowerCase();
+  if (/sugar|sweet|drink|chocolate/.test(text)) return "Unsweetened curd, fruit, nuts, or nimbu water";
+  if (/sodium|salt|namkeen|chips|processed/.test(text)) return "Makhana, roasted chana, peanuts, sprouts, or homemade chivda";
+  if (/maida|refined|bread|biscuit/.test(text)) return "Whole wheat bread, dalia, oats, millet roti, or besan chilla";
+  if (/protein/.test(text)) return "Paneer/tofu, eggs, dal, chana, sprouts, curd, or soy chunks";
+  return "Curd, sprouts, seasonal fruit, salad vegetables, dal, and roasted snacks";
+}
 
 export function ExtractedReceiptText({
   text,
@@ -448,6 +502,135 @@ export function SwapList({ swaps }: { swaps: SwapRecommendation[] }) {
               </p>
               <p className="text-sm text-muted-foreground">{swap.reason}</p>
             </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function SmartGroceryList({
+  swaps = [],
+  risks = [],
+  title = "Smart grocery list"
+}: {
+  swaps?: SwapRecommendation[];
+  risks?: RiskFlag[];
+  title?: string;
+}) {
+  const items = unique([
+    ...swaps.map((swap) => swap.swap),
+    ...risks.map((risk) => groceryFallbackFromRisk(risk.label)),
+    swaps.length === 0 && risks.length === 0 ? "Curd, sprouts, dal, makhana, seasonal fruit, salad vegetables" : null
+  ]).slice(0, 6);
+
+  return (
+    <Card className="glass-panel border-primary/20">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ShoppingBasket className="h-5 w-5 text-primary" />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-3 md:grid-cols-2">
+        {items.map((item) => (
+          <div key={item} className="rounded-xl border border-white/10 bg-white/5 p-4">
+            <p className="font-semibold text-white">{item}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Add this to the next grocery run so the healthier choice is already at home.
+            </p>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function BudgetHealthCombo({ cost }: { cost?: CostComparison }) {
+  if (!cost) return null;
+
+  const savesMoney = cost.monthlySavings > 0;
+  const changeText = savesMoney
+    ? `Healthier swaps may save about ${formatCurrency(cost.monthlySavings)} per month.`
+    : `Healthier swaps may cost about ${formatCurrency(Math.abs(cost.monthlySavings))} more per month.`;
+
+  return (
+    <Card className="glass-panel border-primary/20">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <IndianRupee className="h-5 w-5 text-primary" />
+          Budget + health combo
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-4 md:grid-cols-[1fr_1.2fr]">
+        <div className="rounded-xl border border-primary/20 bg-primary/10 p-4">
+          <p className="mono-label text-[10px] text-muted-foreground">Monthly impact</p>
+          <p className="mt-2 text-2xl font-black text-primary">
+            {savesMoney ? "Save" : "Plan"} {formatCurrency(Math.abs(cost.monthlySavings))}
+          </p>
+        </div>
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <p className="font-semibold text-white">{changeText}</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            {cost.notes || "Small repeat swaps matter because groceries and snacks repeat every month."}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function RedFlagIngredientDetector({
+  ingredients = [],
+  insights = [],
+  warnings = []
+}: {
+  ingredients?: string[];
+  insights?: IngredientInsight[];
+  warnings?: RiskFlag[];
+}) {
+  const detected = unique([
+    ...ingredients.map((ingredient) => redFlagForText(ingredient)?.label),
+    ...insights.map((insight) => redFlagForText(insight.ingredient)?.label),
+    ...warnings.map((warning) => warning.label)
+  ]);
+
+  const cards = detected.length
+    ? detected.map((label) => {
+        const source =
+          [...ingredients, ...insights.map((insight) => insight.ingredient), ...warnings.map((warning) => warning.label)]
+            .find((value) => redFlagForText(value)?.label === label) ?? label;
+        return redFlagForText(source) ?? {
+          label,
+          reason: "This is a label warning DabbaDoc found from the scan.",
+          swap: groceryFallbackFromRisk(label)
+        };
+      })
+    : [];
+
+  return (
+    <Card className="glass-panel border-secondary/25">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Siren className="h-5 w-5 text-secondary" />
+          Red flag ingredient detector
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-3 lg:grid-cols-2">
+        {cards.length === 0 ? (
+          <p className="lg:col-span-2 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-muted-foreground">
+            No strong palm oil, maida, added sugar, sodium, or preservative signal was detected from the readable label.
+          </p>
+        ) : null}
+        {cards.map((flag) => (
+          <div key={flag.label} className="rounded-xl border border-white/10 bg-white/5 p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">{flag.label}</Badge>
+            </div>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">{flag.reason}</p>
+            <p className="mt-3 rounded-xl border border-primary/20 bg-primary/10 p-3 text-sm text-primary">
+              Better buy: {flag.swap}
+            </p>
           </div>
         ))}
       </CardContent>
