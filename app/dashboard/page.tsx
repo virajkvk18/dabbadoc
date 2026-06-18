@@ -169,7 +169,7 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-stretch">
         <div className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -216,9 +216,44 @@ export default async function DashboardPage() {
           </div>
 
           <StreakMomentumCard days={account.streak.days} week={activityWeek} />
+
+          <div className="grid items-stretch gap-4 md:grid-cols-[240px_minmax(0,1fr)]">
+            <HealthScoreGauge
+              score={account.score.current}
+              category={account.score.category}
+              size="md"
+              className="h-full"
+              fillHeight
+            />
+            <div className="grid gap-3 sm:grid-cols-3 md:grid-cols-1">
+              <StatCard
+                label="Risk signals"
+                value={`${riskCount}`}
+                detail={riskCount > 0 ? "From saved analyses" : "No strong risks yet"}
+                icon={Sparkles}
+                variant="secondary"
+                className="min-h-0 items-center p-4"
+              />
+              <StatCard
+                label="Badges earned"
+                value={`${account.badges.length}`}
+                detail="Based on account activity"
+                icon={BadgeCheck}
+                variant="primary"
+                className="min-h-0 items-center p-4"
+              />
+              <StatCard
+                label="Total scans"
+                value={`${account.counts.scans}`}
+                detail={`${account.counts.receipts} receipts, ${account.counts.labels} labels, ${account.counts.diaries} diaries`}
+                icon={ScanLine}
+                className="min-h-0 items-center p-4"
+              />
+            </div>
+          </div>
         </div>
 
-        <Card className="glass-panel overflow-hidden border-primary/20 xl:sticky xl:top-5">
+        <Card className="glass-panel flex h-full flex-col overflow-hidden border-primary/20">
           <CardHeader className="flex-row items-start justify-between space-y-0 p-4">
             <div>
               <CardTitle className="flex items-center gap-2 text-base">
@@ -229,11 +264,11 @@ export default async function DashboardPage() {
             </div>
             <Badge variant="outline">Guide</Badge>
           </CardHeader>
-          <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0">
-            <div className="overflow-hidden rounded-xl border border-white/10 bg-black/50">
+          <CardContent className="flex flex-1 flex-col p-3 pt-0 sm:p-4 sm:pt-0">
+            <div className="relative aspect-[9/16] w-full overflow-hidden rounded-xl border border-white/10 bg-black/50 xl:aspect-auto xl:min-h-[520px] xl:flex-1">
               <video
-                className="aspect-video w-full bg-black object-contain"
-                src="/videos/dabbadoc-explainer.mp4"
+                className="absolute inset-0 h-full w-full bg-black object-cover"
+                src="/videos/dabbadoc-overview.mp4"
                 aria-label="DabbaDoc product walkthrough"
                 controls
                 muted
@@ -251,40 +286,6 @@ export default async function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="grid items-stretch gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <HealthScoreGauge
-          score={account.score.current}
-          category={account.score.category}
-          className="h-full"
-          fillHeight
-        />
-        <div className="grid gap-4 sm:grid-cols-3">
-          <StatCard
-            label="Risk signals"
-            value={`${riskCount}`}
-            detail={riskCount > 0 ? "From your saved analyses" : "No strong risks yet"}
-            icon={Sparkles}
-            variant="secondary"
-            className="h-full items-center"
-          />
-          <StatCard
-            label="Badges earned"
-            value={`${account.badges.length}`}
-            detail="Based on your account activity"
-            icon={BadgeCheck}
-            variant="primary"
-            className="h-full items-center"
-          />
-          <StatCard
-            label="Total scans"
-            value={`${account.counts.scans}`}
-            detail={`${account.counts.receipts} receipts, ${account.counts.labels} labels, ${account.counts.diaries} diaries`}
-            icon={ScanLine}
-            className="h-full items-center"
-          />
-        </div>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1.05fr]">
