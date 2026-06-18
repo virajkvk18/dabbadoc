@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
   Clock3,
@@ -74,15 +74,30 @@ type SpeechRecognitionEventLike = {
   };
 };
 
+type SpeechRecognitionErrorEventLike = {
+  error:
+    | "aborted"
+    | "audio-capture"
+    | "bad-grammar"
+    | "language-not-supported"
+    | "network"
+    | "no-speech"
+    | "not-allowed"
+    | "service-not-allowed";
+};
+
 type SpeechRecognitionLike = {
   lang: string;
   interimResults: boolean;
   maxAlternatives: number;
+  continuous: boolean;
   start: () => void;
   stop: () => void;
+  abort: () => void;
   onresult: ((event: SpeechRecognitionEventLike) => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
   onend: (() => void) | null;
+  onstart: (() => void) | null;
 };
 
 type SpeechWindow = Window & {
@@ -115,6 +130,25 @@ function voiceItems(value: string) {
     .map(cleanVoiceText)
     .filter((item) => item.length > 1);
   return Array.from(new Set(normalized)).slice(0, 6);
+}
+
+function voiceErrorMessage(error: SpeechRecognitionErrorEventLike["error"]) {
+  if (error === "not-allowed" || error === "service-not-allowed") {
+    return "Microphone permission is blocked. Allow mic access for this site, then tap Speak entry again.";
+  }
+  if (error === "audio-capture") {
+    return "No microphone was detected. Check your mic/camera permission or use manual entry.";
+  }
+  if (error === "network") {
+    return "Voice recognition needs network access in this browser. Please try again or type the entry.";
+  }
+  if (error === "language-not-supported") {
+    return "This browser could not start Indian English voice recognition. Try Chrome or use manual entry.";
+  }
+  if (error === "no-speech") {
+    return "I did not catch any words. Tap again and speak after the Listening status appears.";
+  }
+  return "Voice entry stopped. Please try again or type the meal manually.";
 }
 
 function mealPlanFromAnalysis(analysis: FoodDiaryAnalysis) {
@@ -159,6 +193,9 @@ export function FoodDiaryForm({ initialNow }: { initialNow: string }) {
   const [voiceText, setVoiceText] = useState("");
   const [listening, setListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(true);
+  const [voiceStatus, setVoiceStatus] = useState("Tap and speak after the browser allows microphone access.");
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const heardSpeechRef = useRef(false);
 
   const canAdd =
     currentEntry.itemName.trim().length > 1 && currentEntry.quantity.trim().length > 0;
@@ -230,7 +267,22 @@ export function FoodDiaryForm({ initialNow }: { initialNow: string }) {
     setError(null);
   }
 
-  function startVoiceEntry() {
+  async function ensureMicAccess() {
+    if (!navigator.mediaDevices?.getUserMedia) return true;
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((track) => track.stop());
+      return true;
+    } catch {
+      setError("Microphone permission is blocked. Allow mic access for DabbaDoc, then try again.");
+      setVoiceStatus("Mic permission needed.");
+      setListening(false);
+      return false;
+    }
+  }
+
+  async function startVoiceEntry() {
     const SpeechRecognition =
       (window as SpeechWindow).SpeechRecognition ||
       (window as SpeechWindow).webkitSpeechRecognition;
@@ -241,26 +293,60 @@ export function FoodDiaryForm({ initialNow }: { initialNow: string }) {
       return;
     }
 
+    if (listening) {
+      recognitionRef.current?.stop();
+      setListening(false);
+      return;
+    }
+
+    const hasMicAccess = await ensureMicAccess();
+    if (!hasMicAccess) return;
+
+    recognitionRef.current?.abort();
     const recognition = new SpeechRecognition();
     recognition.lang = "en-IN";
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
+    recognition.continuous = false;
+    heardSpeechRef.current = false;
     recognition.onresult = (event) => {
       const transcript = Array.from({ length: event.results.length })
         .map((_, index) => event.results[index]?.[0]?.transcript ?? "")
         .join(" ")
         .trim();
-      if (transcript) addVoiceEntries(transcript);
+      if (transcript) {
+        heardSpeechRef.current = true;
+        addVoiceEntries(transcript);
+        setVoiceStatus("Voice entry added. You can edit/remove it before analysis.");
+      }
     };
-    recognition.onerror = () => {
-      setError("Could not hear clearly. Try again closer to the mic.");
+    recognition.onerror = (event) => {
+      setError(voiceErrorMessage(event.error));
+      setVoiceStatus("Voice entry stopped.");
       setListening(false);
     };
-    recognition.onend = () => setListening(false);
+    recognition.onstart = () => {
+      setListening(true);
+      setVoiceStatus("Listening now. Say your food entry clearly.");
+    };
+    recognition.onend = () => {
+      setListening(false);
+      if (!heardSpeechRef.current) {
+        setVoiceStatus("Tap again when ready. Speak after Listening appears.");
+      }
+    };
 
-    setListening(true);
+    recognitionRef.current = recognition;
     setError(null);
-    recognition.start();
+    setVoiceStatus("Starting microphone...");
+
+    try {
+      recognition.start();
+    } catch {
+      setError("Voice entry could not start. Please wait a second and try again.");
+      setVoiceStatus("Voice entry stopped.");
+      setListening(false);
+    }
   }
 
   async function submit() {
@@ -392,20 +478,22 @@ export function FoodDiaryForm({ initialNow }: { initialNow: string }) {
               <div>
                 <p className="font-semibold text-white">Voice food diary</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Speak Hinglish food entries like: aaj poha aur chai pi.
+                  Allow microphone access, wait for Listening, then say: aaj poha aur chai pi.
                 </p>
               </div>
               <Button
                 type="button"
                 variant={listening ? "secondary" : "outline"}
                 onClick={startVoiceEntry}
-                disabled={listening}
                 className="w-full sm:w-auto"
               >
                 {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                {listening ? "Listening..." : "Speak entry"}
+                {listening ? "Stop listening" : "Speak entry"}
               </Button>
             </div>
+            <p className="mt-3 rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-muted-foreground">
+              {voiceStatus}
+            </p>
             {!voiceSupported ? (
               <p className="mt-3 text-sm text-orange-100">
                 Your browser does not support speech recognition yet. Manual entry still works.
