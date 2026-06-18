@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import {
   BadgeCheck,
+  Barcode,
   FileText,
   History,
   Home,
@@ -34,6 +35,7 @@ const links: NavLinkItem[] = [
   { href: "/dashboard", label: "Overview", icon: Home },
   { href: "/dashboard/upload-receipt", label: "Receipt scan", icon: Upload },
   { href: "/dashboard/label-scan", label: "LabelScan", icon: ScanLine },
+  { href: "/dashboard/barcode-scan", label: "Barcode scan", icon: Barcode },
   { href: "/dashboard/food-diary", label: "Food diary", icon: Utensils },
   { href: "/dashboard/family", label: "Family", icon: UsersRound },
   { href: "/dashboard/history", label: "History", icon: History },
