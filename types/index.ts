@@ -201,6 +201,45 @@ export interface FoodDiaryAnalysis {
   disclaimer: string;
 }
 
+export interface WomenHealthContext {
+  enabled: boolean;
+  pregnancyStatus?: "not_applicable" | "trying" | "pregnant" | "postpartum" | "breastfeeding";
+  cyclePhase?: "not_tracking" | "period" | "follicular" | "ovulation" | "luteal" | "pms";
+  cravings?: string[];
+  notes?: string;
+}
+
+export interface UserHealthProfile {
+  age?: number;
+  gender?: string;
+  heightCm?: number;
+  weightKg?: number;
+  activityLevel?: string;
+  sleepHours?: number;
+  sleepQuality?: string;
+  waterGlasses?: number;
+  dietaryPreference?: string;
+  allergies: string[];
+  medicalConditions: string[];
+  healthGoals: string[];
+  customGoals: string[];
+  womenHealth: WomenHealthContext;
+  updatedAt?: string;
+}
+
+export interface WellnessLog {
+  id?: string;
+  logDate: string;
+  weightKg?: number;
+  mood?: string;
+  energyLevel?: string;
+  sleepHours?: number;
+  cravings: string[];
+  cyclePhase?: string;
+  notes?: string;
+  createdAt?: string;
+}
+
 export interface HealthIndexSnapshot {
   score: number;
   category: string;
@@ -229,6 +268,7 @@ export interface AgentInput {
   dataUri?: string;
   rawText?: string;
   healthGoals?: HealthGoal[];
+  healthContext?: string;
   demoMode?: boolean;
 }
 
@@ -237,6 +277,7 @@ export interface DiaryInput {
   diaryText?: string;
   entries?: ManualMealEntry[];
   healthGoals?: HealthGoal[];
+  healthContext?: string;
   demoMode?: boolean;
 }
 

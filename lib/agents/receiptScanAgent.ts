@@ -81,6 +81,12 @@ function goalActionTips(goals?: string[]) {
   return (goals ?? []).map((goal) => tips[goal]).filter(Boolean).slice(0, 3);
 }
 
+function withHealthContext(text: string, healthContext?: string) {
+  return [text, healthContext ? `User health profile: ${healthContext}` : null]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export async function extractReceiptText(input: AgentInput) {
   if (input.rawText) return input.rawText;
   if (input.demoMode) return sampleReceiptText;
@@ -111,7 +117,8 @@ export async function extractReceiptText(input: AgentInput) {
 export async function analyzeReceipt(input: AgentInput): Promise<ReceiptAnalysis> {
   const extractedText = await extractReceiptText(input);
   const detectedItems = parseFoodItemsFromText(extractedText);
-  const riskFlags = await analyzeRisks(detectedItems, extractedText);
+  const personalizedText = withHealthContext(extractedText, input.healthContext);
+  const riskFlags = await analyzeRisks(detectedItems, personalizedText);
   const swaps = await recommendSwaps(detectedItems);
   const health = await updateHealthIndex({
     items: detectedItems,
@@ -140,7 +147,7 @@ export async function analyzeReceipt(input: AgentInput): Promise<ReceiptAnalysis
     score: health.score,
     riskFlags,
     swaps,
-    context: extractedText,
+    context: personalizedText,
     items: detectedItems,
     healthGoals: input.healthGoals
   });

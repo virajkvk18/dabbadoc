@@ -14,6 +14,7 @@ import {
   enforceUploadFileType,
   MAX_UPLOAD_BYTES
 } from "@/lib/security/abuse-protection";
+import { getHealthContextForUser } from "@/lib/supabase/health-profile";
 import { saveLabelAnalysis, saveUploadRecord } from "@/lib/supabase/mutations";
 import { uploadToStorage } from "@/lib/supabase/storage";
 import { toDataUri } from "@/lib/utils";
@@ -75,6 +76,8 @@ export async function POST(request: NextRequest) {
       throw new ApiError("Stored image path is not allowed for this account.", 403);
     }
 
+    const healthContext = await getHealthContextForUser(user.id);
+    const healthGoals = Array.from(new Set([...healthContext.goals, ...parsed.healthGoals]));
     const agentInput = {
       userId: user.id,
       sourceType: "packaged_label",
@@ -83,14 +86,16 @@ export async function POST(request: NextRequest) {
       dataUri,
       demoMode: parsed.demoMode,
       rawText: parsed.rawText,
-      healthGoals: parsed.healthGoals
+      healthGoals,
+      healthContext: healthContext.context
     } as const;
     const extractedText = await extractLabelText(agentInput);
     const analysis =
       (await analyzeLabelWithDabbaAgent({
         rawText: extractedText,
         productName: extractedText.split("\n").find(Boolean)?.trim(),
-        healthGoals: parsed.healthGoals
+        healthGoals,
+        healthContext: healthContext.context
       })) ??
       (await analyzeLabel({
         ...agentInput,

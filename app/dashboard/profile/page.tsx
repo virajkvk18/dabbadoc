@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { BadgeGrid } from "@/components/badges/badge-grid";
 import { AppPageHeader } from "@/components/layout/app-page-header";
+import { HealthProfileManager } from "@/components/profile/health-profile-manager";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,9 +20,11 @@ import {
   formatDisplayDate,
   getAccountOverview
 } from "@/lib/supabase/account-overview";
+import { getHealthProfileDashboard } from "@/lib/supabase/health-profile";
 
 export default async function ProfilePage() {
   const account = await getAccountOverview();
+  const healthProfile = await getHealthProfileDashboard(account.user.id);
 
   return (
     <div className="space-y-6">
@@ -154,6 +157,12 @@ export default async function ProfilePage() {
           </Card>
         </div>
       </div>
+
+      <HealthProfileManager
+        initialProfile={healthProfile.profile}
+        initialLogs={healthProfile.logs}
+        setupRequired={healthProfile.setupRequired}
+      />
 
       <div className="grid gap-6 xl:grid-cols-[1fr_0.9fr]">
         <Card className="glass-panel">

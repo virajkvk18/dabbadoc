@@ -14,6 +14,7 @@ import {
   enforceUploadFileType,
   MAX_UPLOAD_BYTES
 } from "@/lib/security/abuse-protection";
+import { getHealthContextForUser } from "@/lib/supabase/health-profile";
 import { saveReceiptAnalysis, saveUploadRecord } from "@/lib/supabase/mutations";
 import { uploadToStorage } from "@/lib/supabase/storage";
 import { toDataUri } from "@/lib/utils";
@@ -76,6 +77,8 @@ export async function POST(request: NextRequest) {
       throw new ApiError("Stored image path is not allowed for this account.", 403);
     }
 
+    const healthContext = await getHealthContextForUser(user.id);
+    const healthGoals = Array.from(new Set([...healthContext.goals, ...parsed.healthGoals]));
     const agentInput = {
       userId: user.id,
       sourceType: parsed.sourceType,
@@ -84,7 +87,8 @@ export async function POST(request: NextRequest) {
       dataUri,
       demoMode: parsed.demoMode,
       rawText: parsed.rawText,
-      healthGoals: parsed.healthGoals
+      healthGoals,
+      healthContext: healthContext.context
     };
     const extractedText = await extractReceiptText(agentInput);
     const analysis =
@@ -93,7 +97,8 @@ export async function POST(request: NextRequest) {
         sourceType: parsed.sourceType,
         dataUri,
         mimeType,
-        healthGoals: parsed.healthGoals
+        healthGoals,
+        healthContext: healthContext.context
       })) ??
       (await runReceiptGraph({
         ...agentInput,

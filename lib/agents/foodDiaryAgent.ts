@@ -111,6 +111,12 @@ function goalDiaryTips(goals?: string[]) {
   return (goals ?? []).map((goal) => tips[goal]).filter(Boolean).slice(0, 3);
 }
 
+function withHealthContext(text: string, healthContext?: string) {
+  return [text, healthContext ? `User health profile: ${healthContext}` : null]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export async function analyzeFoodDiary(
   input: DiaryInput
 ): Promise<FoodDiaryAnalysis> {
@@ -122,7 +128,8 @@ export async function analyzeFoodDiary(
       : "Aaj breakfast me poha, lunch me dal chawal, evening me samosa, dinner me roti sabzi khayi.");
   const entryItems = entries.map(foodItemFromEntry);
   const items = mergeItems(parseFoodItemsFromText(diaryText), entryItems);
-  const riskFlags = await analyzeRisks(items, diaryText);
+  const personalizedDiaryText = withHealthContext(diaryText, input.healthContext);
+  const riskFlags = await analyzeRisks(items, personalizedDiaryText);
   const healthierSwaps = await recommendSwaps(items);
   await compareCosts(items, healthierSwaps);
 
@@ -179,7 +186,7 @@ export async function analyzeFoodDiary(
     score: health.score,
     riskFlags,
     swaps: healthierSwaps,
-    context: diaryText,
+    context: personalizedDiaryText,
     healthGoals: input.healthGoals
   });
 

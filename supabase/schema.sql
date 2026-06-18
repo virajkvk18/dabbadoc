@@ -105,6 +105,42 @@ create table if not exists public.family_connections (
   check (owner_user_id <> family_member_user_id)
 );
 
+create table if not exists public.health_profiles (
+  user_id uuid primary key references public.profiles(id) on delete cascade,
+  age integer,
+  gender text,
+  height_cm numeric,
+  weight_kg numeric,
+  activity_level text,
+  sleep_hours numeric,
+  sleep_quality text,
+  water_glasses integer,
+  dietary_preference text,
+  allergies jsonb not null default '[]',
+  medical_conditions jsonb not null default '[]',
+  health_goals jsonb not null default '[]',
+  custom_goals jsonb not null default '[]',
+  women_health jsonb not null default '{"enabled": false, "cravings": []}',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.wellness_logs (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  log_date date not null default current_date,
+  weight_kg numeric,
+  mood text,
+  energy_level text,
+  sleep_hours numeric,
+  cravings jsonb not null default '[]',
+  cycle_phase text,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, log_date)
+);
+
 create index if not exists uploads_user_id_idx on public.uploads (user_id);
 create index if not exists receipt_analyses_user_upload_idx on public.receipt_analyses (user_id, upload_id);
 create index if not exists label_analyses_user_upload_idx on public.label_analyses (user_id, upload_id);
@@ -121,6 +157,7 @@ create index if not exists family_connections_invited_email_idx on public.family
 create unique index if not exists family_connections_unique_active
   on public.family_connections (owner_user_id, invited_email)
   where status in ('pending', 'accepted');
+create index if not exists wellness_logs_user_date_idx on public.wellness_logs (user_id, log_date desc);
 
 create or replace function public.handle_new_user()
 returns trigger

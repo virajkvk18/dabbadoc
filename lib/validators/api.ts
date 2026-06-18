@@ -39,6 +39,26 @@ const healthGoalSchema = z
   .max(60)
   .regex(/^[a-zA-Z0-9 ,+&()./-]+$/);
 
+const profileTextSchema = z
+  .string()
+  .trim()
+  .max(80)
+  .optional()
+  .transform((value) => (value ? value : undefined));
+
+const profileListSchema = z.array(
+  z.string().trim().min(1).max(60).regex(/^[a-zA-Z0-9 ,+&()./-]+$/)
+).max(12).default([]);
+
+const optionalNumberSchema = z
+  .union([z.number(), z.string()])
+  .optional()
+  .transform((value) => {
+    if (value === undefined || value === "") return undefined;
+    const numberValue = Number(value);
+    return Number.isFinite(numberValue) ? numberValue : undefined;
+  });
+
 export const authLoginSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, "Enter your password.").max(256),
@@ -138,4 +158,41 @@ export const familyInviteSchema = z.object({
 export const familyAcceptSchema = z.object({
   connectionId: z.string().uuid(),
   action: z.enum(["accept", "reject"]).default("accept")
+});
+
+export const healthProfileSchema = z.object({
+  age: optionalNumberSchema.pipe(z.number().int().min(1).max(120).optional()),
+  gender: profileTextSchema,
+  heightCm: optionalNumberSchema.pipe(z.number().min(40).max(260).optional()),
+  weightKg: optionalNumberSchema.pipe(z.number().min(2).max(350).optional()),
+  activityLevel: profileTextSchema,
+  sleepHours: optionalNumberSchema.pipe(z.number().min(0).max(18).optional()),
+  sleepQuality: profileTextSchema,
+  waterGlasses: optionalNumberSchema.pipe(z.number().int().min(0).max(40).optional()),
+  dietaryPreference: profileTextSchema,
+  allergies: profileListSchema,
+  medicalConditions: profileListSchema,
+  healthGoals: profileListSchema,
+  customGoals: profileListSchema,
+  womenHealth: z.object({
+    enabled: z.boolean().default(false),
+    pregnancyStatus: z.enum(["not_applicable", "trying", "pregnant", "postpartum", "breastfeeding"]).optional(),
+    cyclePhase: z.enum(["not_tracking", "period", "follicular", "ovulation", "luteal", "pms"]).optional(),
+    cravings: profileListSchema,
+    notes: z.string().trim().max(360).optional().transform((value) => (value ? value : undefined))
+  }).default({
+    enabled: false,
+    cravings: []
+  })
+});
+
+export const wellnessLogSchema = z.object({
+  logDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  weightKg: optionalNumberSchema.pipe(z.number().min(2).max(350).optional()),
+  mood: profileTextSchema,
+  energyLevel: profileTextSchema,
+  sleepHours: optionalNumberSchema.pipe(z.number().min(0).max(18).optional()),
+  cravings: profileListSchema,
+  cyclePhase: profileTextSchema,
+  notes: z.string().trim().max(360).optional().transform((value) => (value ? value : undefined))
 });
