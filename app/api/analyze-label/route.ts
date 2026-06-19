@@ -23,6 +23,10 @@ import { labelAnalyzeSchema } from "@/lib/validators/api";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
+function optionalFormString(value: FormDataEntryValue | null) {
+  return typeof value === "string" ? value : undefined;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const user = await requireVerifiedUser();
@@ -38,8 +42,8 @@ export async function POST(request: NextRequest) {
     const storagePath = formData.get("storagePath");
     const parsed = labelAnalyzeSchema.parse({
       demoMode: formData.get("demoMode") === "true",
-      productName: formData.get("productName"),
-      rawText: formData.get("rawText"),
+      productName: optionalFormString(formData.get("productName")),
+      rawText: optionalFormString(formData.get("rawText")),
       healthGoals: formData.getAll("healthGoals")
     });
     if (!parsed.demoMode && !parsed.rawText && !(file instanceof File) && typeof storagePath !== "string") {
