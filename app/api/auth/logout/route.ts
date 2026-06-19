@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const response = authJson({ message: "Logged out.", next: "/auth" });
+  const response = authJson({ message: "Logged out.", next: "/" });
   clearSessionStartedCookie(response);
   return response;
 }

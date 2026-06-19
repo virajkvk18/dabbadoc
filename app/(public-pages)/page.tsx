@@ -245,23 +245,21 @@ function HeroShowcase() {
                 return (
                   <div
                     key={item.label}
-                    className="interactive-surface rounded-2xl border border-white/10 bg-white/5 p-4"
+                    className="interactive-surface flex min-h-[178px] flex-col rounded-2xl border border-white/10 bg-white/5 p-3"
                   >
-                    <div className="flex items-start gap-3">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-label text-muted-foreground">
-                          {item.label}
-                        </p>
-                        <p className="mt-1 truncate text-lg font-black text-white">
-                          {item.value}
-                        </p>
-                        <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                          {item.detail}
-                        </p>
-                      </div>
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/15 bg-primary/15 text-primary">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <div className="mt-3 min-w-0">
+                      <p className="text-[10px] font-bold uppercase leading-4 tracking-wide text-muted-foreground">
+                        {item.label}
+                      </p>
+                      <p className="mt-1 break-words text-base font-black leading-6 text-white">
+                        {item.value}
+                      </p>
+                      <p className="mt-1.5 break-words text-xs leading-5 text-muted-foreground">
+                        {item.detail}
+                      </p>
                     </div>
                   </div>
                 );

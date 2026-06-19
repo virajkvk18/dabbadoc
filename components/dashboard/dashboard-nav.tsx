@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import {
   BadgeCheck,
@@ -60,7 +60,6 @@ const mobileLinks: MobileNavLinkItem[] = [
 
 export function DashboardNav({ className }: { className?: string }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [pendingHref, setPendingHref] = useState<string | null>(null);
 
   useEffect(() => {
@@ -68,10 +67,9 @@ export function DashboardNav({ className }: { className?: string }) {
   }, [pathname]);
 
   async function logout() {
-    setPendingHref("/auth");
+    setPendingHref("/");
     await fetch("/api/auth/logout", { method: "POST" });
-    router.replace("/auth");
-    router.refresh();
+    window.location.replace("/");
   }
 
   function NavLink({ link }: { link: NavLinkItem }) {
