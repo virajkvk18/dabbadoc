@@ -2,6 +2,7 @@ import "server-only";
 
 import { slugify } from "@/lib/utils";
 import { ApiError } from "@/lib/security/api-errors";
+import { uploadImageToCloudinary } from "@/lib/cloudinary/storage";
 import { createSupabaseAdmin } from "./admin";
 
 export const BUCKET_NAME = "dabbadoc-uploads";
@@ -14,6 +15,15 @@ export async function uploadToStorage(params: {
 }) {
   if (!params.userId) {
     throw new ApiError("Authenticated user is required.", 401);
+  }
+
+  if (params.mimeType.startsWith("image/")) {
+    try {
+      const cloudinaryUpload = await uploadImageToCloudinary(params);
+      if (cloudinaryUpload) return cloudinaryUpload;
+    } catch {
+      // Fall back to Supabase Storage so scans still work if Cloudinary is temporarily unavailable.
+    }
   }
 
   const supabase = createSupabaseAdmin();

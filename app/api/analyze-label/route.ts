@@ -16,7 +16,7 @@ import {
 } from "@/lib/security/abuse-protection";
 import { getHealthContextForUser } from "@/lib/supabase/health-profile";
 import { saveLabelAnalysis, saveUploadRecord } from "@/lib/supabase/mutations";
-import { uploadToStorage } from "@/lib/supabase/storage";
+import { downloadFromStorage, uploadToStorage } from "@/lib/supabase/storage";
 import { toDataUri } from "@/lib/utils";
 import { labelAnalyzeSchema } from "@/lib/validators/api";
 
@@ -72,11 +72,18 @@ export async function POST(request: NextRequest) {
         mimeType,
         buffer
       });
-      fileUrl = upload.path;
+      fileUrl = upload.fileUrl ?? upload.path;
     } else if (typeof storagePath === "string" && storagePath.startsWith(`${user.id}/`)) {
-      fileUrl = storagePath;
       fileName = String(formData.get("fileName") || "stored-label.jpg");
       mimeType = String(formData.get("mimeType") || "image/jpeg");
+      const buffer = await downloadFromStorage(storagePath);
+      const upload = await uploadToStorage({
+        userId: user.id,
+        fileName,
+        mimeType,
+        buffer
+      });
+      fileUrl = upload.fileUrl ?? storagePath;
     } else if (typeof storagePath === "string") {
       throw new ApiError("Stored image path is not allowed for this account.", 403);
     }

@@ -73,6 +73,7 @@ export function detectReceiptType(rawText: string): ReceiptType {
   if (restaurantScore >= 3) return "restaurant_bill";
   if (labelScore >= 3 && restaurantScore < 2) return "packaged_food_label";
   if (groceryScore >= 2) return "grocery_receipt";
+  if (restaurantScore >= 2 && groceryScore === 0 && labelScore < 2) return "restaurant_bill";
   if (restaurantScore >= 2 && /bill|total|amount|tax/.test(text)) return "restaurant_bill";
 
   return "unknown";

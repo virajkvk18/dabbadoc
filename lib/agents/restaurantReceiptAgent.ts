@@ -61,13 +61,41 @@ const vegetableSoupWords = [
 
 const sectionHeaders = new Set([
   "starters",
+  "starter",
   "soups",
+  "soup",
   "main course",
   "breads",
+  "bread",
   "rice biryani",
+  "rice and biryani",
+  "rice & biryani",
   "desserts",
+  "dessert",
   "beverages"
 ]);
+
+const restaurantFoodWords = [
+  ...proteinWords,
+  ...highRiskWords,
+  ...friedWords,
+  ...butterCreamWords,
+  ...refinedCarbWords,
+  ...dessertWords,
+  ...sugaryDrinkWords,
+  ...vegetableSoupWords,
+  "kebab",
+  "tikka",
+  "roll",
+  "manchow",
+  "tomato soup",
+  "masala",
+  "kadai",
+  "roti",
+  "chaas",
+  "lime",
+  "water"
+];
 
 function normalize(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -92,36 +120,98 @@ function classifyCategory(name: string) {
 
 function parseNumber(value?: string) {
   if (!value) return undefined;
-  const parsed = Number(value.replace(",", "."));
+  const parsed = Number(value.replace(/,/g, ""));
   return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function isNoiseLine(line: string) {
+  return /\b(sr|item|qty|rate|amount|subtotal|discount|taxable|grand total|payment|upi|gstin|phone|bill no|date|time|thank you|visit again|plot no|server|guests|table no|cgst|sgst|service charge|address|koramangala|bengaluru|bangalore|karnataka|transaction|amount paid|payment mode|restaurant|dine in)\b/i.test(line);
+}
+
+function parseStrictRestaurantLine(line: string) {
+  const match = line.match(/^(?:\d+[\).]?\s+)?([A-Za-z][A-Za-z0-9 &()/-]*?)\s+(\d+)\s+\d+(?:\.\d{1,2})?\s+(\d+(?:\.\d{1,2})?)$/);
+  if (!match) return null;
+
+  return {
+    name: match[1].replace(/\s+/g, " ").trim(),
+    quantity: parseNumber(match[2]) ?? 1,
+    amount: parseNumber(match[3])
+  };
+}
+
+function parseLooseRestaurantLine(line: string, insideMenuSection: boolean) {
+  const withoutSerial = line.replace(/^\s*\d+[\).]?\s+/, "").replace(/\s+/g, " ").trim();
+  if (!withoutSerial || isNoiseLine(withoutSerial)) return null;
+
+  const normalized = normalize(withoutSerial);
+  const hasFoodSignal = hasAny(normalized, restaurantFoodWords);
+  if (!insideMenuSection && !hasFoodSignal) return null;
+
+  const numericValues = withoutSerial.match(/\b\d+(?:,\d{3})*(?:\.\d{1,2})?\b/g) ?? [];
+  const name = withoutSerial
+    .replace(/\s+\d+(?:,\d{3})*(?:\.\d{1,2})?(?:\s+\d+(?:,\d{3})*(?:\.\d{1,2})?){0,3}\s*$/, "")
+    .replace(/\s+x\d+\b/gi, " ")
+    .replace(/\b(?:rs\.?|inr|qty|rate|amount|amt)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (name.length < 3 || !/[a-zA-Z]/.test(name)) return null;
+  if (!hasAny(normalize(name), restaurantFoodWords) && !insideMenuSection) return null;
+
+  const quantity = numericValues.length >= 3 ? parseNumber(numericValues[0]) ?? 1 : 1;
+  const amount = numericValues.length ? parseNumber(numericValues[numericValues.length - 1]) : undefined;
+
+  return { name, quantity, amount };
+}
+
+function dedupeRestaurantItems(items: Array<{ name: string; quantity: number; amount?: number }>) {
+  const seen = new Set<string>();
+  const deduped: Array<{ name: string; quantity: number; amount?: number }> = [];
+  for (const item of items) {
+    const key = normalize(item.name);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(item);
+  }
+  return deduped;
 }
 
 export function parseRestaurantBillItems(rawText: string) {
   const items: Array<{ name: string; quantity: number; amount?: number }> = [];
+  let insideMenuSection = false;
 
   for (const rawLine of rawText.split(/\r?\n/)) {
     const line = rawLine.trim();
     if (!line || /^[-=]+$/.test(line)) continue;
 
     const cleanedHeader = normalize(line);
-    if (sectionHeaders.has(cleanedHeader)) continue;
-    if (
-      /\b(sr|item|qty|rate|amount|subtotal|discount|taxable|grand total|payment|upi|gstin|phone|bill no|date|time|thank you|visit again|plot no|server|guests|table no|cgst|sgst|service charge)\b/i.test(line)
-    ) {
+    if (sectionHeaders.has(cleanedHeader)) {
+      insideMenuSection = true;
       continue;
     }
+    if (/\b(subtotal|discount|taxable|grand total|payment|thank you)\b/i.test(line)) {
+      insideMenuSection = false;
+    }
+    if (isNoiseLine(line)) continue;
 
-    const match = line.match(/^(?:\d+\s+)?([A-Za-z][A-Za-z &()/-]*?)\s+(\d+)\s+\d+(?:\.\d{1,2})?\s+(\d+(?:\.\d{1,2})?)$/);
-    if (!match) continue;
-
-    const name = match[1].replace(/\s+/g, " ").trim();
-    const quantity = parseNumber(match[2]) ?? 1;
-    const amount = parseNumber(match[3]);
-    if (name.length < 3) continue;
-    items.push({ name, quantity, amount });
+    const item = parseStrictRestaurantLine(line) ?? parseLooseRestaurantLine(line, insideMenuSection);
+    if (!item || item.name.length < 3) continue;
+    items.push(item);
   }
 
-  return items;
+  return dedupeRestaurantItems(items);
+}
+
+export function restaurantItemTextForAnalysis(rawText: string) {
+  const items = parseRestaurantBillItems(rawText);
+  if (items.length === 0) return rawText;
+
+  return items
+    .map((item, index) => {
+      const amount = typeof item.amount === "number" ? ` ${item.amount.toFixed(2)}` : "";
+      return `${index + 1}. ${item.name} x${item.quantity}${amount}`;
+    })
+    .join("\n");
 }
 
 function insightForItem(item: { name: string; quantity: number; amount?: number }): FoodItemInsight {
@@ -313,11 +403,12 @@ function foodItemsFromInsights(items: FoodItemInsight[]): FoodItem[] {
 export function analyzeRestaurantReceipt(rawText: string): ReceiptAnalysis {
   const parsedItems = parseRestaurantBillItems(rawText);
   const itemBreakdown = parsedItems.map(insightForItem);
+  const focusedText = parsedItems.length ? restaurantItemTextForAnalysis(rawText) : rawText;
 
   if (itemBreakdown.length === 0) {
     return {
       receiptType: "restaurant_bill",
-      extractedText: rawText,
+      extractedText: focusedText,
       detectedItems: [],
       riskFlags: [],
       healthScore: 50,
@@ -398,7 +489,7 @@ export function analyzeRestaurantReceipt(rawText: string): ReceiptAnalysis {
 
   return {
     receiptType: "restaurant_bill",
-    extractedText: rawText,
+    extractedText: focusedText,
     detectedItems,
     riskFlags,
     futureHealthRisks: [],
