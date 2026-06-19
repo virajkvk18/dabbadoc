@@ -8,7 +8,7 @@ export function SiteFooter() {
         <div>
           <DabbaDocLogo href="/" size="sm" />
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
-            Food health intelligence for Indian families. Scan before you eat.
+            Food health intelligence for Indian families. Label Padhega India.
           </p>
         </div>
         <Disclaimer />

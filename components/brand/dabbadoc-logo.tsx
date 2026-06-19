@@ -45,7 +45,7 @@ export function DabbaDocLogo({
             Dabba<span className="text-primary">Doc</span>
           </span>
           <span className="mt-1 hidden text-[10px] font-semibold uppercase tracking-[0.22em] text-orange-200 sm:block">
-            Scan Before You Eat
+            Label Padhega India
           </span>
         </span>
       ) : null}
