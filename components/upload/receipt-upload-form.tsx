@@ -367,6 +367,68 @@ export function ReceiptUploadForm() {
               </CardContent>
             </Card>
           </div>
+          {analysis.receiptType === "restaurant_bill" ? (
+            <Card className="glass-panel border-primary/25">
+              <CardHeader>
+                <CardTitle>Restaurant meal intelligence</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm leading-6 text-muted-foreground">
+                  {analysis.mealBalanceSummary}
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                    <p className="text-sm text-muted-foreground">Protein score</p>
+                    <p className="mt-2 text-2xl font-black text-primary">
+                      {analysis.proteinScore ?? 0}/100
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                    <p className="text-sm text-muted-foreground">Risk level</p>
+                    <p className="mt-2 text-2xl font-black capitalize text-white">
+                      {analysis.riskLevel ?? "medium"}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                    <p className="text-sm text-muted-foreground">Inferred calories</p>
+                    <p className="mt-2 text-2xl font-black capitalize text-white">
+                      {analysis.nutritionInference?.estimatedCaloriesLevel ?? "unknown"}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-xl border border-primary/20 bg-primary/10 p-4">
+                    <p className="font-bold text-primary">What was good</p>
+                    <ul className="mt-3 space-y-2 text-sm leading-6 text-muted-foreground">
+                      {(analysis.positives ?? []).map((positive) => (
+                        <li key={positive}>{positive}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="rounded-xl border border-orange-300/20 bg-orange-500/10 p-4">
+                    <p className="font-bold text-orange-100">What to watch</p>
+                    <ul className="mt-3 space-y-2 text-sm leading-6 text-muted-foreground">
+                      {(analysis.concerns ?? []).map((concern) => (
+                        <li key={concern}>{concern}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                {(analysis.suggestions ?? []).length > 0 ? (
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                    <p className="font-bold text-white">Next order suggestions</p>
+                    <div className="mt-3 grid gap-2 md:grid-cols-2">
+                      {(analysis.suggestions ?? []).map((suggestion) => (
+                        <p key={suggestion} className="rounded-lg bg-black/20 p-3 text-sm leading-6 text-muted-foreground">
+                          {suggestion}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
           <ReceiptCoverage coverage={analysis.coverageSummary} />
           <ExtractedReceiptText text={analysis.extractedText} />
           <DetectedItems items={analysis.detectedItems} />
