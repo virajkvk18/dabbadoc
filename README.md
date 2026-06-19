@@ -159,7 +159,7 @@ Where to add each key:
 7. Gemini API key is server-only and powers receipt, label, and food diary AI analysis.
 8. Groq API key is optional and is used as an AI fallback if Gemini is not configured or fails. Keep it as server-only `GROQ_API_KEY`.
 9. `DABBA_AGENT_URL` and `DABBA_AGENT_TOKEN` connect the Next.js backend to the optional secured Python Dabba Agent service in `services/dabba-agent`. Keep the token server-only.
-10. Cloudinary keys are optional if you choose Cloudinary instead of Supabase Storage for images.
+10. Cloudinary keys are optional and make receipt/label images upload to Cloudinary first. If they are missing or Cloudinary fails, the app falls back to Supabase Storage.
 11. Razorpay key ID, secret, and webhook secret power premium plan payments.
 12. `EXPRESS_API_PORT`, `EXPRESS_CORS_ORIGINS`, and `DABBADOC_APP_URL` configure the optional Node.js/Express backend.
 13. Never expose secret keys on the frontend. Only `NEXT_PUBLIC_*` values are browser-visible.
