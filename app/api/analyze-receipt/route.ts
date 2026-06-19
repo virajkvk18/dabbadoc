@@ -107,7 +107,10 @@ export async function POST(request: NextRequest) {
       healthContext: healthContext.context
     };
     const extractedText = await extractReceiptText(agentInput);
-    const receiptType = detectReceiptType(extractedText);
+    const receiptType =
+      parsed.sourceType === "food_delivery"
+        ? "restaurant_bill"
+        : detectReceiptType(extractedText);
     const analysis =
       receiptType === "restaurant_bill"
         ? await runReceiptGraph({

@@ -27,7 +27,10 @@ import {
 import { updateHealthIndex } from "./healthIndexAgent";
 import { analyzeRisks } from "./riskAnalyzerAgent";
 import { recommendSwaps } from "./swapRecommenderAgent";
-import { analyzeRestaurantReceipt } from "./restaurantReceiptAgent";
+import {
+  analyzeRestaurantReceipt,
+  restaurantItemTextForAnalysis
+} from "./restaurantReceiptAgent";
 import { detectReceiptType } from "./receiptType";
 
 const sampleReceiptText = `
@@ -182,6 +185,12 @@ export async function extractReceiptText(input: AgentInput) {
   throw new ReceiptExtractionError(
     "Could not read this receipt clearly. Please upload a sharper image, crop only the bill area, or use live capture in better light."
   );
+}
+
+export function receiptTextForAnalysis(rawText: string) {
+  return detectReceiptType(rawText) === "restaurant_bill"
+    ? restaurantItemTextForAnalysis(rawText)
+    : rawText;
 }
 
 export async function analyzeReceipt(input: AgentInput): Promise<ReceiptAnalysis> {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import {
   extractReceiptText,
+  receiptTextForAnalysis,
   ReceiptExtractionError
 } from "@/lib/agents/receiptScanAgent";
 import { detectReceiptType } from "@/lib/agents/receiptType";
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({
-      extractedText,
+      extractedText: receiptTextForAnalysis(extractedText),
       receiptType: detectReceiptType(extractedText)
     });
   } catch (error) {
