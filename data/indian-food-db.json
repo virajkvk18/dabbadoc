@@ -1,146 +1,2338 @@
 [
   {
     "name": "Maggi",
-    "aliases": ["maggi", "instant noodles", "noodles"],
+    "aliases": [
+      "maggi",
+      "instant noodles",
+      "noodles"
+    ],
     "category": "processed",
-    "riskTags": ["high_sodium", "processed", "low_protein"],
+    "riskTags": [
+      "high_sodium",
+      "processed",
+      "low_protein"
+    ],
     "calories": 360,
     "protein": 8,
     "monthlyCost": 720
   },
   {
     "name": "Cola",
-    "aliases": ["cola", "coke", "pepsi", "soft drink"],
+    "aliases": [
+      "cola",
+      "coke",
+      "pepsi",
+      "soft drink"
+    ],
     "category": "sugary_drink",
-    "riskTags": ["high_sugar", "ultra_processed"],
+    "riskTags": [
+      "high_sugar",
+      "ultra_processed"
+    ],
     "calories": 140,
     "protein": 0,
     "monthlyCost": 1200
   },
   {
     "name": "Chips",
-    "aliases": ["chips", "lays", "kurkure", "nachos"],
+    "aliases": [
+      "chips",
+      "lays",
+      "kurkure",
+      "nachos"
+    ],
     "category": "packaged_snack",
-    "riskTags": ["high_sodium", "fried", "processed"],
+    "riskTags": [
+      "high_sodium",
+      "fried",
+      "processed"
+    ],
     "calories": 250,
     "protein": 3,
     "monthlyCost": 900
   },
   {
     "name": "Fried snacks",
-    "aliases": ["samosa", "kachori", "pakora", "vada", "fries"],
+    "aliases": [
+      "samosa",
+      "kachori",
+      "pakora",
+      "vada",
+      "fries"
+    ],
     "category": "fried",
-    "riskTags": ["fried", "refined_flour", "high_fat"],
+    "riskTags": [
+      "fried",
+      "refined_flour",
+      "high_fat"
+    ],
     "calories": 300,
     "protein": 6,
     "monthlyCost": 1000
   },
   {
     "name": "Biscuits",
-    "aliases": ["biscuit", "cookies", "cream biscuit"],
+    "aliases": [
+      "biscuit",
+      "cookies",
+      "cream biscuit"
+    ],
     "category": "packaged_snack",
-    "riskTags": ["added_sugar", "maida", "palm_oil"],
+    "riskTags": [
+      "added_sugar",
+      "maida",
+      "palm_oil"
+    ],
     "calories": 180,
     "protein": 2,
     "monthlyCost": 650
   },
   {
     "name": "Sugary cereal",
-    "aliases": ["cereal", "chocos", "corn flakes"],
+    "aliases": [
+      "cereal",
+      "chocos",
+      "corn flakes"
+    ],
     "category": "breakfast",
-    "riskTags": ["added_sugar", "processed"],
+    "riskTags": [
+      "added_sugar",
+      "processed"
+    ],
     "calories": 220,
     "protein": 5,
     "monthlyCost": 1100
   },
   {
     "name": "Poha",
-    "aliases": ["poha"],
+    "aliases": [
+      "poha"
+    ],
     "category": "whole_food",
-    "riskTags": ["balanced"],
+    "riskTags": [
+      "balanced"
+    ],
     "calories": 230,
     "protein": 6,
     "monthlyCost": 500
   },
   {
     "name": "Dal chawal",
-    "aliases": ["dal chawal", "dal rice", "dal"],
+    "aliases": [
+      "dal chawal",
+      "dal rice",
+      "dal"
+    ],
     "category": "home_meal",
-    "riskTags": ["protein", "whole_food"],
+    "riskTags": [
+      "protein",
+      "whole_food"
+    ],
     "calories": 420,
     "protein": 16,
     "monthlyCost": 900
   },
   {
     "name": "Roti sabzi",
-    "aliases": ["roti sabzi", "roti", "sabzi", "chapati"],
+    "aliases": [
+      "roti sabzi",
+      "roti",
+      "sabzi",
+      "chapati"
+    ],
     "category": "home_meal",
-    "riskTags": ["whole_food", "vegetable"],
+    "riskTags": [
+      "whole_food",
+      "vegetable"
+    ],
     "calories": 360,
     "protein": 11,
     "monthlyCost": 800
   },
   {
     "name": "Paneer",
-    "aliases": ["paneer", "paneer salad", "paneer bhurji"],
+    "aliases": [
+      "paneer",
+      "paneer salad",
+      "paneer bhurji"
+    ],
     "category": "protein",
-    "riskTags": ["protein"],
+    "riskTags": [
+      "protein"
+    ],
     "calories": 280,
     "protein": 18,
     "monthlyCost": 1500
   },
   {
     "name": "Sprouts",
-    "aliases": ["sprouts", "sprout chaat", "moong sprouts"],
+    "aliases": [
+      "sprouts",
+      "sprout chaat",
+      "moong sprouts"
+    ],
     "category": "protein",
-    "riskTags": ["protein", "fiber", "whole_food"],
+    "riskTags": [
+      "protein",
+      "fiber",
+      "whole_food"
+    ],
     "calories": 160,
     "protein": 12,
     "monthlyCost": 550
   },
   {
     "name": "Makhana",
-    "aliases": ["makhana", "roasted makhana"],
+    "aliases": [
+      "makhana",
+      "roasted makhana"
+    ],
     "category": "healthy_snack",
-    "riskTags": ["whole_food"],
+    "riskTags": [
+      "whole_food"
+    ],
     "calories": 120,
     "protein": 4,
     "monthlyCost": 700
   },
   {
     "name": "Pasta",
-    "aliases": ["pasta", "white sauce pasta", "red sauce pasta"],
+    "aliases": [
+      "pasta",
+      "white sauce pasta",
+      "red sauce pasta"
+    ],
     "category": "outside_food",
-    "riskTags": ["refined_flour", "processed", "low_protein"],
+    "riskTags": [
+      "refined_flour",
+      "processed",
+      "low_protein"
+    ],
     "calories": 420,
     "protein": 11,
     "monthlyCost": 1300
   },
   {
     "name": "Momos",
-    "aliases": ["momos", "momo", "dumplings"],
+    "aliases": [
+      "momos",
+      "momo",
+      "dumplings"
+    ],
     "category": "outside_food",
-    "riskTags": ["refined_flour", "high_sodium", "processed"],
+    "riskTags": [
+      "refined_flour",
+      "high_sodium",
+      "processed"
+    ],
     "calories": 360,
     "protein": 12,
     "monthlyCost": 1100
   },
   {
     "name": "Biryani",
-    "aliases": ["biryani", "chicken biryani", "veg biryani", "mutton biryani", "paneer biryani"],
+    "aliases": [
+      "biryani",
+      "chicken biryani",
+      "veg biryani",
+      "mutton biryani",
+      "paneer biryani"
+    ],
     "category": "outside_food",
-    "riskTags": ["high_sodium", "high_fat"],
+    "riskTags": [
+      "high_sodium",
+      "high_fat"
+    ],
     "calories": 520,
     "protein": 18,
     "monthlyCost": 1600
   },
   {
     "name": "Butter naan",
-    "aliases": ["butter naan", "naan", "nan", "garlic naan", "plain naan", "tandoori naan"],
+    "aliases": [
+      "butter naan",
+      "naan",
+      "nan",
+      "garlic naan",
+      "plain naan",
+      "tandoori naan"
+    ],
     "category": "outside_food",
-    "riskTags": ["refined_flour", "high_fat"],
+    "riskTags": [
+      "refined_flour",
+      "high_fat"
+    ],
     "calories": 310,
     "protein": 8,
     "monthlyCost": 900
+  },
+  {
+    "name": "Idli sambar",
+    "aliases": [
+      "idli",
+      "idli sambar",
+      "idly",
+      "sambar idli"
+    ],
+    "category": "breakfast",
+    "riskTags": [
+      "balanced",
+      "fermented",
+      "whole_food"
+    ],
+    "calories": 260,
+    "protein": 10,
+    "monthlyCost": 650
+  },
+  {
+    "name": "Plain dosa",
+    "aliases": [
+      "dosa",
+      "plain dosa",
+      "sada dosa"
+    ],
+    "category": "breakfast",
+    "riskTags": [
+      "balanced",
+      "fermented"
+    ],
+    "calories": 290,
+    "protein": 8,
+    "monthlyCost": 700
+  },
+  {
+    "name": "Masala dosa",
+    "aliases": [
+      "masala dosa",
+      "dosa masala"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "high_carbohydrate",
+      "high_fat"
+    ],
+    "calories": 430,
+    "protein": 10,
+    "monthlyCost": 1100
+  },
+  {
+    "name": "Rava dosa",
+    "aliases": [
+      "rava dosa",
+      "suji dosa"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "refined_flour",
+      "high_carbohydrate"
+    ],
+    "calories": 360,
+    "protein": 8,
+    "monthlyCost": 1000
+  },
+  {
+    "name": "Uttapam",
+    "aliases": [
+      "uttapam",
+      "uttappa",
+      "vegetable uttapam"
+    ],
+    "category": "breakfast",
+    "riskTags": [
+      "balanced",
+      "fermented",
+      "vegetable"
+    ],
+    "calories": 330,
+    "protein": 10,
+    "monthlyCost": 850
+  },
+  {
+    "name": "Upma",
+    "aliases": [
+      "upma",
+      "rava upma",
+      "suji upma"
+    ],
+    "category": "breakfast",
+    "riskTags": [
+      "balanced"
+    ],
+    "calories": 250,
+    "protein": 7,
+    "monthlyCost": 450
+  },
+  {
+    "name": "Oats upma",
+    "aliases": [
+      "oats upma",
+      "masala oats upma"
+    ],
+    "category": "breakfast",
+    "riskTags": [
+      "fiber",
+      "whole_food"
+    ],
+    "calories": 240,
+    "protein": 9,
+    "monthlyCost": 520
+  },
+  {
+    "name": "Dalia",
+    "aliases": [
+      "dalia",
+      "broken wheat",
+      "daliya"
+    ],
+    "category": "breakfast",
+    "riskTags": [
+      "fiber",
+      "whole_food"
+    ],
+    "calories": 220,
+    "protein": 8,
+    "monthlyCost": 420
+  },
+  {
+    "name": "Besan chilla",
+    "aliases": [
+      "besan chilla",
+      "chilla",
+      "cheela",
+      "gram flour pancake"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein",
+      "fiber",
+      "whole_food"
+    ],
+    "calories": 260,
+    "protein": 14,
+    "monthlyCost": 480
+  },
+  {
+    "name": "Moong dal chilla",
+    "aliases": [
+      "moong chilla",
+      "moong dal chilla",
+      "dal chilla"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein",
+      "fiber",
+      "whole_food"
+    ],
+    "calories": 240,
+    "protein": 15,
+    "monthlyCost": 520
+  },
+  {
+    "name": "Aloo paratha",
+    "aliases": [
+      "aloo paratha",
+      "potato paratha"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "high_carbohydrate",
+      "high_fat"
+    ],
+    "calories": 420,
+    "protein": 10,
+    "monthlyCost": 850
+  },
+  {
+    "name": "Paneer paratha",
+    "aliases": [
+      "paneer paratha"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein",
+      "high_fat"
+    ],
+    "calories": 430,
+    "protein": 18,
+    "monthlyCost": 1100
+  },
+  {
+    "name": "Bread butter",
+    "aliases": [
+      "bread butter",
+      "toast butter",
+      "butter toast"
+    ],
+    "category": "breakfast",
+    "riskTags": [
+      "refined_flour",
+      "high_fat",
+      "low_protein"
+    ],
+    "calories": 270,
+    "protein": 6,
+    "monthlyCost": 700
+  },
+  {
+    "name": "Bread omelette",
+    "aliases": [
+      "bread omelette",
+      "omelette bread",
+      "egg bread"
+    ],
+    "category": "breakfast",
+    "riskTags": [
+      "protein",
+      "refined_flour"
+    ],
+    "calories": 360,
+    "protein": 18,
+    "monthlyCost": 850
+  },
+  {
+    "name": "Egg bhurji",
+    "aliases": [
+      "egg bhurji",
+      "anda bhurji",
+      "bhurji"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein"
+    ],
+    "calories": 240,
+    "protein": 18,
+    "monthlyCost": 900
+  },
+  {
+    "name": "Boiled eggs",
+    "aliases": [
+      "boiled egg",
+      "boiled eggs",
+      "egg"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein"
+    ],
+    "calories": 155,
+    "protein": 13,
+    "monthlyCost": 700
+  },
+  {
+    "name": "Peanut butter sandwich",
+    "aliases": [
+      "peanut butter sandwich",
+      "pb sandwich"
+    ],
+    "category": "breakfast",
+    "riskTags": [
+      "protein",
+      "high_calorie"
+    ],
+    "calories": 390,
+    "protein": 14,
+    "monthlyCost": 1200
+  },
+  {
+    "name": "Corn flakes",
+    "aliases": [
+      "corn flakes",
+      "cornflakes"
+    ],
+    "category": "breakfast",
+    "riskTags": [
+      "processed",
+      "added_sugar",
+      "low_protein"
+    ],
+    "calories": 240,
+    "protein": 6,
+    "monthlyCost": 950
+  },
+  {
+    "name": "Chocos",
+    "aliases": [
+      "chocos",
+      "chocolate cereal",
+      "kids cereal"
+    ],
+    "category": "breakfast",
+    "riskTags": [
+      "high_sugar",
+      "processed",
+      "low_protein"
+    ],
+    "calories": 260,
+    "protein": 5,
+    "monthlyCost": 1200
+  },
+  {
+    "name": "Milk tea",
+    "aliases": [
+      "tea",
+      "chai",
+      "milk tea",
+      "masala chai"
+    ],
+    "category": "drink",
+    "riskTags": [
+      "added_sugar"
+    ],
+    "calories": 110,
+    "protein": 3,
+    "monthlyCost": 450
+  },
+  {
+    "name": "Black tea",
+    "aliases": [
+      "black tea",
+      "lemon tea"
+    ],
+    "category": "drink",
+    "riskTags": [
+      "low_calorie"
+    ],
+    "calories": 20,
+    "protein": 0,
+    "monthlyCost": 250
+  },
+  {
+    "name": "Coffee with sugar",
+    "aliases": [
+      "coffee",
+      "milk coffee",
+      "sweet coffee"
+    ],
+    "category": "drink",
+    "riskTags": [
+      "added_sugar"
+    ],
+    "calories": 130,
+    "protein": 4,
+    "monthlyCost": 650
+  },
+  {
+    "name": "Protein oats",
+    "aliases": [
+      "protein oats",
+      "oats protein",
+      "overnight oats"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein",
+      "fiber"
+    ],
+    "calories": 330,
+    "protein": 22,
+    "monthlyCost": 1400
+  },
+  {
+    "name": "Curd bowl",
+    "aliases": [
+      "curd bowl",
+      "dahi bowl",
+      "curd rice bowl"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "protein",
+      "fermented"
+    ],
+    "calories": 260,
+    "protein": 12,
+    "monthlyCost": 650
+  },
+  {
+    "name": "Fruit bowl",
+    "aliases": [
+      "fruit bowl",
+      "mixed fruits",
+      "fruit salad"
+    ],
+    "category": "fruit",
+    "riskTags": [
+      "fiber",
+      "whole_food"
+    ],
+    "calories": 180,
+    "protein": 3,
+    "monthlyCost": 900
+  },
+  {
+    "name": "Banana",
+    "aliases": [
+      "banana",
+      "kela"
+    ],
+    "category": "fruit",
+    "riskTags": [
+      "whole_food"
+    ],
+    "calories": 105,
+    "protein": 1,
+    "monthlyCost": 350
+  },
+  {
+    "name": "Apple",
+    "aliases": [
+      "apple",
+      "seb"
+    ],
+    "category": "fruit",
+    "riskTags": [
+      "fiber",
+      "whole_food"
+    ],
+    "calories": 95,
+    "protein": 0,
+    "monthlyCost": 900
+  },
+  {
+    "name": "Papaya",
+    "aliases": [
+      "papaya",
+      "papita"
+    ],
+    "category": "fruit",
+    "riskTags": [
+      "fiber",
+      "whole_food"
+    ],
+    "calories": 80,
+    "protein": 1,
+    "monthlyCost": 500
+  },
+  {
+    "name": "Guava",
+    "aliases": [
+      "guava",
+      "amrood"
+    ],
+    "category": "fruit",
+    "riskTags": [
+      "fiber",
+      "whole_food"
+    ],
+    "calories": 90,
+    "protein": 3,
+    "monthlyCost": 450
+  },
+  {
+    "name": "Rajma chawal",
+    "aliases": [
+      "rajma chawal",
+      "rajma rice",
+      "rajma"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "protein",
+      "fiber",
+      "whole_food"
+    ],
+    "calories": 480,
+    "protein": 18,
+    "monthlyCost": 950
+  },
+  {
+    "name": "Chole chawal",
+    "aliases": [
+      "chole chawal",
+      "chole rice",
+      "chana rice",
+      "chole"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "protein",
+      "fiber",
+      "whole_food"
+    ],
+    "calories": 500,
+    "protein": 19,
+    "monthlyCost": 950
+  },
+  {
+    "name": "Khichdi",
+    "aliases": [
+      "khichdi",
+      "dal khichdi",
+      "moong dal khichdi"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "balanced",
+      "whole_food"
+    ],
+    "calories": 360,
+    "protein": 13,
+    "monthlyCost": 650
+  },
+  {
+    "name": "Curd rice",
+    "aliases": [
+      "curd rice",
+      "dahi chawal"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "fermented",
+      "balanced"
+    ],
+    "calories": 330,
+    "protein": 10,
+    "monthlyCost": 600
+  },
+  {
+    "name": "Sambar rice",
+    "aliases": [
+      "sambar rice",
+      "sambhar rice"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "balanced",
+      "vegetable"
+    ],
+    "calories": 390,
+    "protein": 13,
+    "monthlyCost": 700
+  },
+  {
+    "name": "Vegetable pulao",
+    "aliases": [
+      "veg pulao",
+      "vegetable pulao",
+      "pulao"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "vegetable",
+      "balanced"
+    ],
+    "calories": 420,
+    "protein": 10,
+    "monthlyCost": 850
+  },
+  {
+    "name": "Plain rice",
+    "aliases": [
+      "rice",
+      "white rice",
+      "plain rice",
+      "chawal"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "high_carbohydrate",
+      "low_protein"
+    ],
+    "calories": 260,
+    "protein": 5,
+    "monthlyCost": 450
+  },
+  {
+    "name": "Brown rice",
+    "aliases": [
+      "brown rice"
+    ],
+    "category": "whole_food",
+    "riskTags": [
+      "fiber",
+      "whole_food"
+    ],
+    "calories": 250,
+    "protein": 6,
+    "monthlyCost": 800
+  },
+  {
+    "name": "Millet roti",
+    "aliases": [
+      "millet roti",
+      "bajra roti",
+      "jowar roti",
+      "ragi roti"
+    ],
+    "category": "whole_food",
+    "riskTags": [
+      "fiber",
+      "whole_food"
+    ],
+    "calories": 210,
+    "protein": 6,
+    "monthlyCost": 650
+  },
+  {
+    "name": "Wheat roti",
+    "aliases": [
+      "wheat roti",
+      "phulka",
+      "chapati"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "whole_food"
+    ],
+    "calories": 120,
+    "protein": 4,
+    "monthlyCost": 400
+  },
+  {
+    "name": "Mixed veg sabzi",
+    "aliases": [
+      "mixed veg",
+      "vegetable sabzi",
+      "mix veg sabzi"
+    ],
+    "category": "vegetable",
+    "riskTags": [
+      "vegetable",
+      "fiber"
+    ],
+    "calories": 180,
+    "protein": 5,
+    "monthlyCost": 700
+  },
+  {
+    "name": "Bhindi sabzi",
+    "aliases": [
+      "bhindi",
+      "bhindi sabzi",
+      "okra"
+    ],
+    "category": "vegetable",
+    "riskTags": [
+      "vegetable",
+      "fiber"
+    ],
+    "calories": 170,
+    "protein": 4,
+    "monthlyCost": 650
+  },
+  {
+    "name": "Aloo sabzi",
+    "aliases": [
+      "aloo sabzi",
+      "potato sabzi"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "high_carbohydrate"
+    ],
+    "calories": 230,
+    "protein": 4,
+    "monthlyCost": 550
+  },
+  {
+    "name": "Palak paneer",
+    "aliases": [
+      "palak paneer"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein",
+      "vegetable",
+      "high_fat"
+    ],
+    "calories": 360,
+    "protein": 20,
+    "monthlyCost": 1400
+  },
+  {
+    "name": "Paneer bhurji",
+    "aliases": [
+      "paneer bhurji"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein"
+    ],
+    "calories": 330,
+    "protein": 22,
+    "monthlyCost": 1300
+  },
+  {
+    "name": "Dal tadka",
+    "aliases": [
+      "dal tadka",
+      "dal fry",
+      "yellow dal"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "protein",
+      "high_fat"
+    ],
+    "calories": 300,
+    "protein": 15,
+    "monthlyCost": 850
+  },
+  {
+    "name": "Moong dal",
+    "aliases": [
+      "moong dal",
+      "green gram dal"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "protein",
+      "fiber"
+    ],
+    "calories": 230,
+    "protein": 15,
+    "monthlyCost": 650
+  },
+  {
+    "name": "Chicken curry",
+    "aliases": [
+      "chicken curry",
+      "home chicken curry"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein",
+      "high_fat"
+    ],
+    "calories": 410,
+    "protein": 32,
+    "monthlyCost": 1800
+  },
+  {
+    "name": "Grilled chicken",
+    "aliases": [
+      "grilled chicken",
+      "chicken tikka",
+      "tandoori chicken"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein"
+    ],
+    "calories": 320,
+    "protein": 35,
+    "monthlyCost": 2000
+  },
+  {
+    "name": "Fish curry",
+    "aliases": [
+      "fish curry",
+      "machli curry"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein"
+    ],
+    "calories": 350,
+    "protein": 28,
+    "monthlyCost": 1800
+  },
+  {
+    "name": "Soyabean curry",
+    "aliases": [
+      "soyabean",
+      "soya curry",
+      "soya chunks"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein"
+    ],
+    "calories": 300,
+    "protein": 25,
+    "monthlyCost": 650
+  },
+  {
+    "name": "Roasted chana",
+    "aliases": [
+      "roasted chana",
+      "bhuna chana",
+      "chana"
+    ],
+    "category": "healthy_snack",
+    "riskTags": [
+      "protein",
+      "fiber",
+      "whole_food"
+    ],
+    "calories": 180,
+    "protein": 10,
+    "monthlyCost": 450
+  },
+  {
+    "name": "Peanuts",
+    "aliases": [
+      "peanuts",
+      "moongfali",
+      "roasted peanuts"
+    ],
+    "category": "healthy_snack",
+    "riskTags": [
+      "protein",
+      "high_calorie"
+    ],
+    "calories": 250,
+    "protein": 12,
+    "monthlyCost": 450
+  },
+  {
+    "name": "Sprouts chaat",
+    "aliases": [
+      "sprouts chaat",
+      "sprout salad"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein",
+      "fiber",
+      "whole_food"
+    ],
+    "calories": 180,
+    "protein": 13,
+    "monthlyCost": 550
+  },
+  {
+    "name": "Paneer salad",
+    "aliases": [
+      "paneer salad",
+      "paneer bowl"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein",
+      "vegetable"
+    ],
+    "calories": 280,
+    "protein": 20,
+    "monthlyCost": 1400
+  },
+  {
+    "name": "Cucumber salad",
+    "aliases": [
+      "cucumber salad",
+      "kakdi salad",
+      "salad"
+    ],
+    "category": "vegetable",
+    "riskTags": [
+      "vegetable",
+      "fiber",
+      "low_calorie"
+    ],
+    "calories": 60,
+    "protein": 2,
+    "monthlyCost": 350
+  },
+  {
+    "name": "Makhana roasted",
+    "aliases": [
+      "roasted makhana",
+      "masala makhana"
+    ],
+    "category": "healthy_snack",
+    "riskTags": [
+      "whole_food",
+      "low_calorie"
+    ],
+    "calories": 130,
+    "protein": 4,
+    "monthlyCost": 700
+  },
+  {
+    "name": "Popcorn salted",
+    "aliases": [
+      "popcorn",
+      "salted popcorn"
+    ],
+    "category": "packaged_snack",
+    "riskTags": [
+      "high_sodium",
+      "processed"
+    ],
+    "calories": 180,
+    "protein": 4,
+    "monthlyCost": 550
+  },
+  {
+    "name": "Namkeen",
+    "aliases": [
+      "namkeen",
+      "bhujia",
+      "sev",
+      "mixture"
+    ],
+    "category": "packaged_snack",
+    "riskTags": [
+      "high_sodium",
+      "fried",
+      "processed"
+    ],
+    "calories": 300,
+    "protein": 6,
+    "monthlyCost": 850
+  },
+  {
+    "name": "Chocolate",
+    "aliases": [
+      "chocolate",
+      "dairy milk",
+      "kitkat",
+      "munch"
+    ],
+    "category": "sweet",
+    "riskTags": [
+      "high_sugar",
+      "high_fat",
+      "processed"
+    ],
+    "calories": 240,
+    "protein": 3,
+    "monthlyCost": 900
+  },
+  {
+    "name": "Ice cream",
+    "aliases": [
+      "ice cream",
+      "kulfi",
+      "cone ice cream"
+    ],
+    "category": "dessert",
+    "riskTags": [
+      "high_sugar",
+      "high_fat"
+    ],
+    "calories": 260,
+    "protein": 5,
+    "monthlyCost": 1000
+  },
+  {
+    "name": "Gulab jamun",
+    "aliases": [
+      "gulab jamun"
+    ],
+    "category": "dessert",
+    "riskTags": [
+      "high_sugar",
+      "fried"
+    ],
+    "calories": 320,
+    "protein": 4,
+    "monthlyCost": 800
+  },
+  {
+    "name": "Jalebi",
+    "aliases": [
+      "jalebi"
+    ],
+    "category": "dessert",
+    "riskTags": [
+      "high_sugar",
+      "fried",
+      "refined_flour"
+    ],
+    "calories": 300,
+    "protein": 3,
+    "monthlyCost": 650
+  },
+  {
+    "name": "Rasgulla",
+    "aliases": [
+      "rasgulla",
+      "rosogolla"
+    ],
+    "category": "dessert",
+    "riskTags": [
+      "high_sugar"
+    ],
+    "calories": 180,
+    "protein": 5,
+    "monthlyCost": 700
+  },
+  {
+    "name": "Sweet lassi",
+    "aliases": [
+      "sweet lassi",
+      "lassi"
+    ],
+    "category": "drink",
+    "riskTags": [
+      "added_sugar"
+    ],
+    "calories": 230,
+    "protein": 8,
+    "monthlyCost": 750
+  },
+  {
+    "name": "Chaas",
+    "aliases": [
+      "chaas",
+      "buttermilk",
+      "masala chaas"
+    ],
+    "category": "drink",
+    "riskTags": [
+      "fermented",
+      "low_calorie"
+    ],
+    "calories": 60,
+    "protein": 3,
+    "monthlyCost": 350
+  },
+  {
+    "name": "Nimbu pani",
+    "aliases": [
+      "nimbu pani",
+      "lemon water",
+      "shikanji"
+    ],
+    "category": "drink",
+    "riskTags": [
+      "low_calorie"
+    ],
+    "calories": 60,
+    "protein": 0,
+    "monthlyCost": 250
+  },
+  {
+    "name": "Coconut water",
+    "aliases": [
+      "coconut water",
+      "nariyal pani"
+    ],
+    "category": "drink",
+    "riskTags": [
+      "whole_food"
+    ],
+    "calories": 70,
+    "protein": 1,
+    "monthlyCost": 900
+  },
+  {
+    "name": "Packaged juice",
+    "aliases": [
+      "juice",
+      "packaged juice",
+      "tropicana",
+      "real juice",
+      "fruit juice"
+    ],
+    "category": "sugary_drink",
+    "riskTags": [
+      "high_sugar",
+      "processed"
+    ],
+    "calories": 150,
+    "protein": 0,
+    "monthlyCost": 1000
+  },
+  {
+    "name": "Energy drink",
+    "aliases": [
+      "energy drink",
+      "red bull",
+      "sting"
+    ],
+    "category": "sugary_drink",
+    "riskTags": [
+      "high_sugar",
+      "ultra_processed"
+    ],
+    "calories": 170,
+    "protein": 0,
+    "monthlyCost": 1400
+  },
+  {
+    "name": "Milkshake",
+    "aliases": [
+      "milkshake",
+      "chocolate shake",
+      "oreo shake"
+    ],
+    "category": "sugary_drink",
+    "riskTags": [
+      "high_sugar",
+      "high_calorie"
+    ],
+    "calories": 420,
+    "protein": 10,
+    "monthlyCost": 1500
+  },
+  {
+    "name": "Smoothie homemade",
+    "aliases": [
+      "smoothie",
+      "homemade smoothie",
+      "banana smoothie"
+    ],
+    "category": "drink",
+    "riskTags": [
+      "whole_food",
+      "fiber"
+    ],
+    "calories": 250,
+    "protein": 8,
+    "monthlyCost": 800
+  },
+  {
+    "name": "Pizza",
+    "aliases": [
+      "pizza",
+      "cheese pizza",
+      "veg pizza",
+      "dominos",
+      "pizza hut"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "refined_flour",
+      "high_sodium",
+      "high_fat",
+      "processed"
+    ],
+    "calories": 620,
+    "protein": 20,
+    "monthlyCost": 1800
+  },
+  {
+    "name": "Burger",
+    "aliases": [
+      "burger",
+      "veg burger",
+      "chicken burger",
+      "mcdonalds burger"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "refined_flour",
+      "high_sodium",
+      "fried",
+      "processed"
+    ],
+    "calories": 520,
+    "protein": 18,
+    "monthlyCost": 1500
+  },
+  {
+    "name": "French fries",
+    "aliases": [
+      "french fries",
+      "fries",
+      "peri peri fries"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "fried",
+      "high_sodium",
+      "low_protein"
+    ],
+    "calories": 360,
+    "protein": 4,
+    "monthlyCost": 950
+  },
+  {
+    "name": "Schezwan noodles",
+    "aliases": [
+      "schezwan noodles",
+      "hakka noodles",
+      "chowmein",
+      "chow mein"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "high_sodium",
+      "refined_flour",
+      "processed"
+    ],
+    "calories": 500,
+    "protein": 12,
+    "monthlyCost": 1200
+  },
+  {
+    "name": "Fried rice",
+    "aliases": [
+      "fried rice",
+      "veg fried rice",
+      "chicken fried rice"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "high_sodium",
+      "high_fat"
+    ],
+    "calories": 520,
+    "protein": 14,
+    "monthlyCost": 1200
+  },
+  {
+    "name": "Manchurian",
+    "aliases": [
+      "manchurian",
+      "gobi manchurian",
+      "veg manchurian"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "fried",
+      "high_sodium",
+      "refined_flour"
+    ],
+    "calories": 420,
+    "protein": 10,
+    "monthlyCost": 1100
+  },
+  {
+    "name": "Pav bhaji",
+    "aliases": [
+      "pav bhaji",
+      "paav bhaji"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "refined_flour",
+      "high_fat",
+      "high_sodium"
+    ],
+    "calories": 470,
+    "protein": 11,
+    "monthlyCost": 950
+  },
+  {
+    "name": "Vada pav",
+    "aliases": [
+      "vada pav",
+      "vada pao"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "fried",
+      "refined_flour",
+      "high_carbohydrate"
+    ],
+    "calories": 330,
+    "protein": 8,
+    "monthlyCost": 650
+  },
+  {
+    "name": "Chole bhature",
+    "aliases": [
+      "chole bhature",
+      "chole bhatura",
+      "bhature"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "fried",
+      "refined_flour",
+      "high_fat"
+    ],
+    "calories": 650,
+    "protein": 18,
+    "monthlyCost": 1200
+  },
+  {
+    "name": "Pani puri",
+    "aliases": [
+      "pani puri",
+      "golgappa",
+      "puchka",
+      "gupchup"
+    ],
+    "category": "street_food",
+    "riskTags": [
+      "refined_flour",
+      "high_sodium"
+    ],
+    "calories": 220,
+    "protein": 4,
+    "monthlyCost": 500
+  },
+  {
+    "name": "Sev puri",
+    "aliases": [
+      "sev puri",
+      "sev poori"
+    ],
+    "category": "street_food",
+    "riskTags": [
+      "high_sodium",
+      "fried",
+      "processed"
+    ],
+    "calories": 300,
+    "protein": 5,
+    "monthlyCost": 600
+  },
+  {
+    "name": "Bhel puri",
+    "aliases": [
+      "bhel puri",
+      "bhelpuri",
+      "bhel"
+    ],
+    "category": "street_food",
+    "riskTags": [
+      "high_sodium",
+      "processed"
+    ],
+    "calories": 260,
+    "protein": 6,
+    "monthlyCost": 500
+  },
+  {
+    "name": "Dahi puri",
+    "aliases": [
+      "dahi puri",
+      "dahi poori"
+    ],
+    "category": "street_food",
+    "riskTags": [
+      "high_sodium",
+      "added_sugar"
+    ],
+    "calories": 320,
+    "protein": 8,
+    "monthlyCost": 650
+  },
+  {
+    "name": "Paneer butter masala",
+    "aliases": [
+      "paneer butter masala",
+      "paneer makhani"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "high_fat",
+      "high_sodium"
+    ],
+    "calories": 520,
+    "protein": 20,
+    "monthlyCost": 1500
+  },
+  {
+    "name": "Butter chicken",
+    "aliases": [
+      "butter chicken",
+      "murgh makhani"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "high_fat",
+      "high_sodium"
+    ],
+    "calories": 560,
+    "protein": 32,
+    "monthlyCost": 1800
+  },
+  {
+    "name": "Chicken roll",
+    "aliases": [
+      "chicken roll",
+      "kathi roll",
+      "egg roll"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "refined_flour",
+      "high_sodium",
+      "high_fat"
+    ],
+    "calories": 480,
+    "protein": 22,
+    "monthlyCost": 1200
+  },
+  {
+    "name": "Veg roll",
+    "aliases": [
+      "veg roll",
+      "paneer roll",
+      "frankie"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "refined_flour",
+      "high_sodium"
+    ],
+    "calories": 430,
+    "protein": 14,
+    "monthlyCost": 1000
+  },
+  {
+    "name": "Thali",
+    "aliases": [
+      "thali",
+      "veg thali",
+      "mini thali",
+      "north indian thali"
+    ],
+    "category": "restaurant_meal",
+    "riskTags": [
+      "balanced",
+      "high_sodium"
+    ],
+    "calories": 700,
+    "protein": 22,
+    "monthlyCost": 1600
+  },
+  {
+    "name": "South Indian thali",
+    "aliases": [
+      "south indian thali",
+      "meals"
+    ],
+    "category": "restaurant_meal",
+    "riskTags": [
+      "balanced",
+      "high_carbohydrate"
+    ],
+    "calories": 680,
+    "protein": 20,
+    "monthlyCost": 1500
+  },
+  {
+    "name": "Chicken biryani",
+    "aliases": [
+      "chicken biryani"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "high_sodium",
+      "high_fat",
+      "protein"
+    ],
+    "calories": 580,
+    "protein": 28,
+    "monthlyCost": 1700
+  },
+  {
+    "name": "Veg biryani",
+    "aliases": [
+      "veg biryani",
+      "vegetable biryani"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "high_sodium",
+      "high_fat"
+    ],
+    "calories": 520,
+    "protein": 12,
+    "monthlyCost": 1400
+  },
+  {
+    "name": "Paneer tikka",
+    "aliases": [
+      "paneer tikka",
+      "tandoori paneer"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein",
+      "high_sodium"
+    ],
+    "calories": 340,
+    "protein": 22,
+    "monthlyCost": 1500
+  },
+  {
+    "name": "Tandoori roti",
+    "aliases": [
+      "tandoori roti"
+    ],
+    "category": "restaurant_meal",
+    "riskTags": [
+      "whole_food"
+    ],
+    "calories": 150,
+    "protein": 5,
+    "monthlyCost": 600
+  },
+  {
+    "name": "Rumali roti",
+    "aliases": [
+      "rumali roti"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "refined_flour"
+    ],
+    "calories": 190,
+    "protein": 5,
+    "monthlyCost": 550
+  },
+  {
+    "name": "Parotta",
+    "aliases": [
+      "parotta",
+      "malabar parotta",
+      "paratha hotel"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "refined_flour",
+      "high_fat"
+    ],
+    "calories": 360,
+    "protein": 7,
+    "monthlyCost": 800
+  },
+  {
+    "name": "Cup noodles",
+    "aliases": [
+      "cup noodles",
+      "instant cup noodles",
+      "yippee cup noodles"
+    ],
+    "category": "processed",
+    "riskTags": [
+      "high_sodium",
+      "processed",
+      "low_protein"
+    ],
+    "calories": 320,
+    "protein": 7,
+    "monthlyCost": 850
+  },
+  {
+    "name": "Frozen fries",
+    "aliases": [
+      "frozen fries",
+      "ready to fry fries"
+    ],
+    "category": "processed",
+    "riskTags": [
+      "fried",
+      "processed",
+      "high_sodium"
+    ],
+    "calories": 310,
+    "protein": 4,
+    "monthlyCost": 900
+  },
+  {
+    "name": "Ready-to-eat curry",
+    "aliases": [
+      "ready to eat curry",
+      "retort curry",
+      "packet curry"
+    ],
+    "category": "processed",
+    "riskTags": [
+      "high_sodium",
+      "processed"
+    ],
+    "calories": 350,
+    "protein": 9,
+    "monthlyCost": 1200
+  },
+  {
+    "name": "Packaged soup",
+    "aliases": [
+      "instant soup",
+      "packet soup",
+      "soup sachet"
+    ],
+    "category": "processed",
+    "riskTags": [
+      "high_sodium",
+      "processed",
+      "low_protein"
+    ],
+    "calories": 120,
+    "protein": 3,
+    "monthlyCost": 650
+  },
+  {
+    "name": "Protein bar",
+    "aliases": [
+      "protein bar",
+      "energy bar"
+    ],
+    "category": "packaged_snack",
+    "riskTags": [
+      "protein",
+      "processed",
+      "added_sugar"
+    ],
+    "calories": 230,
+    "protein": 15,
+    "monthlyCost": 1800
+  },
+  {
+    "name": "Granola bar",
+    "aliases": [
+      "granola bar",
+      "muesli bar"
+    ],
+    "category": "packaged_snack",
+    "riskTags": [
+      "added_sugar",
+      "processed"
+    ],
+    "calories": 190,
+    "protein": 5,
+    "monthlyCost": 1300
+  },
+  {
+    "name": "Muesli",
+    "aliases": [
+      "muesli",
+      "breakfast muesli"
+    ],
+    "category": "breakfast",
+    "riskTags": [
+      "fiber",
+      "processed",
+      "added_sugar"
+    ],
+    "calories": 280,
+    "protein": 8,
+    "monthlyCost": 1300
+  },
+  {
+    "name": "Flavored yogurt",
+    "aliases": [
+      "flavored yogurt",
+      "fruit yogurt",
+      "sweet yogurt"
+    ],
+    "category": "packaged_snack",
+    "riskTags": [
+      "added_sugar",
+      "processed"
+    ],
+    "calories": 160,
+    "protein": 6,
+    "monthlyCost": 950
+  },
+  {
+    "name": "Plain curd",
+    "aliases": [
+      "plain curd",
+      "dahi",
+      "curd"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "fermented",
+      "protein"
+    ],
+    "calories": 100,
+    "protein": 6,
+    "monthlyCost": 450
+  },
+  {
+    "name": "Cheese slices",
+    "aliases": [
+      "cheese slice",
+      "processed cheese",
+      "cheese slices"
+    ],
+    "category": "processed",
+    "riskTags": [
+      "high_sodium",
+      "high_fat",
+      "processed"
+    ],
+    "calories": 180,
+    "protein": 10,
+    "monthlyCost": 1100
+  },
+  {
+    "name": "Mayonnaise",
+    "aliases": [
+      "mayonnaise",
+      "mayo"
+    ],
+    "category": "sauce",
+    "riskTags": [
+      "high_fat",
+      "processed"
+    ],
+    "calories": 180,
+    "protein": 0,
+    "monthlyCost": 500
+  },
+  {
+    "name": "Ketchup",
+    "aliases": [
+      "ketchup",
+      "tomato sauce"
+    ],
+    "category": "sauce",
+    "riskTags": [
+      "added_sugar",
+      "high_sodium",
+      "processed"
+    ],
+    "calories": 60,
+    "protein": 0,
+    "monthlyCost": 400
+  },
+  {
+    "name": "Packaged biscuits cream",
+    "aliases": [
+      "cream biscuit",
+      "oreo",
+      "bourbon",
+      "hide and seek"
+    ],
+    "category": "packaged_snack",
+    "riskTags": [
+      "high_sugar",
+      "maida",
+      "palm_oil",
+      "processed"
+    ],
+    "calories": 220,
+    "protein": 3,
+    "monthlyCost": 750
+  },
+  {
+    "name": "Marie biscuits",
+    "aliases": [
+      "marie biscuit",
+      "marie biscuits"
+    ],
+    "category": "packaged_snack",
+    "riskTags": [
+      "maida",
+      "processed",
+      "low_protein"
+    ],
+    "calories": 160,
+    "protein": 3,
+    "monthlyCost": 550
+  },
+  {
+    "name": "Rusk",
+    "aliases": [
+      "rusk",
+      "toast rusk"
+    ],
+    "category": "packaged_snack",
+    "riskTags": [
+      "maida",
+      "added_sugar",
+      "processed"
+    ],
+    "calories": 170,
+    "protein": 4,
+    "monthlyCost": 550
+  },
+  {
+    "name": "Instant coffee sachet",
+    "aliases": [
+      "instant coffee sachet",
+      "premix coffee"
+    ],
+    "category": "drink",
+    "riskTags": [
+      "added_sugar",
+      "processed"
+    ],
+    "calories": 120,
+    "protein": 2,
+    "monthlyCost": 500
+  },
+  {
+    "name": "Cold coffee bottled",
+    "aliases": [
+      "bottled cold coffee",
+      "cold coffee",
+      "frappuccino"
+    ],
+    "category": "sugary_drink",
+    "riskTags": [
+      "high_sugar",
+      "processed"
+    ],
+    "calories": 220,
+    "protein": 6,
+    "monthlyCost": 1200
+  },
+  {
+    "name": "Flavored milk",
+    "aliases": [
+      "flavored milk",
+      "chocolate milk",
+      "badam milk packet"
+    ],
+    "category": "sugary_drink",
+    "riskTags": [
+      "added_sugar",
+      "processed"
+    ],
+    "calories": 180,
+    "protein": 7,
+    "monthlyCost": 900
+  },
+  {
+    "name": "Packaged paneer",
+    "aliases": [
+      "packaged paneer",
+      "paneer packet"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein"
+    ],
+    "calories": 290,
+    "protein": 18,
+    "monthlyCost": 1500
+  },
+  {
+    "name": "Tofu",
+    "aliases": [
+      "tofu",
+      "soy paneer"
+    ],
+    "category": "protein",
+    "riskTags": [
+      "protein"
+    ],
+    "calories": 180,
+    "protein": 18,
+    "monthlyCost": 1100
+  },
+  {
+    "name": "Dhokla",
+    "aliases": [
+      "dhokla",
+      "khaman"
+    ],
+    "category": "snack",
+    "riskTags": [
+      "fermented",
+      "balanced"
+    ],
+    "calories": 180,
+    "protein": 7,
+    "monthlyCost": 600
+  },
+  {
+    "name": "Thepla",
+    "aliases": [
+      "thepla",
+      "methi thepla"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "whole_food",
+      "high_fat"
+    ],
+    "calories": 260,
+    "protein": 8,
+    "monthlyCost": 650
+  },
+  {
+    "name": "Misal pav",
+    "aliases": [
+      "misal pav",
+      "misal"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "high_spice",
+      "high_sodium",
+      "refined_flour"
+    ],
+    "calories": 480,
+    "protein": 18,
+    "monthlyCost": 900
+  },
+  {
+    "name": "Poha with peanuts",
+    "aliases": [
+      "poha with peanuts",
+      "peanut poha"
+    ],
+    "category": "breakfast",
+    "riskTags": [
+      "balanced",
+      "protein"
+    ],
+    "calories": 300,
+    "protein": 10,
+    "monthlyCost": 600
+  },
+  {
+    "name": "Sabudana khichdi",
+    "aliases": [
+      "sabudana khichdi",
+      "sago khichdi"
+    ],
+    "category": "breakfast",
+    "riskTags": [
+      "high_carbohydrate",
+      "low_protein"
+    ],
+    "calories": 420,
+    "protein": 6,
+    "monthlyCost": 750
+  },
+  {
+    "name": "Dabeli",
+    "aliases": [
+      "dabeli"
+    ],
+    "category": "street_food",
+    "riskTags": [
+      "refined_flour",
+      "high_sodium",
+      "added_sugar"
+    ],
+    "calories": 350,
+    "protein": 8,
+    "monthlyCost": 600
+  },
+  {
+    "name": "Kathi roll paneer",
+    "aliases": [
+      "paneer kathi roll",
+      "paneer frankie"
+    ],
+    "category": "outside_food",
+    "riskTags": [
+      "refined_flour",
+      "high_sodium",
+      "protein"
+    ],
+    "calories": 500,
+    "protein": 20,
+    "monthlyCost": 1200
+  },
+  {
+    "name": "Litti chokha",
+    "aliases": [
+      "litti chokha",
+      "litti"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "whole_food",
+      "fiber"
+    ],
+    "calories": 430,
+    "protein": 13,
+    "monthlyCost": 750
+  },
+  {
+    "name": "Daal baati",
+    "aliases": [
+      "dal baati",
+      "daal baati"
+    ],
+    "category": "home_meal",
+    "riskTags": [
+      "protein",
+      "high_fat"
+    ],
+    "calories": 620,
+    "protein": 20,
+    "monthlyCost": 1100
+  },
+  {
+    "name": "Sattu drink",
+    "aliases": [
+      "sattu drink",
+      "sattu sherbet",
+      "sattu"
+    ],
+    "category": "drink",
+    "riskTags": [
+      "protein",
+      "fiber"
+    ],
+    "calories": 180,
+    "protein": 9,
+    "monthlyCost": 400
+  },
+  {
+    "name": "Ragi malt",
+    "aliases": [
+      "ragi malt",
+      "ragi drink"
+    ],
+    "category": "drink",
+    "riskTags": [
+      "whole_food",
+      "fiber"
+    ],
+    "calories": 170,
+    "protein": 5,
+    "monthlyCost": 450
+  },
+  {
+    "name": "Coconut chutney",
+    "aliases": [
+      "coconut chutney"
+    ],
+    "category": "side",
+    "riskTags": [
+      "high_fat"
+    ],
+    "calories": 120,
+    "protein": 2,
+    "monthlyCost": 400
+  },
+  {
+    "name": "Green chutney",
+    "aliases": [
+      "green chutney",
+      "mint chutney",
+      "coriander chutney"
+    ],
+    "category": "side",
+    "riskTags": [
+      "low_calorie"
+    ],
+    "calories": 40,
+    "protein": 1,
+    "monthlyCost": 250
+  },
+  {
+    "name": "Pickle",
+    "aliases": [
+      "pickle",
+      "achar",
+      "aachar"
+    ],
+    "category": "side",
+    "riskTags": [
+      "high_sodium"
+    ],
+    "calories": 40,
+    "protein": 0,
+    "monthlyCost": 250
+  },
+  {
+    "name": "Papad fried",
+    "aliases": [
+      "fried papad",
+      "papad"
+    ],
+    "category": "side",
+    "riskTags": [
+      "fried",
+      "high_sodium"
+    ],
+    "calories": 90,
+    "protein": 2,
+    "monthlyCost": 300
+  },
+  {
+    "name": "Roasted papad",
+    "aliases": [
+      "roasted papad"
+    ],
+    "category": "side",
+    "riskTags": [
+      "high_sodium"
+    ],
+    "calories": 50,
+    "protein": 2,
+    "monthlyCost": 250
   }
 ]

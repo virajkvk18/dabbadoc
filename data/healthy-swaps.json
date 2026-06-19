@@ -96,5 +96,1034 @@
     "reason": "More fiber and protein than sweet packaged cereal.",
     "costDelta": -100,
     "scoreImpact": 9
+  },
+  {
+    "original": "Maggi",
+    "swap": "moong dal chilla",
+    "reason": "Higher protein replacement for a quick hot meal.",
+    "costDelta": -80,
+    "scoreImpact": 11
+  },
+  {
+    "original": "Cola",
+    "swap": "plain water with lemon",
+    "reason": "Hydrates without added sugar or calories.",
+    "costDelta": -450,
+    "scoreImpact": 12
+  },
+  {
+    "original": "Chips",
+    "swap": "peanuts and cucumber",
+    "reason": "Improves fullness with protein and water-rich vegetables.",
+    "costDelta": -120,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Chips",
+    "swap": "homemade bhel with sprouts",
+    "reason": "Keeps crunch while improving fiber and protein.",
+    "costDelta": -100,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Fried snacks",
+    "swap": "roasted chana chaat",
+    "reason": "Crunchy Indian snack with less oil.",
+    "costDelta": -160,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Fried snacks",
+    "swap": "dhokla",
+    "reason": "Lighter steamed snack option.",
+    "costDelta": -100,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Biscuits",
+    "swap": "roasted makhana",
+    "reason": "Packaged-snack feel with lower oil load.",
+    "costDelta": 40,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Biscuits",
+    "swap": "plain curd with fruit",
+    "reason": "Adds protein and reduces refined flour snacking.",
+    "costDelta": 80,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Sugary cereal",
+    "swap": "poha with peanuts",
+    "reason": "Indian breakfast with better satiety.",
+    "costDelta": -180,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Sugary cereal",
+    "swap": "curd bowl with fruit",
+    "reason": "Improves protein and avoids hidden cereal sugar.",
+    "costDelta": -80,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Pasta",
+    "swap": "vegetable dalia",
+    "reason": "More fiber and less refined-flour load.",
+    "costDelta": -250,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Pasta",
+    "swap": "paneer veggie bowl",
+    "reason": "Better protein balance than refined pasta.",
+    "costDelta": 100,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Pasta",
+    "swap": "whole wheat pasta with vegetables",
+    "reason": "Keeps pasta format with improved fiber.",
+    "costDelta": 80,
+    "scoreImpact": 6
+  },
+  {
+    "original": "Pasta",
+    "swap": "moong dal chilla with chutney",
+    "reason": "Indian protein-rich swap for a filling meal.",
+    "costDelta": -120,
+    "scoreImpact": 11
+  },
+  {
+    "original": "Momos",
+    "swap": "steamed sprouts chaat",
+    "reason": "Better fiber and protein with less refined flour.",
+    "costDelta": -150,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Momos",
+    "swap": "paneer tikka",
+    "reason": "High-protein snack with less maida.",
+    "costDelta": 150,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Momos",
+    "swap": "idli sambar",
+    "reason": "Steamed option with fermented batter and dal.",
+    "costDelta": -80,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Momos",
+    "swap": "vegetable soup with paneer",
+    "reason": "Warmer lighter option with protein.",
+    "costDelta": 80,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Biryani",
+    "swap": "dal chawal with salad",
+    "reason": "More balanced home-style protein and fiber.",
+    "costDelta": -350,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Biryani",
+    "swap": "grilled chicken with rice and salad",
+    "reason": "Keeps protein while reducing oil/sodium load.",
+    "costDelta": 100,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Biryani",
+    "swap": "veg pulao with curd",
+    "reason": "Lighter rice meal with better portion control.",
+    "costDelta": -250,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Biryani",
+    "swap": "khichdi with curd",
+    "reason": "Comfort meal with simpler ingredients.",
+    "costDelta": -400,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Butter naan",
+    "swap": "tandoori roti",
+    "reason": "Whole-wheat option with less butter.",
+    "costDelta": -150,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Butter naan",
+    "swap": "wheat roti",
+    "reason": "Lower fat and more regular home-style grain.",
+    "costDelta": -250,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Butter naan",
+    "swap": "millet roti",
+    "reason": "Adds fiber and improves grain quality.",
+    "costDelta": -100,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Pizza",
+    "swap": "paneer tikka with roti",
+    "reason": "Higher protein and less refined-flour load.",
+    "costDelta": -250,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Pizza",
+    "swap": "homemade roti pizza with vegetables",
+    "reason": "Keeps pizza feel with better base and toppings.",
+    "costDelta": -200,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Pizza",
+    "swap": "veg uttapam",
+    "reason": "Savory Indian swap with fermented batter.",
+    "costDelta": -300,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Pizza",
+    "swap": "grilled sandwich with paneer and vegetables",
+    "reason": "More controlled portion and protein.",
+    "costDelta": -150,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Burger",
+    "swap": "paneer chilla wrap",
+    "reason": "Higher protein and less refined bun load.",
+    "costDelta": -200,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Burger",
+    "swap": "grilled chicken roti wrap",
+    "reason": "Keeps handheld format with better protein.",
+    "costDelta": -100,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Burger",
+    "swap": "sprouts sandwich on whole wheat bread",
+    "reason": "Improves fiber and reduces fried load.",
+    "costDelta": -250,
+    "scoreImpact": 8
+  },
+  {
+    "original": "French fries",
+    "swap": "roasted sweet potato chaat",
+    "reason": "Keeps snacky feel with less oil.",
+    "costDelta": -150,
+    "scoreImpact": 9
+  },
+  {
+    "original": "French fries",
+    "swap": "masala makhana",
+    "reason": "Crunchy replacement with lower oil.",
+    "costDelta": -120,
+    "scoreImpact": 8
+  },
+  {
+    "original": "French fries",
+    "swap": "roasted chana",
+    "reason": "Protein-rich replacement for salty fried snack.",
+    "costDelta": -180,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Schezwan noodles",
+    "swap": "oats upma with vegetables",
+    "reason": "Better fiber and lower sodium format.",
+    "costDelta": -200,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Schezwan noodles",
+    "swap": "veg poha with peanuts",
+    "reason": "Familiar quick meal with better balance.",
+    "costDelta": -250,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Schezwan noodles",
+    "swap": "sambar rice",
+    "reason": "Warm meal with dal and vegetables.",
+    "costDelta": -180,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Fried rice",
+    "swap": "vegetable pulao with curd",
+    "reason": "Less oily rice option with cooling protein.",
+    "costDelta": -150,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Fried rice",
+    "swap": "brown rice bowl with paneer",
+    "reason": "Improves protein and fiber.",
+    "costDelta": 150,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Fried rice",
+    "swap": "khichdi with salad",
+    "reason": "Simpler balanced meal with less sodium.",
+    "costDelta": -250,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Manchurian",
+    "swap": "paneer tikka",
+    "reason": "Protein-rich starter with less fried coating.",
+    "costDelta": 100,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Manchurian",
+    "swap": "sprouts chaat",
+    "reason": "Lighter high-fiber snack.",
+    "costDelta": -200,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Manchurian",
+    "swap": "grilled vegetables with curd dip",
+    "reason": "Reduces fried and sodium load.",
+    "costDelta": -120,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Pav bhaji",
+    "swap": "roti sabzi with curd",
+    "reason": "More home-style balanced plate.",
+    "costDelta": -250,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Pav bhaji",
+    "swap": "millet roti with mixed veg",
+    "reason": "Adds fiber and reduces pav/maida load.",
+    "costDelta": -150,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Pav bhaji",
+    "swap": "vegetable khichdi",
+    "reason": "Simpler vegetable-rich meal.",
+    "costDelta": -250,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Vada pav",
+    "swap": "dhokla with chutney",
+    "reason": "Steamed snack with less fried load.",
+    "costDelta": -100,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Vada pav",
+    "swap": "besan chilla",
+    "reason": "Higher protein replacement.",
+    "costDelta": -150,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Vada pav",
+    "swap": "roasted chana chaat",
+    "reason": "Crunchy filling snack without deep frying.",
+    "costDelta": -180,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Chole bhature",
+    "swap": "chole with wheat roti",
+    "reason": "Keeps chole protein while reducing fried maida.",
+    "costDelta": -250,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Chole bhature",
+    "swap": "rajma chawal with salad",
+    "reason": "Balanced protein/fiber meal.",
+    "costDelta": -200,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Chole bhature",
+    "swap": "chana salad bowl",
+    "reason": "Lighter protein-rich version.",
+    "costDelta": -180,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Pani puri",
+    "swap": "sprouts chaat",
+    "reason": "Chaat-style swap with more protein.",
+    "costDelta": -80,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Pani puri",
+    "swap": "bhel with sprouts and less sev",
+    "reason": "Keeps tangy snack with better fiber.",
+    "costDelta": -60,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Pani puri",
+    "swap": "cucumber chaat",
+    "reason": "Light snack with lower sodium load.",
+    "costDelta": -120,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Sev puri",
+    "swap": "sprouts chaat",
+    "reason": "Reduces fried sev and improves protein.",
+    "costDelta": -100,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Sev puri",
+    "swap": "roasted chana bhel",
+    "reason": "Crunchy but less fried.",
+    "costDelta": -80,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Bhel puri",
+    "swap": "sprouts bhel",
+    "reason": "Adds protein and improves fullness.",
+    "costDelta": 20,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Bhel puri",
+    "swap": "roasted chana chaat",
+    "reason": "Lower puffed-rice carb load and more protein.",
+    "costDelta": -50,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Dahi puri",
+    "swap": "curd sprouts chaat",
+    "reason": "Keeps dahi-chaat taste with higher protein.",
+    "costDelta": -80,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Dahi puri",
+    "swap": "curd bowl with fruit",
+    "reason": "Reduces fried/puri load.",
+    "costDelta": -50,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Paneer butter masala",
+    "swap": "paneer bhurji with roti",
+    "reason": "Keeps paneer protein with less cream/butter.",
+    "costDelta": -250,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Paneer butter masala",
+    "swap": "palak paneer with tandoori roti",
+    "reason": "Adds greens and better balance.",
+    "costDelta": -100,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Paneer butter masala",
+    "swap": "paneer tikka with salad",
+    "reason": "Higher protein starter with lower gravy fat.",
+    "costDelta": -150,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Butter chicken",
+    "swap": "grilled chicken with roti",
+    "reason": "Keeps protein and reduces creamy gravy.",
+    "costDelta": -250,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Butter chicken",
+    "swap": "chicken curry home-style",
+    "reason": "Less butter/cream heavy option.",
+    "costDelta": -200,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Butter chicken",
+    "swap": "tandoori chicken with salad",
+    "reason": "Protein-rich lower-gravy option.",
+    "costDelta": -150,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Chicken roll",
+    "swap": "grilled chicken roti wrap",
+    "reason": "Use whole wheat roti and lighter sauce.",
+    "costDelta": -100,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Chicken roll",
+    "swap": "chicken salad bowl",
+    "reason": "Higher vegetables and less refined wrap.",
+    "costDelta": 0,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Veg roll",
+    "swap": "paneer chilla wrap",
+    "reason": "Better protein than maida roll.",
+    "costDelta": -100,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Veg roll",
+    "swap": "vegetable besan chilla",
+    "reason": "Lighter and more filling.",
+    "costDelta": -150,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Thali",
+    "swap": "mini thali with salad and curd",
+    "reason": "Better portion control while keeping variety.",
+    "costDelta": -150,
+    "scoreImpact": 6
+  },
+  {
+    "original": "Thali",
+    "swap": "home-style dal roti sabzi",
+    "reason": "Lower oil/sodium version.",
+    "costDelta": -300,
+    "scoreImpact": 8
+  },
+  {
+    "original": "South Indian thali",
+    "swap": "idli sambar with salad",
+    "reason": "Lighter fermented option.",
+    "costDelta": -200,
+    "scoreImpact": 7
+  },
+  {
+    "original": "South Indian thali",
+    "swap": "curd rice with sambar",
+    "reason": "Simpler plate with controlled portions.",
+    "costDelta": -150,
+    "scoreImpact": 6
+  },
+  {
+    "original": "Chicken biryani",
+    "swap": "grilled chicken rice bowl",
+    "reason": "Keeps chicken/rice but reduces oil load.",
+    "costDelta": -50,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Chicken biryani",
+    "swap": "chicken curry with roti and salad",
+    "reason": "Better balance and less rice overload.",
+    "costDelta": -150,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Veg biryani",
+    "swap": "vegetable pulao with curd",
+    "reason": "Lower oil/sodium rice option.",
+    "costDelta": -150,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Veg biryani",
+    "swap": "khichdi with vegetables",
+    "reason": "Simpler and lighter one-pot meal.",
+    "costDelta": -250,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Parotta",
+    "swap": "wheat roti",
+    "reason": "Less refined flour and oil.",
+    "costDelta": -200,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Parotta",
+    "swap": "millet roti",
+    "reason": "Adds fiber and whole-grain quality.",
+    "costDelta": -120,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Cup noodles",
+    "swap": "oats upma",
+    "reason": "Quick hot meal with more fiber.",
+    "costDelta": -150,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Cup noodles",
+    "swap": "moong dal chilla",
+    "reason": "Protein-rich quick meal.",
+    "costDelta": -80,
+    "scoreImpact": 11
+  },
+  {
+    "original": "Cup noodles",
+    "swap": "poha with peanuts",
+    "reason": "Familiar fast option with better balance.",
+    "costDelta": -120,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Frozen fries",
+    "swap": "roasted sweet potato",
+    "reason": "Less oil and more whole-food quality.",
+    "costDelta": -150,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Frozen fries",
+    "swap": "roasted makhana",
+    "reason": "Crunchy snack with lower fried load.",
+    "costDelta": -100,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Ready-to-eat curry",
+    "swap": "home dal tadka",
+    "reason": "Less processed and easier to control salt.",
+    "costDelta": -250,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Ready-to-eat curry",
+    "swap": "paneer bhurji",
+    "reason": "Quick high-protein fresh option.",
+    "costDelta": -100,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Packaged soup",
+    "swap": "homemade vegetable soup",
+    "reason": "Lower sodium and more vegetables.",
+    "costDelta": -150,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Packaged soup",
+    "swap": "dal soup",
+    "reason": "Improves protein and fullness.",
+    "costDelta": -100,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Protein bar",
+    "swap": "boiled eggs",
+    "reason": "Less processed protein option.",
+    "costDelta": -250,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Protein bar",
+    "swap": "roasted chana and peanuts",
+    "reason": "Affordable protein/fiber snack.",
+    "costDelta": -300,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Protein bar",
+    "swap": "curd with nuts",
+    "reason": "Protein snack with better satiety.",
+    "costDelta": -100,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Granola bar",
+    "swap": "fruit and nuts",
+    "reason": "Less processed snack pattern.",
+    "costDelta": -100,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Granola bar",
+    "swap": "roasted makhana",
+    "reason": "Lower added sugar option.",
+    "costDelta": -120,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Muesli",
+    "swap": "oats with nuts",
+    "reason": "More controlled sugar and better fiber.",
+    "costDelta": -150,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Muesli",
+    "swap": "dalia",
+    "reason": "Simple whole-grain breakfast.",
+    "costDelta": -250,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Flavored yogurt",
+    "swap": "plain curd with fruit",
+    "reason": "Reduces added sugar and keeps probiotics.",
+    "costDelta": -80,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Flavored yogurt",
+    "swap": "curd bowl with nuts",
+    "reason": "Improves protein and satiety.",
+    "costDelta": 0,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Cheese slices",
+    "swap": "paneer cubes",
+    "reason": "Less processed protein option.",
+    "costDelta": 0,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Cheese slices",
+    "swap": "hung curd spread",
+    "reason": "Creamy replacement with better protein balance.",
+    "costDelta": -80,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Mayonnaise",
+    "swap": "hung curd dip",
+    "reason": "Creamy swap with protein and less fat.",
+    "costDelta": -100,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Mayonnaise",
+    "swap": "mint curd chutney",
+    "reason": "Fresh Indian dip with lower fat.",
+    "costDelta": -120,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Ketchup",
+    "swap": "homemade tomato chutney",
+    "reason": "Less added sugar and more fresh ingredients.",
+    "costDelta": -60,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Ketchup",
+    "swap": "green chutney",
+    "reason": "Lower sugar condiment.",
+    "costDelta": -100,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Packaged biscuits cream",
+    "swap": "homemade chilla",
+    "reason": "Higher protein snack.",
+    "costDelta": -150,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Packaged biscuits cream",
+    "swap": "fruit and nuts",
+    "reason": "Less maida/palm-oil snacking.",
+    "costDelta": 100,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Packaged biscuits cream",
+    "swap": "plain curd with fruit",
+    "reason": "Better protein and freshness.",
+    "costDelta": 50,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Marie biscuits",
+    "swap": "roasted chana",
+    "reason": "More protein and fiber.",
+    "costDelta": -100,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Marie biscuits",
+    "swap": "makhana",
+    "reason": "Crunchy lighter snack.",
+    "costDelta": 0,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Rusk",
+    "swap": "whole wheat toast with peanut butter",
+    "reason": "Improves protein and satiety.",
+    "costDelta": 80,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Rusk",
+    "swap": "besan chilla",
+    "reason": "Fresh higher-protein breakfast/snack.",
+    "costDelta": -120,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Instant coffee sachet",
+    "swap": "home coffee with less sugar",
+    "reason": "Controls sugar amount.",
+    "costDelta": -150,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Instant coffee sachet",
+    "swap": "black coffee",
+    "reason": "Avoids premix sugar and creamer.",
+    "costDelta": -250,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Cold coffee bottled",
+    "swap": "homemade cold coffee with less sugar",
+    "reason": "Controls sugar and portion size.",
+    "costDelta": -150,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Cold coffee bottled",
+    "swap": "chaas",
+    "reason": "Lower sugar drink option.",
+    "costDelta": -250,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Flavored milk",
+    "swap": "plain milk",
+    "reason": "Removes added flavor sugar.",
+    "costDelta": -120,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Flavored milk",
+    "swap": "haldi milk without excess sugar",
+    "reason": "Traditional lower-sugar option.",
+    "costDelta": -80,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Milkshake",
+    "swap": "banana smoothie without sugar",
+    "reason": "Keeps creamy feel using whole fruit.",
+    "costDelta": -150,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Milkshake",
+    "swap": "plain lassi without excess sugar",
+    "reason": "Lower sugar and fermented drink.",
+    "costDelta": -180,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Sweet lassi",
+    "swap": "chaas",
+    "reason": "Much lighter fermented drink.",
+    "costDelta": -200,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Sweet lassi",
+    "swap": "plain lassi with less sugar",
+    "reason": "Same base with controlled sugar.",
+    "costDelta": -100,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Jalebi",
+    "swap": "fruit bowl",
+    "reason": "Sweet craving with fiber.",
+    "costDelta": 0,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Jalebi",
+    "swap": "dates and nuts small portion",
+    "reason": "Sweet snack with better satiety.",
+    "costDelta": 80,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Gulab jamun",
+    "swap": "rasgulla small portion",
+    "reason": "Lighter sweet option when dessert is needed.",
+    "costDelta": -50,
+    "scoreImpact": 5
+  },
+  {
+    "original": "Gulab jamun",
+    "swap": "fruit and curd bowl",
+    "reason": "Sweet and protein-balanced alternative.",
+    "costDelta": 50,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Chocolate",
+    "swap": "fruit and nuts",
+    "reason": "Better sweet snack with fiber.",
+    "costDelta": 50,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Chocolate",
+    "swap": "dark chocolate small portion",
+    "reason": "Portion-controlled sweet replacement.",
+    "costDelta": 0,
+    "scoreImpact": 5
+  },
+  {
+    "original": "Ice cream",
+    "swap": "curd fruit bowl",
+    "reason": "Creamy and sweet with protein.",
+    "costDelta": -100,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Ice cream",
+    "swap": "homemade smoothie bowl",
+    "reason": "Whole-fruit replacement.",
+    "costDelta": -50,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Aloo paratha",
+    "swap": "paneer paratha with curd",
+    "reason": "Improves protein in same format.",
+    "costDelta": 150,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Aloo paratha",
+    "swap": "moong dal chilla",
+    "reason": "Higher protein and lighter option.",
+    "costDelta": -200,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Bread butter",
+    "swap": "besan chilla",
+    "reason": "Higher protein and no refined bread.",
+    "costDelta": -100,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Bread butter",
+    "swap": "egg bhurji with roti",
+    "reason": "More protein and satiety.",
+    "costDelta": 0,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Corn flakes",
+    "swap": "oats with nuts",
+    "reason": "Better fiber and protein.",
+    "costDelta": -100,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Corn flakes",
+    "swap": "dalia",
+    "reason": "Less processed breakfast.",
+    "costDelta": -250,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Chocos",
+    "swap": "oats with nuts and fruit",
+    "reason": "Sweet breakfast feel with better balance.",
+    "costDelta": -150,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Chocos",
+    "swap": "curd bowl with banana",
+    "reason": "Simpler breakfast with protein.",
+    "costDelta": -100,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Packaged juice",
+    "swap": "whole fruit",
+    "reason": "Fiber-rich replacement for juice.",
+    "costDelta": -150,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Packaged juice",
+    "swap": "nimbu pani without excess sugar",
+    "reason": "Hydrating lower-sugar option.",
+    "costDelta": -250,
+    "scoreImpact": 9
+  },
+  {
+    "original": "Energy drink",
+    "swap": "coconut water",
+    "reason": "Lighter natural drink.",
+    "costDelta": -100,
+    "scoreImpact": 7
+  },
+  {
+    "original": "Energy drink",
+    "swap": "water with lemon and salt pinch",
+    "reason": "Hydration without high sugar/caffeine load.",
+    "costDelta": -250,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Namkeen",
+    "swap": "roasted chana",
+    "reason": "Crunchy and protein-rich.",
+    "costDelta": -200,
+    "scoreImpact": 10
+  },
+  {
+    "original": "Namkeen",
+    "swap": "makhana roasted",
+    "reason": "Lighter snack with less oil.",
+    "costDelta": -100,
+    "scoreImpact": 8
+  },
+  {
+    "original": "Popcorn salted",
+    "swap": "homemade popcorn with less salt",
+    "reason": "Same snack with better sodium control.",
+    "costDelta": -100,
+    "scoreImpact": 6
+  },
+  {
+    "original": "Popcorn salted",
+    "swap": "roasted makhana",
+    "reason": "Crunchy lower-salt option.",
+    "costDelta": 20,
+    "scoreImpact": 7
   }
 ]

@@ -75,5 +75,285 @@
     "severity": "medium",
     "reason": "The meal was marked high in spice.",
     "possibleConcern": "May cause discomfort for some people if frequent, especially with fried or outside food."
+  },
+  {
+    "tag": "ultra_processed",
+    "label": "Ultra-processed food pattern",
+    "severity": "high",
+    "reason": "Packaged snacks, sugary drinks, instant foods, or ready-to-eat items appear in the log.",
+    "possibleConcern": "May increase hidden sugar, sodium, additives, and low-fiber intake when frequent."
+  },
+  {
+    "tag": "refined_flour",
+    "label": "Refined flour signal",
+    "severity": "medium",
+    "reason": "Maida/refined flour foods like naan, pizza, burger, momos, rolls, or bhature appear.",
+    "possibleConcern": "May reduce whole-grain intake and affect fullness if frequent."
+  },
+  {
+    "tag": "high_fat",
+    "label": "High fat pattern",
+    "severity": "medium",
+    "reason": "Creamy, buttery, fried, or oil-heavy foods appear in the day.",
+    "possibleConcern": "May raise calorie load and heaviness when repeated often."
+  },
+  {
+    "tag": "high_calorie",
+    "label": "High calorie density",
+    "severity": "medium",
+    "reason": "The food item is calorie dense for a regular snack or meal.",
+    "possibleConcern": "May make total daily energy intake higher than expected."
+  },
+  {
+    "tag": "high_carbohydrate",
+    "label": "High carbohydrate load",
+    "severity": "medium",
+    "reason": "The meal is dominated by rice, bread, potato, noodles, or refined grains.",
+    "possibleConcern": "May cause energy dips if not balanced with protein, fiber, and vegetables."
+  },
+  {
+    "tag": "low_fiber",
+    "label": "Low fiber pattern",
+    "severity": "medium",
+    "reason": "The log has processed/refined foods but few vegetables, fruits, dal, sprouts, or whole grains.",
+    "possibleConcern": "May affect digestion, fullness, and gut-health patterns over time."
+  },
+  {
+    "tag": "low_vegetable",
+    "label": "Low vegetable signal",
+    "severity": "medium",
+    "reason": "Few vegetable-rich foods were found in the day’s entries.",
+    "possibleConcern": "May reduce micronutrient and fiber quality in the daily diet."
+  },
+  {
+    "tag": "sugary_drink",
+    "label": "Sugary drink habit",
+    "severity": "high",
+    "reason": "Cola, packaged juice, energy drink, milkshake, or sweet beverages appear.",
+    "possibleConcern": "Liquid sugar may increase cravings and calorie load without fullness."
+  },
+  {
+    "tag": "late_night_heavy",
+    "label": "Late-night heavy meal",
+    "severity": "medium",
+    "reason": "A heavy, fried, or high-sodium item was logged late in the day.",
+    "possibleConcern": "May affect sleep comfort or digestion for some people when frequent."
+  },
+  {
+    "tag": "outside_food",
+    "label": "Outside food heavy day",
+    "severity": "medium",
+    "reason": "Restaurant, delivery, or street-food entries appear multiple times.",
+    "possibleConcern": "May increase hidden oil, sodium, refined flour, and portion-size load."
+  },
+  {
+    "tag": "packaged_snack",
+    "label": "Packaged snack load",
+    "severity": "medium",
+    "reason": "Chips, biscuits, namkeen, bars, or other packaged snacks are present.",
+    "possibleConcern": "May add hidden salt, sugar, refined flour, and oils when eaten often."
+  },
+  {
+    "tag": "sweet",
+    "label": "Sweet/dessert watch",
+    "severity": "medium",
+    "reason": "Desserts, chocolates, or sweets appear in the diary.",
+    "possibleConcern": "May increase daily sugar load if not portion-controlled."
+  },
+  {
+    "tag": "dessert",
+    "label": "Dessert frequency signal",
+    "severity": "medium",
+    "reason": "Dessert items were found in the daily/weekly food pattern.",
+    "possibleConcern": "May be better kept occasional or paired with balanced meals."
+  },
+  {
+    "tag": "low_calorie",
+    "label": "Light option detected",
+    "severity": "low",
+    "reason": "A low-calorie or lighter food/drink option appears in the log.",
+    "possibleConcern": "Good sign when it supports balance, but avoid under-eating."
+  },
+  {
+    "tag": "fiber",
+    "label": "Fiber-positive food",
+    "severity": "low",
+    "reason": "Fiber-rich foods like fruits, sprouts, dal, millets, oats, or vegetables appear.",
+    "possibleConcern": "This supports fullness and digestion-friendly patterns."
+  },
+  {
+    "tag": "protein",
+    "label": "Protein-positive food",
+    "severity": "low",
+    "reason": "Protein-rich foods such as dal, paneer, eggs, chicken, fish, tofu, sprouts, or curd appear.",
+    "possibleConcern": "This supports fullness, recovery, and balanced meals."
+  },
+  {
+    "tag": "whole_food",
+    "label": "Whole-food positive signal",
+    "severity": "low",
+    "reason": "Less processed foods such as home meals, fruits, dal, vegetables, or whole grains appear.",
+    "possibleConcern": "This usually improves overall food quality when repeated."
+  },
+  {
+    "tag": "vegetable",
+    "label": "Vegetable-positive signal",
+    "severity": "low",
+    "reason": "Vegetable-rich meals or sides appear in the food log.",
+    "possibleConcern": "This supports fiber, micronutrients, and better plate balance."
+  },
+  {
+    "tag": "fermented",
+    "label": "Fermented food positive signal",
+    "severity": "low",
+    "reason": "Curd, idli, dosa, dhokla, chaas, or similar fermented foods appear.",
+    "possibleConcern": "Can support meal variety and digestion-friendly patterns for many people."
+  },
+  {
+    "tag": "balanced",
+    "label": "Balanced meal signal",
+    "severity": "low",
+    "reason": "The meal appears to include a better mix of carbs, protein, and/or vegetables.",
+    "possibleConcern": "A positive pattern; keep portions and frequency balanced."
+  },
+  {
+    "tag": "sauce",
+    "label": "Sauce/condiment watch",
+    "severity": "medium",
+    "reason": "Sauces like ketchup, mayonnaise, or packaged dips appear.",
+    "possibleConcern": "Can add hidden sugar, salt, and fat when used often."
+  },
+  {
+    "tag": "side",
+    "label": "Side-item watch",
+    "severity": "medium",
+    "reason": "Pickle, papad, chutney, or condiments appear as sides.",
+    "possibleConcern": "Some sides can add sodium/oil; use them in controlled portions."
+  },
+  {
+    "tag": "street_food",
+    "label": "Street-food pattern",
+    "severity": "medium",
+    "reason": "Street-food items such as pani puri, sev puri, vada pav, or chaat appear.",
+    "possibleConcern": "May increase sodium, refined flour, fried load, or hygiene uncertainty when frequent."
+  },
+  {
+    "tag": "restaurant_meal",
+    "label": "Restaurant meal pattern",
+    "severity": "medium",
+    "reason": "Restaurant meals or thalis appear in the food log.",
+    "possibleConcern": "May include larger portions and hidden oil/salt; balance with lighter meals."
+  },
+  {
+    "tag": "drink",
+    "label": "Drink choice watch",
+    "severity": "low",
+    "reason": "A drink entry was detected.",
+    "possibleConcern": "Choose water, chaas, unsweetened drinks, or coconut water more often than sugary beverages."
+  },
+  {
+    "tag": "breakfast",
+    "label": "Breakfast quality signal",
+    "severity": "low",
+    "reason": "A breakfast item was detected in the diary.",
+    "possibleConcern": "A balanced breakfast with protein and fiber can improve daily food pattern."
+  },
+  {
+    "tag": "home_meal",
+    "label": "Home-meal positive signal",
+    "severity": "low",
+    "reason": "Home-style meals like dal, roti sabzi, khichdi, rajma, or curd rice appear.",
+    "possibleConcern": "Usually easier to control oil, salt, and portion quality than outside food."
+  },
+  {
+    "tag": "healthy_snack",
+    "label": "Healthy snack positive signal",
+    "severity": "low",
+    "reason": "Snacks like makhana, roasted chana, sprouts, peanuts, or fruit appear.",
+    "possibleConcern": "Can improve satiety and reduce packaged snack dependence."
+  },
+  {
+    "tag": "fruit",
+    "label": "Fruit-positive signal",
+    "severity": "low",
+    "reason": "Whole fruit or fruit bowl appears in the food log.",
+    "possibleConcern": "Whole fruit adds fiber and is usually better than packaged juice."
+  },
+  {
+    "tag": "packaged_sweet",
+    "label": "Packaged sweet watch",
+    "severity": "medium",
+    "reason": "Packaged sweet foods such as cream biscuits, chocolate, or sweet cereals appear.",
+    "possibleConcern": "May add sugar, refined flour, and oils without much fullness."
+  },
+  {
+    "tag": "portion_heavy",
+    "label": "Portion-heavy pattern",
+    "severity": "medium",
+    "reason": "Large meal items or multiple calorie-dense entries were logged together.",
+    "possibleConcern": "May make daily calorie load higher than expected."
+  },
+  {
+    "tag": "repeated_same_food",
+    "label": "Repeated same-food pattern",
+    "severity": "medium",
+    "reason": "The same item appears repeatedly in recent logs.",
+    "possibleConcern": "May reduce variety; rotate protein, vegetables, and whole grains."
+  },
+  {
+    "tag": "missing_protein_breakfast",
+    "label": "Low-protein breakfast pattern",
+    "severity": "medium",
+    "reason": "Breakfast appears mostly carb/sugar based without enough protein.",
+    "possibleConcern": "May reduce fullness and cause mid-day cravings for some people."
+  },
+  {
+    "tag": "hidden_sugar",
+    "label": "Hidden sugar signal",
+    "severity": "medium",
+    "reason": "Packaged drinks, flavored milk, cereals, sauces, or sweet snacks may contain hidden sugar.",
+    "possibleConcern": "Could increase sugar load even when the food does not look like a dessert."
+  },
+  {
+    "tag": "hidden_sodium",
+    "label": "Hidden sodium signal",
+    "severity": "medium",
+    "reason": "Packaged, instant, restaurant, or sauce-based items may contain hidden sodium.",
+    "possibleConcern": "May increase sodium intake if these foods repeat often."
+  },
+  {
+    "tag": "oil_load",
+    "label": "Oil-load signal",
+    "severity": "medium",
+    "reason": "Fried, buttery, creamy, or packaged foods appear in the log.",
+    "possibleConcern": "Could increase heaviness and calorie density when frequent."
+  },
+  {
+    "tag": "child_snack_watch",
+    "label": "Children snack watch",
+    "severity": "medium",
+    "reason": "Cream biscuits, sweet cereal, chips, chocolate, or sugary drinks appear.",
+    "possibleConcern": "May be better kept occasional, especially for children."
+  },
+  {
+    "tag": "energy_crash_pattern",
+    "label": "Energy crash pattern",
+    "severity": "medium",
+    "reason": "Sugar/refined-carb heavy entries appear without enough protein or fiber.",
+    "possibleConcern": "May lead to hunger or energy dips later in the day for some users."
+  },
+  {
+    "tag": "digestion_discomfort_pattern",
+    "label": "Digestion discomfort pattern",
+    "severity": "medium",
+    "reason": "Fried, spicy, late-night, or heavy outside foods appear together.",
+    "possibleConcern": "May cause bloating, acidity, or discomfort in sensitive users."
+  },
+  {
+    "tag": "weekly_outside_food_frequency",
+    "label": "Frequent outside-food week",
+    "severity": "high",
+    "reason": "Outside food appears repeatedly across recent diary days.",
+    "possibleConcern": "May raise hidden oil, salt, and refined-flour exposure over time."
   }
 ]
