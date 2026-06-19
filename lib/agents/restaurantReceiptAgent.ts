@@ -393,6 +393,9 @@ function foodItemsFromInsights(items: FoodItemInsight[]): FoodItem[] {
     confidence: 0.86,
     flags: [
       ...(item.proteinSignal ? ["protein"] : []),
+      ...(item.positives.some((positive) => /vegetable|soup/i.test(positive))
+        ? ["vegetable", "whole_food", "fiber"]
+        : []),
       ...item.riskTags
     ],
     proteinEstimate: item.proteinSignal ? 12 : 4,
