@@ -1,6 +1,6 @@
 # DabbaDoc
 
-**Scan Before You Eat**
+**Label Padhega India**
 
 DabbaDoc is an AI Food Health Intelligence app for Indian families. It analyzes grocery receipts, food delivery screenshots, quick-commerce order history, packaged food labels, and daily food diary text. The app returns general wellness insights, a Dabba Health Index, risky pattern flags, healthy Indian swaps, cost comparison, streaks, badges, and PDF reports.
 

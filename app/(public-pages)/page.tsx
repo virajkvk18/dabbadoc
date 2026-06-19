@@ -339,7 +339,7 @@ function ExplainerVideoSection() {
 
         <div className="glass-panel scan-frame relative overflow-hidden rounded-3xl p-3 sm:p-4">
           <div className="absolute right-6 top-6 z-10 hidden rounded-full border border-primary/20 bg-black/45 px-3 py-1 text-xs font-bold text-primary shadow-[0_0_22px_rgba(129,247,89,0.24)] backdrop-blur-xl sm:inline-flex">
-            Scan Before You Eat
+            Label Padhega India
           </div>
           <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_28px_70px_rgba(0,0,0,0.38)]">
             <ControlledLoopVideo

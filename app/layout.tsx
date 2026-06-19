@@ -3,7 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DabbaDoc - Scan Before You Eat",
+  title: "DabbaDoc - Label Padhega India",
   description: "AI Food Health Intelligence for Indian Families",
   icons: {
     icon: [
