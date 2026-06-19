@@ -42,6 +42,11 @@ type ExtractResponse = {
   error?: string;
 };
 
+type ExtractResult = {
+  text: string;
+  upload: DirectUploadResult | null;
+};
+
 const ANALYSIS_TIMEOUT_MS = 70_000;
 const DIRECT_UPLOAD_THRESHOLD_BYTES = 3.8 * 1024 * 1024;
 
@@ -101,11 +106,11 @@ export function LabelScanForm() {
     }
   }
 
-  async function extractText() {
+  async function extractText(): Promise<ExtractResult | null> {
     if (!file) {
       setError("Choose a label image or use live capture before extracting text.");
       setWarning(null);
-      return false;
+      return null;
     }
 
     setLoading(true);
@@ -117,8 +122,10 @@ export function LabelScanForm() {
     try {
       const formData = new FormData();
       formData.set("demoMode", "false");
+      let uploadedFile: DirectUploadResult | null = null;
       if (file.size > DIRECT_UPLOAD_THRESHOLD_BYTES) {
         const upload = await uploadImageDirectly(file);
+        uploadedFile = upload;
         setDirectUpload(upload);
         formData.set("storagePath", upload.path);
         formData.set("fileName", upload.fileName);
@@ -136,22 +143,29 @@ export function LabelScanForm() {
 
       if (!response.ok || !payload.extractedText) {
         setError(payload.error ?? "Could not read this label. Try a clearer, closer photo.");
-        return false;
+        return null;
       }
 
       setOcrText(payload.extractedText);
-      setWarning("Review the extracted text, then run AI analysis.");
-      return true;
+      setWarning("Text extracted. Running AI analysis now.");
+      return { text: payload.extractedText, upload: uploadedFile };
     } catch (error) {
       setError(
         error instanceof DOMException && error.name === "AbortError"
           ? "Text extraction took too long. Try a clearer, smaller image."
           : "Could not extract label text. Please check your connection and try again."
       );
-      return false;
+      return null;
     } finally {
       window.clearTimeout(timeout);
       setLoading(false);
+    }
+  }
+
+  async function extractTextOnly() {
+    const result = await extractText();
+    if (result) {
+      setWarning("Review the extracted text, then run AI analysis.");
     }
   }
 
@@ -162,9 +176,13 @@ export function LabelScanForm() {
       return;
     }
 
-    if (!demoMode && !ocrText.trim()) {
-      await extractText();
-      return;
+    let textForAnalysis = ocrText.trim();
+    let uploadForAnalysis = directUpload;
+    if (!demoMode && !textForAnalysis) {
+      const extracted = await extractText();
+      if (!extracted) return;
+      textForAnalysis = extracted.text.trim();
+      uploadForAnalysis = extracted.upload;
     }
 
     setLoading(true);
@@ -181,12 +199,12 @@ export function LabelScanForm() {
         formData.set("productName", productName.trim());
       }
       healthGoals.forEach((goal) => formData.append("healthGoals", goal));
-      if (ocrText.trim() && !demoMode) {
-        formData.set("rawText", ocrText);
-        if (directUpload) {
-          formData.set("storagePath", directUpload.path);
-          formData.set("fileName", directUpload.fileName);
-          formData.set("mimeType", directUpload.mimeType);
+      if (textForAnalysis && !demoMode) {
+        formData.set("rawText", textForAnalysis);
+        if (uploadForAnalysis) {
+          formData.set("storagePath", uploadForAnalysis.path);
+          formData.set("fileName", uploadForAnalysis.fileName);
+          formData.set("mimeType", uploadForAnalysis.mimeType);
         } else if (file) {
           formData.set("file", file);
         }
@@ -330,8 +348,14 @@ export function LabelScanForm() {
           <div className="grid gap-3 sm:flex sm:flex-wrap">
             <Button className="w-full sm:w-auto" onClick={() => submit(false)} disabled={loading || processingFile}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanLine className="h-4 w-4" />}
-              {ocrText ? "Run AI analysis" : "Extract text"}
+              Analyze label
             </Button>
+            {file ? (
+              <Button className="w-full sm:w-auto" variant="secondary" onClick={extractTextOnly} disabled={loading || processingFile}>
+                <FileImage className="h-4 w-4" />
+                Extract text only
+              </Button>
+            ) : null}
             <Button className="w-full sm:w-auto" variant="outline" onClick={() => submit(true)} disabled={loading}>
               <PlayCircle className="h-4 w-4" />
               Try demo LabelScan
