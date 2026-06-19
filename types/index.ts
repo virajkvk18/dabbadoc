@@ -2,6 +2,11 @@ export const DABBADOC_DISCLAIMER =
   "DabbaDoc is not a medical diagnosis tool. Please consult a doctor/dietitian for medical advice.";
 
 export type RiskSeverity = "low" | "medium" | "high";
+export type ReceiptType =
+  | "grocery_receipt"
+  | "restaurant_bill"
+  | "packaged_food_label"
+  | "unknown";
 
 export type SourceType =
   | "grocery_receipt"
@@ -118,6 +123,29 @@ export interface ReceiptCoverageSummary {
   confidenceNote: string;
 }
 
+export interface FoodItemInsight {
+  item: string;
+  quantity?: number;
+  category: string;
+  proteinSignal: boolean;
+  positives: string[];
+  concerns: string[];
+  inferredCalories: "low" | "medium" | "high" | "unknown";
+  riskTags: string[];
+}
+
+export interface NutritionInference {
+  proteinSources: string[];
+  friedItems: string[];
+  butterCreamItems: string[];
+  refinedCarbs: string[];
+  desserts: string[];
+  sugaryBeverages: string[];
+  vegetableOrSoupItems: string[];
+  estimatedCaloriesLevel: "low" | "medium" | "high" | "unknown";
+  confidence: "low" | "medium" | "high";
+}
+
 export interface CostComparison {
   currentMonthlyEstimate: number;
   healthierMonthlyEstimate: number;
@@ -138,6 +166,7 @@ export interface HealthScoreBreakdown {
 }
 
 export interface ReceiptAnalysis {
+  receiptType?: ReceiptType;
   extractedText: string;
   detectedItems: FoodItem[];
   riskFlags: RiskFlag[];
@@ -145,6 +174,15 @@ export interface ReceiptAnalysis {
   itemInsights?: ItemHealthInsight[];
   coverageSummary?: ReceiptCoverageSummary;
   healthScore: number;
+  proteinScore?: number;
+  riskLevel?: RiskSeverity | "insufficient_data";
+  positives?: string[];
+  concerns?: string[];
+  itemBreakdown?: FoodItemInsight[];
+  restaurantItemBreakdown?: FoodItemInsight[];
+  nutritionInference?: NutritionInference;
+  mealBalanceSummary?: string;
+  suggestions?: string[];
   scoreCategory: string;
   scoreBreakdown: HealthScoreBreakdown;
   blameMap: BlameItem[];
@@ -154,6 +192,8 @@ export interface ReceiptAnalysis {
   aiSummary: string;
   disclaimer: string;
 }
+
+export type ReceiptAnalysisResult = ReceiptAnalysis;
 
 export interface LabelAnalysis {
   extractedText: string;

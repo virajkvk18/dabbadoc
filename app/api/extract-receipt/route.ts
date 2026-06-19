@@ -4,6 +4,7 @@ import {
   extractReceiptText,
   ReceiptExtractionError
 } from "@/lib/agents/receiptScanAgent";
+import { detectReceiptType } from "@/lib/agents/receiptType";
 import { requireVerifiedUser } from "@/lib/auth/require-user";
 import { ApiError, apiErrorResponse } from "@/lib/security/api-errors";
 import {
@@ -69,7 +70,10 @@ export async function POST(request: NextRequest) {
       demoMode: parsed.demoMode
     });
 
-    return NextResponse.json({ extractedText });
+    return NextResponse.json({
+      extractedText,
+      receiptType: detectReceiptType(extractedText)
+    });
   } catch (error) {
     if (error instanceof ReceiptExtractionError) {
       return apiErrorResponse(new ApiError(error.message, 422), "Receipt OCR failed", 422, {

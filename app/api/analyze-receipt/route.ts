@@ -6,6 +6,7 @@ import {
   extractReceiptText,
   ReceiptExtractionError
 } from "@/lib/agents/receiptScanAgent";
+import { detectReceiptType } from "@/lib/agents/receiptType";
 import { requireVerifiedUser } from "@/lib/auth/require-user";
 import { ApiError, apiErrorResponse } from "@/lib/security/api-errors";
 import {
@@ -91,20 +92,27 @@ export async function POST(request: NextRequest) {
       healthContext: healthContext.context
     };
     const extractedText = await extractReceiptText(agentInput);
+    const receiptType = detectReceiptType(extractedText);
     const analysis =
-      (await analyzeReceiptWithDabbaAgent({
-        rawText: extractedText,
-        sourceType: parsed.sourceType,
-        dataUri,
-        mimeType,
-        healthGoals,
-        healthContext: healthContext.context
-      })) ??
-      (await runReceiptGraph({
-        ...agentInput,
-        rawText: extractedText,
-        dataUri: undefined
-      }));
+      receiptType === "restaurant_bill"
+        ? await runReceiptGraph({
+            ...agentInput,
+            rawText: extractedText,
+            dataUri: undefined
+          })
+        : (await analyzeReceiptWithDabbaAgent({
+            rawText: extractedText,
+            sourceType: parsed.sourceType,
+            dataUri,
+            mimeType,
+            healthGoals,
+            healthContext: healthContext.context
+          })) ??
+          (await runReceiptGraph({
+            ...agentInput,
+            rawText: extractedText,
+            dataUri: undefined
+          }));
 
     let saved = false;
     try {

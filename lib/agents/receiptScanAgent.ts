@@ -27,6 +27,8 @@ import {
 import { updateHealthIndex } from "./healthIndexAgent";
 import { analyzeRisks } from "./riskAnalyzerAgent";
 import { recommendSwaps } from "./swapRecommenderAgent";
+import { analyzeRestaurantReceipt } from "./restaurantReceiptAgent";
+import { detectReceiptType } from "./receiptType";
 
 const sampleReceiptText = `
 Freshmart Grocery
@@ -44,6 +46,7 @@ You are DabbaDoc's receipt OCR agent for Indian grocery, restaurant, food delive
 Extract ONLY what is visible in the uploaded receipt/order image.
 Return plain text, one item or line per row.
 Include every visible food line item, brand name, quantity, unit, price, total, and store/order text if visible.
+For restaurant bills, preserve category headings such as starters, soups, main course, breads, rice & biryani, desserts, beverages, plus table/server/guest/service charge lines when visible.
 Keep uncertain but readable food lines instead of dropping them; mark unclear text with [?].
 Do not summarize the receipt and do not merge multiple items into one line.
 Do not invent Maggi, cola, chips, or any other example items.
@@ -112,6 +115,8 @@ Rules:
 - Keep separate items separate. Example: if text has "Biryani" and "Butter Naan", return both.
 - Do not invent items that are not visible.
 - Preserve restaurant foods like biryani, naan, roti, paratha, kulcha, curry, paneer, dal, rice, beverages, desserts, and sides.
+- For restaurant bills, do not require calories, protein, sugar, sodium, or ingredient labels. Infer item identity from Indian dish names.
+- Do not assign health scores here. Only extract item names.
 - If quantity or price is visible, keep it in the line field.
 
 Receipt text:
@@ -181,6 +186,11 @@ export async function extractReceiptText(input: AgentInput) {
 
 export async function analyzeReceipt(input: AgentInput): Promise<ReceiptAnalysis> {
   const extractedText = await extractReceiptText(input);
+  const receiptType = detectReceiptType(extractedText);
+  if (receiptType === "restaurant_bill") {
+    return analyzeRestaurantReceipt(extractedText);
+  }
+
   const detectedItems = mergeFoodItems([
     ...parseFoodItemsFromText(extractedText),
     ...(await extractReceiptItemsWithAi(extractedText))
