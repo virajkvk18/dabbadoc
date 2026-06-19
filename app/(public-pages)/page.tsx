@@ -90,39 +90,6 @@ const insightCards = [
   }
 ];
 
-const judgeSnapshot = [
-  {
-    icon: ShieldCheck,
-    label: "Problem",
-    text: "Indian families eat from receipts, labels, delivery apps, and home meals, but hidden sugar, sodium, refined carbs, and low-protein patterns stay hard to understand."
-  },
-  {
-    icon: BrainCircuit,
-    label: "Solution",
-    text: "DabbaDoc converts scans and diary entries into a simple health score, food-risk summary, Indian swaps, and next actions."
-  },
-  {
-    icon: Utensils,
-    label: "Target users",
-    text: "Health-conscious Indian families, students, working professionals, parents, and users managing goals like weight loss, high protein, diabetes-friendly, or low sodium."
-  },
-  {
-    icon: Sparkles,
-    label: "Differentiator",
-    text: "Unlike calorie-only apps, DabbaDoc understands Indian receipts, restaurant bills, packaged labels, barcode products, family summaries, and Hinglish food questions."
-  },
-  {
-    icon: BadgeIndianRupee,
-    label: "Business model",
-    text: "Freemium scans drive adoption, while Premium unlocks personalization and reports; Premium Plus unlocks family tracking and connected account summaries."
-  },
-  {
-    icon: Award,
-    label: "Growth path",
-    text: "Future expansion can include dietitian sharing, school lunchbox plans, WhatsApp bot access, regional languages, and corporate wellness dashboards."
-  }
-];
-
 function HeroShowcase() {
   return (
     <div className="relative mx-auto w-full max-w-[720px] lg:ml-auto">
@@ -542,36 +509,6 @@ export default function LandingPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
-        </section>
-
-        <section className="app-section px-4 py-16 sm:px-6 lg:px-8">
-          <SectionHeading
-            eyebrow="Startup snapshot"
-            title="Built for judges to understand in one minute"
-            description="The product connects a real Indian food problem with a working AI workflow, clear users, defensible differentiation, and a freemium growth model."
-          />
-          <div className="mx-auto mt-10 grid max-w-7xl gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {judgeSnapshot.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Card key={item.label} className="glass-panel interactive-surface">
-                  <CardContent className="p-5">
-                    <div className="flex items-start gap-4">
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <div>
-                        <p className="text-sm font-black text-primary">{item.label}</p>
-                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                          {item.text}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
           </div>
         </section>
 
