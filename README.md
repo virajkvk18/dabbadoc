@@ -27,7 +27,7 @@ DabbaDoc is an AI Food Health Intelligence app for Indian families. It analyzes 
 
 - Frontend: Next.js App Router, React, TypeScript, Tailwind CSS
 - UI: shadcn/ui-style components, Framer Motion, Lucide Icons, Recharts
-- Backend: Next.js Route Handlers
+- Backend: Next.js Route Handlers plus optional Node.js/Express service under `backend/`
 - Database: Supabase PostgreSQL
 - Auth: Supabase Auth
 - Storage: Supabase Storage bucket `dabbadoc-uploads`
@@ -90,6 +90,13 @@ data/
   risk-rules.json
 types/
   index.ts
+backend/
+  src/
+    routes/
+    services/
+    middleware/
+    app.ts
+    server.ts
 supabase/
   schema.sql
   policies.sql
@@ -136,6 +143,9 @@ RAZORPAY_KEY_SECRET=
 RAZORPAY_WEBHOOK_SECRET=
 NEXT_PUBLIC_RAZORPAY_KEY_ID=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+EXPRESS_API_PORT=4000
+EXPRESS_CORS_ORIGINS=http://localhost:3000
+DABBADOC_APP_URL=http://localhost:3000
 ```
 
 Where to add each key:
@@ -151,7 +161,36 @@ Where to add each key:
 9. `DABBA_AGENT_URL` and `DABBA_AGENT_TOKEN` connect the Next.js backend to the optional secured Python Dabba Agent service in `services/dabba-agent`. Keep the token server-only.
 10. Cloudinary keys are optional if you choose Cloudinary instead of Supabase Storage for images.
 11. Razorpay key ID, secret, and webhook secret power premium plan payments.
-12. Never expose secret keys on the frontend. Only `NEXT_PUBLIC_*` values are browser-visible.
+12. `EXPRESS_API_PORT`, `EXPRESS_CORS_ORIGINS`, and `DABBADOC_APP_URL` configure the optional Node.js/Express backend.
+13. Never expose secret keys on the frontend. Only `NEXT_PUBLIC_*` values are browser-visible.
+
+## Optional Node.js + Express Backend
+
+The repo includes a separate Express backend in `backend/` for heavier server-side work without disturbing the existing Vercel/Next.js flow. It is useful for AI orchestration, restaurant receipt text analysis, barcode lookup, monthly report summaries, centralized logging, JWT verification, and rate-limited integrations.
+
+Run it locally:
+
+```bash
+npm run backend:dev
+```
+
+Build it:
+
+```bash
+npm run backend:build
+npm run backend:start
+```
+
+Important routes:
+
+- `GET /api/v1/health`
+- `GET /api/v1/ai/status`
+- `POST /api/v1/ai/food-chat`
+- `POST /api/v1/ai/analyze-text`
+- `GET /api/v1/barcode/product/:barcode`
+- `POST /api/v1/reports/monthly-summary`
+
+Protected Express routes use Supabase JWT auth through `Authorization: Bearer <supabase_access_token>`. Recommended deployment: keep the frontend on Vercel and deploy this backend separately on Render, Railway, Fly.io, AWS, or DigitalOcean when you want dedicated backend capacity.
 
 ## Supabase Setup
 
