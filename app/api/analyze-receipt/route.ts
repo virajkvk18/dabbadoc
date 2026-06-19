@@ -28,6 +28,10 @@ import { receiptAnalyzeSchema } from "@/lib/validators/api";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
+function optionalFormString(value: FormDataEntryValue | null) {
+  return typeof value === "string" ? value : undefined;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const user = await requireVerifiedUser();
@@ -44,7 +48,7 @@ export async function POST(request: NextRequest) {
     const parsed = receiptAnalyzeSchema.parse({
       sourceType: formData.get("sourceType") ?? "grocery_receipt",
       demoMode: formData.get("demoMode") === "true",
-      rawText: formData.get("rawText"),
+      rawText: optionalFormString(formData.get("rawText")),
       healthGoals: formData.getAll("healthGoals")
     });
     if (!parsed.demoMode && !parsed.rawText && !(file instanceof File) && typeof storagePath !== "string") {
