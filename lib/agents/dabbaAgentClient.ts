@@ -208,16 +208,45 @@ function normalizeConcernLevel(value?: string): IngredientInsight["concernLevel"
   return "unknown";
 }
 
+function norm(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function isClearlyPositiveFoodName(name: string) {
+  const normalized = norm(name);
+  const positiveName =
+    /\b(salad|green salad|kachumber|koshimbir|cucumber|carrot|sprout|sprouts|curd|dahi|chaas|sabzi|vegetable|fruit|apple|banana|dal|chana|rajma|roti sabzi)\b/.test(normalized);
+  const riskyPreparation =
+    /\b(fried|fries|cream|creamy|mayo|mayonnaise|cheese|butter|sugar|sweet|dessert|soda|cola|packaged|instant|chips|namkeen)\b/.test(normalized);
+
+  return positiveName && !riskyPreparation;
+}
+
+function sanitizePositiveFoodItem(item: FoodItem): FoodItem {
+  if (!isClearlyPositiveFoodName(item.name)) return item;
+
+  const flags = (item.flags ?? []).filter((flag) =>
+    ["protein", "fiber", "whole_food", "vegetable", "balanced"].includes(flag)
+  );
+  return {
+    ...item,
+    category: item.category === "food_item" ? "whole_food" : item.category,
+    flags: Array.from(new Set([...flags, "whole_food", "fiber"]))
+  };
+}
+
 function mapFoodItems(items?: AgentDetectedItem[]): FoodItem[] {
   return (items ?? [])
     .filter((item) => item.name?.trim())
-    .map((item) => ({
-      name: item.name?.trim() ?? "Food item",
-      category: item.category?.trim() || "food_item",
-      quantity: item.quantity ?? undefined,
-      confidence: item.confidence ?? undefined,
-      flags: item.risk_tags ?? []
-    }));
+    .map((item) =>
+      sanitizePositiveFoodItem({
+        name: item.name?.trim() ?? "Food item",
+        category: item.category?.trim() || "food_item",
+        quantity: item.quantity ?? undefined,
+        confidence: item.confidence ?? undefined,
+        flags: item.risk_tags ?? []
+      })
+    );
 }
 
 function mapRiskFlags(
@@ -249,23 +278,28 @@ function mapFutureHealthRisks(
 ): FutureHealthRisk[] {
   const mapped = (risks ?? [])
     .filter((risk) => risk.risk_area?.trim() || risk.simple_reason?.trim())
-    .map((risk, index) => ({
-      riskArea: risk.risk_area?.trim() || "Food pattern risk",
-      severity: normalizeSeverity(risk.confidence || flags?.[index]?.severity),
-      habitFrequency:
-        risk.habit_frequency?.trim() ||
-        "If this pattern becomes frequent instead of occasional",
-      possibleConcern:
-        risk.simple_reason?.trim() ||
-        "This pattern may increase long-term lifestyle health risk if repeated often.",
-      linkedItems: risk.linked_items?.filter(Boolean) ?? flags?.[index]?.evidence?.filter(Boolean) ?? [],
-      preventionTip:
-        risk.prevention_tip?.trim() ||
-        "Use the suggested swaps and add protein/fiber to balance the meal.",
-      timeframe:
-        risk.timeframe?.trim() ||
-        "Think in repeated weeks/months, not one single meal."
-    }));
+    .map((risk, index) => {
+      const linkedItems =
+        risk.linked_items?.filter(Boolean) ?? flags?.[index]?.evidence?.filter(Boolean) ?? [];
+      return {
+        riskArea: risk.risk_area?.trim() || "Food pattern risk",
+        severity: normalizeSeverity(risk.confidence || flags?.[index]?.severity),
+        habitFrequency:
+          risk.habit_frequency?.trim() ||
+          "If this pattern becomes frequent instead of occasional",
+        possibleConcern:
+          risk.simple_reason?.trim() ||
+          "This pattern may increase long-term lifestyle health risk if repeated often.",
+        linkedItems: linkedItems.filter((item) => !isClearlyPositiveFoodName(item)),
+        preventionTip:
+          risk.prevention_tip?.trim() ||
+          "Use the suggested swaps and add protein/fiber to balance the meal.",
+        timeframe:
+          risk.timeframe?.trim() ||
+          "Think in repeated weeks/months, not one single meal."
+      };
+    })
+    .filter((risk) => risk.linkedItems.length > 0 || !/salad|vegetable|fiber|whole/i.test(risk.riskArea));
 
   return mapped.length > 0 ? mapped : buildFutureHealthRisks(items, mappedRiskFlags);
 }
@@ -368,7 +402,7 @@ export async function analyzeReceiptWithDabbaAgent(params: {
   const detectedItems = mergeFoodItems([
     ...mapFoodItems(agent.detected_items),
     ...parseFoodItemsFromText(params.rawText)
-  ]);
+  ]).map(sanitizePositiveFoodItem);
   const riskFlags = mapRiskFlags(agent.risk_flags, agent.future_health_risks);
   const swaps = mapSwaps(agent.healthier_swaps, agent.cost_comparison, detectedItems);
   const futureHealthRisks = mapFutureHealthRisks(

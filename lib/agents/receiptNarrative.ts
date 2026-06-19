@@ -110,9 +110,46 @@ function norm(value: string) {
 
 function matchingGroups(item: FoodItem) {
   const flags = new Set((item.flags ?? []).map(norm));
+  if (isClearlyPositiveFood(item) && !hasHardRiskFlag(flags)) {
+    return [];
+  }
+
   return Object.entries(tagGroups)
     .filter(([, tags]) => tags.some((tag) => flags.has(norm(tag))))
     .map(([group]) => group);
+}
+
+function hasHardRiskFlag(flags: Set<string>) {
+  return [
+    "high sugar",
+    "sugary drink",
+    "added sugar",
+    "dessert",
+    "high sodium",
+    "fried",
+    "refined flour",
+    "maida",
+    "processed",
+    "ultra processed",
+    "high fat",
+    "palm oil",
+    "trans fat",
+    "high calorie"
+  ].some((flag) => flags.has(flag));
+}
+
+function isClearlyPositiveFood(item: FoodItem) {
+  const name = norm(item.name);
+  const flags = new Set((item.flags ?? []).map(norm));
+  const positiveFlag = ["protein", "fiber", "whole food", "vegetable", "balanced"].some((flag) =>
+    flags.has(flag)
+  );
+  const positiveName =
+    /\b(salad|green salad|kachumber|koshimbir|cucumber|carrot|sprout|sprouts|curd|dahi|chaas|sabzi|vegetable|fruit|apple|banana|dal|chana|rajma|roti sabzi)\b/.test(name);
+  const riskyPreparation =
+    /\b(fried|fries|cream|creamy|mayo|mayonnaise|cheese|butter|sugar|sweet|dessert|soda|cola|packaged|instant|chips|namkeen)\b/.test(name);
+
+  return (positiveFlag || positiveName) && !riskyPreparation;
 }
 
 function swapForItem(item: FoodItem, swaps: SwapRecommendation[]) {
