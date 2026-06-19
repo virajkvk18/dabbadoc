@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import { ControlledLoopVideo } from "@/components/common/controlled-loop-video";
 import { SectionHeading } from "@/components/common/section-heading";
-import { DabbaDocLogo } from "@/components/brand/dabbadoc-logo";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Badge } from "@/components/ui/badge";
@@ -373,7 +372,7 @@ export default function LandingPage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main>
-        <section className="relative isolate flex min-h-[calc(100svh-8rem)] items-center overflow-hidden px-4 py-8 sm:px-6 sm:py-8 lg:px-8">
+        <section className="relative isolate flex min-h-[calc(100svh-4rem)] items-center overflow-hidden px-4 py-8 sm:px-5 lg:px-6">
           <Image
             src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=1800&q=82"
             alt="Indian meal spread"
@@ -385,18 +384,15 @@ export default function LandingPage() {
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(2,6,10,0.94),rgba(5,9,13,0.78),rgba(5,9,13,0.48))]" />
           <div className="absolute inset-x-0 bottom-0 -z-10 h-36 bg-[linear-gradient(0deg,#071018,transparent)]" />
 
-          <div className="mx-auto grid w-full max-w-7xl gap-5 sm:gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-center lg:gap-10">
-            <div className="page-enter max-w-2xl">
-              <div className="mb-6 hidden sm:block">
-                <DabbaDocLogo size="md" />
-              </div>
+          <div className="mx-auto grid w-full max-w-[1800px] gap-6 sm:gap-8 lg:grid-cols-[minmax(0,0.82fr)_minmax(620px,1.18fr)] lg:items-center xl:gap-12">
+            <div className="page-enter max-w-3xl">
               <Badge variant="secondary">Food intelligence for Indian families</Badge>
-              <h1 className="mt-4 text-4xl font-black tracking-normal text-white sm:mt-5 sm:text-6xl lg:text-6xl">
+              <h1 className="mt-4 text-[2.75rem] font-black leading-[0.98] tracking-normal text-white sm:mt-5 sm:text-6xl lg:text-7xl">
                 Eat Smart.
                 <span className="block">Track Daily.</span>
                 <span className="block text-gradient-premium">Feel Amazing!</span>
               </h1>
-              <div className="mt-4 max-w-xl rounded-2xl border border-white/10 bg-black/25 p-4 shadow-[0_18px_42px_rgba(0,0,0,0.24)] backdrop-blur-md sm:mt-5">
+              <div className="mt-5 max-w-2xl rounded-2xl border border-white/10 bg-black/35 p-4 shadow-[0_18px_42px_rgba(0,0,0,0.24)] backdrop-blur-md sm:p-5">
                 <p className="text-sm leading-6 text-slate-200 sm:text-base sm:leading-7">
                   Scan receipts, labels, and daily meals. Get a Dabba Health
                   Index with hidden-risk flags, Indian food swaps, streaks,
@@ -414,7 +410,7 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <div className="mt-5 hidden max-w-xl gap-2 sm:grid sm:grid-cols-2">
+              <div className="mt-5 hidden max-w-2xl gap-3 sm:grid sm:grid-cols-2">
                 {[
                   { icon: FileScan, title: "Smart tracking", text: "Receipts, labels, meals" },
                   { icon: MessageCircle, title: "DabbaBot guidance", text: "Simple personal tips" },
@@ -438,17 +434,23 @@ export default function LandingPage() {
                 })}
               </div>
 
-              <div className="mt-5 flex flex-wrap gap-3 sm:mt-6">
-                <Button asChild size="lg">
+              <div className="mt-5 grid gap-3 sm:mt-6 sm:flex sm:flex-wrap">
+                <Button asChild size="lg" className="w-full sm:w-auto">
                   <Link href="/auth">
                     <Sparkles className="h-5 w-5" />
                     Start tracking
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="secondary">
+                <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
                   <Link href="/dashboard/upload-receipt">
                     <Upload className="h-5 w-5" />
                     Scan receipt
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
+                  <Link href="/about">
+                    <ShieldCheck className="h-5 w-5" />
+                    About DabbaDoc
                   </Link>
                 </Button>
               </div>
