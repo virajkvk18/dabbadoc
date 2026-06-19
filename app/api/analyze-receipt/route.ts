@@ -16,7 +16,11 @@ import {
   MAX_UPLOAD_BYTES
 } from "@/lib/security/abuse-protection";
 import { getHealthContextForUser } from "@/lib/supabase/health-profile";
-import { saveReceiptAnalysis, saveUploadRecord } from "@/lib/supabase/mutations";
+import {
+  saveHealthIndex,
+  saveReceiptAnalysis,
+  saveUploadRecord
+} from "@/lib/supabase/mutations";
 import { uploadToStorage } from "@/lib/supabase/storage";
 import { toDataUri } from "@/lib/utils";
 import { receiptAnalyzeSchema } from "@/lib/validators/api";
@@ -127,6 +131,13 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         uploadId,
         analysis
+      });
+      await saveHealthIndex({
+        userId: user.id,
+        score: analysis.healthScore,
+        scoreBreakdown: analysis.scoreBreakdown,
+        streakCount: 1,
+        badges: []
       });
       saved = true;
     } catch {

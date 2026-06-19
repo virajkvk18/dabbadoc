@@ -116,17 +116,6 @@ type ReceiptRow = {
   ai_summary: string | null;
   created_at: string;
 };
-type LabelRow = {
-  id: string;
-  product_name: string | null;
-  ingredients: unknown;
-  nutrition: unknown;
-  label_truth_score: number | null;
-  warnings: unknown;
-  better_alternatives: unknown;
-  ai_summary: string | null;
-  created_at: string;
-};
 type DiaryRow = {
   id: string;
   diary_text: string;
@@ -207,13 +196,45 @@ function warningRows(value: unknown) {
 }
 
 function sourceForReceipt(sourceType?: string): Pick<DiaryEntry, "source" | "sourceLabel"> {
-  if (sourceType === "food_delivery") {
+  if (sourceType === "food_delivery" || sourceType === "restaurant_bill") {
     return { source: "restaurant_receipt", sourceLabel: "Restaurant / delivery receipt" };
   }
   if (sourceType === "quick_commerce") {
     return { source: "quick_commerce_receipt", sourceLabel: "Quick-commerce receipt" };
   }
   return { source: "grocery_receipt", sourceLabel: "Grocery receipt" };
+}
+
+function receiptMetadata(row: ReceiptRow) {
+  return isRecord(row.cost_summary) ? row.cost_summary : {};
+}
+
+function receiptTypeFromRow(row: ReceiptRow, sourceType?: string) {
+  const metadata = receiptMetadata(row);
+  const receiptType = typeof metadata.receiptType === "string" ? metadata.receiptType : "";
+  if (receiptType === "restaurant_bill") return "restaurant_bill";
+  return sourceType;
+}
+
+function shouldShowReceiptInDiary(row: ReceiptRow, sourceType?: string) {
+  const type = receiptTypeFromRow(row, sourceType);
+  return type === "restaurant_bill" || type === "food_delivery";
+}
+
+function restaurantBillMealSlot(text?: string | null): DiaryMealSlot | null {
+  if (!text) return null;
+  const match = text.match(/\btime\s*:?\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+  if (!match) return null;
+
+  let hour = Number(match[1]);
+  const meridian = match[3]?.toLowerCase();
+  if (!Number.isFinite(hour)) return null;
+  if (meridian === "pm" && hour < 12) hour += 12;
+  if (meridian === "am" && hour === 12) hour = 0;
+  if (hour < 11) return "Morning";
+  if (hour < 16) return "Afternoon";
+  if (hour < 20) return "Evening";
+  return "Dinner / Snacks";
 }
 
 function costForReceipt(value: unknown): DiaryEntry["cost"] {
@@ -275,39 +296,27 @@ function manualEntries(row: DiaryRow): DiaryEntry[] {
 }
 
 function receiptEntry(row: ReceiptRow, sourceType?: string): DiaryEntry {
-  const source = sourceForReceipt(sourceType);
+  const type = receiptTypeFromRow(row, sourceType);
+  const source = sourceForReceipt(type);
   const items = asArray<FoodItem>(row.detected_items).map((item) => item.name).filter(Boolean);
+  const metadata = receiptMetadata(row);
+  const restaurantSummary =
+    typeof metadata.mealBalanceSummary === "string" ? metadata.mealBalanceSummary : null;
   return {
     id: `receipt-${row.id}`,
     createdAt: row.created_at,
     ...source,
-    mealSlot: mealSlotForTime(row.created_at),
+    mealSlot:
+      type === "restaurant_bill"
+        ? restaurantBillMealSlot(row.extracted_text) ?? mealSlotForTime(row.created_at)
+        : mealSlotForTime(row.created_at),
     title: items.slice(0, 3).join(", ") || source.sourceLabel,
-    detail: cleanText(row.ai_summary ?? row.extracted_text, "Receipt analysis saved."),
+    detail: cleanText(restaurantSummary ?? row.ai_summary ?? row.extracted_text, "Receipt analysis saved."),
     items,
     warnings: warningRows(row.risk_flags),
     swaps: asArray<SwapRecommendation>(row.swaps),
     score: row.health_score ?? undefined,
     cost: costForReceipt(row.cost_summary)
-  };
-}
-
-function labelEntry(row: LabelRow): DiaryEntry {
-  const nutrition = isRecord(row.nutrition) ? row.nutrition : {};
-  const barcode = nutrition.scanSource === "barcode_scan";
-  const ingredients = asArray<string>(row.ingredients).filter(Boolean);
-  return {
-    id: `label-${row.id}`,
-    createdAt: row.created_at,
-    source: barcode ? "barcode_scan" : "label_scan",
-    sourceLabel: barcode ? "Barcode scan" : "Packaged food label",
-    mealSlot: mealSlotForTime(row.created_at),
-    title: row.product_name || "Packaged food",
-    detail: cleanText(row.ai_summary, barcode ? "Barcode product saved." : "Label analysis saved."),
-    items: [row.product_name || "Packaged food", ...ingredients.slice(0, 4)],
-    warnings: warningRows(row.warnings),
-    swaps: asArray<SwapRecommendation>(row.better_alternatives),
-    score: row.label_truth_score ?? undefined
   };
 }
 
@@ -357,7 +366,9 @@ function detectRiskCounts(entries: DiaryEntry[]) {
     }
   }
 
-  const foodEntries = entries.filter((entry) => ["manual", "outside_food"].includes(entry.source));
+  const foodEntries = entries.filter((entry) =>
+    ["manual", "outside_food", "restaurant_receipt"].includes(entry.source)
+  );
   const protein = entries.reduce((total, entry) => total + (entry.protein ?? 0), 0);
   const allText = entries.map(entrySearchText).join(" ");
   if (foodEntries.length >= 2 && protein < 40 && !/\b(dal|paneer|egg|chicken|fish|curd|tofu|beans|protein)\b/i.test(allText)) {
@@ -464,7 +475,11 @@ export function calculateDailyHealthIndex(entries: DiaryEntry[]) {
   let score = savedScores.length
     ? savedScores.reduce((total, value) => total + value, 0) / savedScores.length
     : 70;
-  const slots = new Set(entries.filter((entry) => ["manual", "outside_food"].includes(entry.source)).map((entry) => entry.mealSlot));
+  const slots = new Set(
+    entries
+      .filter((entry) => ["manual", "outside_food", "restaurant_receipt"].includes(entry.source))
+      .map((entry) => entry.mealSlot)
+  );
   const counts = detectRiskCounts(entries);
   if (slots.has("Morning")) score += 3;
   if (slots.size >= 3) score += 3;
@@ -501,7 +516,7 @@ function buildDay(date: string, entries: DiaryEntry[]): DiaryDay {
   const mealSlots = Array.from(
     new Set(
       sortedEntries
-        .filter((entry) => ["manual", "outside_food"].includes(entry.source))
+        .filter((entry) => ["manual", "outside_food", "restaurant_receipt"].includes(entry.source))
         .map((entry) => entry.mealSlot)
     )
   );
@@ -644,22 +659,22 @@ export async function getMyDiaryOverview(): Promise<MyDiaryOverview> {
   } = await supabase.auth.getUser();
   if (userError || !user) throw new ApiError("Please log in to continue.", 401);
 
-  const [uploadsResponse, receiptsResponse, labelsResponse, diariesResponse] = await Promise.all([
+  const [uploadsResponse, receiptsResponse, diariesResponse] = await Promise.all([
     supabase.from("uploads").select("id, source_type").eq("user_id", user.id).order("created_at", { ascending: false }).limit(180),
     supabase.from("receipt_analyses").select("id, upload_id, extracted_text, detected_items, risk_flags, health_score, cost_summary, swaps, ai_summary, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(120),
-    supabase.from("label_analyses").select("id, product_name, ingredients, nutrition, label_truth_score, warnings, better_alternatives, ai_summary, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(120),
     supabase.from("food_diaries").select("id, diary_text, calories_estimate, protein_estimate, good_items, risky_items, suggestions, daily_score, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(120)
   ]);
 
-  if (uploadsResponse.error || receiptsResponse.error || labelsResponse.error || diariesResponse.error) {
+  if (uploadsResponse.error || receiptsResponse.error || diariesResponse.error) {
     throw new ApiError("Could not load My Diary right now.", 500);
   }
 
   const uploads = (uploadsResponse.data ?? []) as UploadRow[];
   const sourceByUpload = new Map(uploads.map((upload) => [upload.id, upload.source_type]));
   const entries = [
-    ...((receiptsResponse.data ?? []) as ReceiptRow[]).map((row) => receiptEntry(row, row.upload_id ? sourceByUpload.get(row.upload_id) : undefined)),
-    ...((labelsResponse.data ?? []) as LabelRow[]).map(labelEntry),
+    ...((receiptsResponse.data ?? []) as ReceiptRow[])
+      .filter((row) => shouldShowReceiptInDiary(row, row.upload_id ? sourceByUpload.get(row.upload_id) : undefined))
+      .map((row) => receiptEntry(row, row.upload_id ? sourceByUpload.get(row.upload_id) : undefined)),
     ...((diariesResponse.data ?? []) as DiaryRow[]).flatMap(manualEntries)
   ];
   return buildMyDiaryOverview(entries);
